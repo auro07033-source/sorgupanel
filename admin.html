@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel — Forex Sorgulama Hizmeti</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a0e1a; --card: rgba(30,41,59,.6); --card-solid: #1e293b;
+    --border: rgba(148,163,184,.12); --border-hover: rgba(148,163,184,.3);
+    --text: #f1f5f9; --text-dim: #94a3b8; --text-mute: #64748b;
+    --primary: #6366f1; --primary-2: #8b5cf6;
+    --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
+  }
+  body {
+    font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text);
+    min-height: 100vh; padding: 1.5rem 1rem 3rem; position: relative; overflow-x: hidden;
+  }
+  body::before {
+    content: ""; position: fixed; inset: -50%; z-index: -1;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(239, 68, 68, 0.12), transparent 45%),
+      radial-gradient(circle at 80% 60%, rgba(139, 92, 246, 0.1), transparent 45%);
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+  .hidden { display: none !important; }
+  .header {
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
+    margin-bottom: 2rem; padding: 1.25rem 1.5rem; background: var(--card);
+    backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 1.25rem;
+  }
+  .logo { display: flex; align-items: center; gap: .85rem; }
+  .logo-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: linear-gradient(135deg, #ef4444, #f97316);
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+  }
+  .logo-text h1 { font-size: 1.2rem; font-weight: 800; letter-spacing: -.02em; }
+  .logo-text p { font-size: .72rem; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
+  .btn {
+    background: var(--card-solid); border: 1px solid var(--border); border-radius: .65rem;
+    padding: .55rem 1rem; cursor: pointer; font-weight: 600; font-size: .82rem;
+    color: var(--text); transition: all .2s; font-family: inherit;
+  }
+  .btn:hover { border-color: var(--border-hover); }
+  .btn.danger { color: #fca5a5; border-color: rgba(239,68,68,.35); }
+  .btn.danger:hover { background: rgba(239,68,68,.1); }
+  .btn.success { color: #86efac; border-color: rgba(16,185,129,.35); }
+  .btn.success:hover { background: rgba(16,185,129,.1); }
+  .stats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: .85rem; margin-bottom: 1.5rem;
+  }
+  .stat {
+    background: var(--card); backdrop-filter: blur(20px);
+    border: 1px solid var(--border); border-radius: 1rem; padding: 1rem 1.1rem;
+  }
+  .stat .label { font-size: .68rem; color: var(--text-dim); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; margin-bottom: .4rem; }
+  .stat .value { font-size: 1.6rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .stat .value.purple { background: linear-gradient(135deg, var(--primary), var(--primary-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .stat .value.green { color: #86efac; }
+  .stat .value.red { color: #fca5a5; }
+  .stat .value.yellow { color: #fcd34d; }
+
+  .panel {
+    background: var(--card); backdrop-filter: blur(20px);
+    border: 1px solid var(--border); border-radius: 1.25rem;
+    padding: 1.5rem; margin-bottom: 1.5rem;
+  }
+  .panel-title {
+    font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem;
+    display: flex; align-items: center; gap: .5rem;
+  }
+  .panel-title::before {
+    content: ""; width: 4px; height: 18px;
+    background: linear-gradient(180deg, #ef4444, #f97316);
+    border-radius: 4px;
+  }
+
+  .user-row {
+    display: flex; align-items: center; gap: 1rem;
+    padding: .85rem 1rem; border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .user-row:last-child { border-bottom: none; }
+  .user-avatar {
+    width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+    object-fit: cover; border: 2px solid var(--border);
+  }
+  .user-info { flex: 1; min-width: 180px; }
+  .user-name {
+    font-weight: 700; font-size: .92rem;
+    display: flex; align-items: center; gap: .35rem; flex-wrap: wrap;
+  }
+  .tick { color: #60a5fa; font-size: .85rem; }
+  .rank-badge {
+    font-size: .65rem; font-weight: 700; padding: .18rem .5rem;
+    border-radius: 999px; background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    color: white; text-transform: uppercase; letter-spacing: .04em;
+  }
+  .rank-badge.admin { background: linear-gradient(135deg, #ef4444, #f97316); }
+  .user-meta { font-size: .72rem; color: var(--text-dim); margin-top: .15rem; }
+  .status {
+    font-size: .72rem; font-weight: 700;
+    display: inline-flex; align-items: center; gap: .35rem;
+  }
+  .status .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+  }
+  .status.online { color: #86efac; }
+  .status.online .dot { background: #10b981; box-shadow: 0 0 8px #10b981; animation: pulse 2s infinite; }
+  .status.offline { color: #64748b; }
+  .status.offline .dot { background: #64748b; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+  .status.banned { color: #fca5a5; }
+  .user-actions { display: flex; gap: .4rem; flex-wrap: wrap; }
+  .btn-sm {
+    padding: .4rem .7rem; border-radius: .5rem; font-size: .72rem; font-weight: 600;
+    cursor: pointer; border: 1px solid var(--border); background: var(--card-solid);
+    color: var(--text); font-family: inherit; transition: all .2s;
+  }
+  .btn-sm:hover { border-color: var(--border-hover); }
+  .btn-sm.danger { color: #fca5a5; border-color: rgba(239,68,68,.3); }
+  .btn-sm.danger:hover { background: rgba(239,68,68,.1); }
+  .btn-sm.success { color: #86efac; border-color: rgba(16,185,129,.3); }
+  .btn-sm.success:hover { background: rgba(16,185,129,.1); }
+  .btn-sm.warn { color: #fcd34d; border-color: rgba(245,158,11,.3); }
+
+  input, select {
+    padding: .6rem .8rem; border-radius: .5rem;
+    border: 1px solid var(--border); background: var(--bg); color: var(--text);
+    font-family: 'JetBrains Mono', monospace; font-size: .78rem; outline: none;
+  }
+  input:focus, select:focus { border-color: var(--primary); }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; padding: .85rem 1.2rem;
+    background: var(--card-solid); border: 1px solid var(--primary); border-radius: .75rem;
+    color: var(--text); font-size: .85rem; font-weight: 600;
+    box-shadow: 0 10px 30px rgba(99,102,241,.4);
+    opacity: 0; transform: translateY(12px); transition: all .3s; pointer-events: none; z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.error { border-color: var(--danger); }
+  .toast.success { border-color: var(--success); }
+</style>
+</head>
+<body>
+
+<!-- Yetkisiz görünüm -->
+<div id="unauthView" class="container hidden">
+  <div class="panel" style="text-align:center;padding:3rem 2rem;">
+    <div style="font-size:3rem;margin-bottom:1rem;">🛡️</div>
+    <h2 style="margin-bottom:.5rem;">Yetkisiz Erişim</h2>
+    <p style="color:var(--text-dim);margin-bottom:1.5rem;">Bu sayfa sadece adminler içindir.</p>
+    <a href="adminlogin.html" class="btn danger" style="display:inline-block;text-decoration:none;padding:.7rem 1.5rem;">🛡️ Admin Girişi</a>
+  </div>
+</div>
+
+<!-- Admin panel -->
+<div id="adminView" class="container hidden">
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">🛡️</div>
+      <div class="logo-text">
+        <h1>Admin Panel</h1>
+        <p>Forex Sorgulama Hizmeti</p>
+      </div>
+    </div>
+    <div style="display:flex;gap:.5rem;">
+      <button class="btn" onclick="loadStats()">🔄 Yenile</button>
+      <button class="btn" onclick="location.href='index.html'">🏠 Ana Sayfa</button>
+      <button class="btn danger" onclick="logout()">🚪 Çıkış</button>
+    </div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="panel">
+    <div class="panel-title">👥 Kullanıcılar</div>
+    <div id="userList"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const ADMIN_API = 'admin.php';
+
+function toast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.className = 'toast', 2200);
+}
+
+function esc(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+async function api(action, params = {}) {
+  const fd = new FormData();
+  fd.append('action', action);
+  for (const [k, v] of Object.entries(params)) fd.append(k, v);
+  const r = await fetch(ADMIN_API, { method: 'POST', body: fd });
+  return r.json();
+}
+
+async function checkSession() {
+  const r = await fetch(ADMIN_API + '?action=admin_check');
+  const d = await r.json();
+  if (d.success && d.logged) {
+    document.getElementById('adminView').classList.remove('hidden');
+    document.getElementById('unauthView').classList.add('hidden');
+    loadStats();
+    loadUsers();
+  } else {
+    document.getElementById('adminView').classList.add('hidden');
+    document.getElementById('unauthView').classList.remove('hidden');
+  }
+}
+
+async function loadStats() {
+  const d = await api('stats');
+  if (!d.success) return;
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><div class="label">Toplam</div><div class="value purple">${d.total}</div></div>
+    <div class="stat"><div class="label">Çevrimiçi</div><div class="value green">${d.online}</div></div>
+    <div class="stat"><div class="label">Doğrulanmış</div><div class="value yellow">${d.verified}</div></div>
+    <div class="stat"><div class="label">Banlı</div><div class="value red">${d.banned}</div></div>
+    <div class="stat"><div class="label">Mesaj</div><div class="value purple">${d.messages}</div></div>
+  `;
+}
+
+async function loadUsers() {
+  const d = await api('list_users');
+  if (!d.success) return;
+
+  const list = d.users.sort((a, b) => (b.online - a.online) || a.username.localeCompare(b.username));
+
+  let html = '';
+  for (const u of list) {
+    const status = u.banned
+      ? '<span class="status banned"><span class="dot"></span> BANLI</span>'
+      : u.online
+        ? '<span class="status online"><span class="dot"></span> Çevrimiçi</span>'
+        : '<span class="status offline"><span class="dot"></span> Çevrimdışı</span>';
+
+    const tick = u.verified ? '<span class="tick" title="Doğrulanmış">✅</span>' : '';
+    const rankCls = u.is_admin ? 'admin' : '';
+    const lastSeen = u.last_seen ? new Date(u.last_seen).toLocaleString('tr-TR') : 'Bilinmiyor';
+
+    html += `
+      <div class="user-row">
+        <img class="user-avatar" src="${esc(u.avatar)}" alt="">
+        <div class="user-info">
+          <div class="user-name">
+            ${esc(u.username)}
+            ${tick}
+            <span class="rank-badge ${rankCls}">${esc(u.rank)}</span>
+            ${u.is_admin ? '<span class="rank-badge admin">ADMIN</span>' : ''}
+          </div>
+          <div class="user-meta">${esc(u.email || '-')} · Son görülme: ${lastSeen}</div>
+          <div style="margin-top:.3rem;">${status}</div>
+        </div>
+        <div class="user-actions">
+          ${!u.is_admin ? `
+            <button class="btn-sm ${u.verified ? 'warn' : 'success'}" onclick="toggleVerify('${u.id}', ${u.verified ? 0 : 1})">
+              ${u.verified ? '❌ Tik Kaldır' : '✅ Tik Ver'}
+            </button>
+            <button class="btn-sm ${u.banned ? 'success' : 'danger'}" onclick="toggleBan('${u.id}', ${u.banned ? 0 : 1})">
+              ${u.banned ? '✅ Ban Kaldır' : '🚫 Banla'}
+            </button>
+            <button class="btn-sm warn" onclick="setRank('${u.id}', '${esc(u.rank)}')">🏅 Rütbe</button>
+            <button class="btn-sm danger" onclick="delUser('${u.id}', '${esc(u.username)}')">🗑️ Sil</button>
+          ` : '<span style="color:var(--text-dim);font-size:.75rem;">(admin)</span>'}
+        </div>
+      </div>
+    `;
+  }
+  document.getElementById('userList').innerHTML = html || '<p style="color:var(--text-dim);text-align:center;padding:2rem;">Kayıtlı kullanıcı yok</p>';
+}
+
+async function toggleVerify(id, v) {
+  const d = await api('verify', { id, verified: v });
+  toast(d.message || 'İşlem tamam', d.success ? 'success' : 'error');
+  loadUsers(); loadStats();
+}
+
+async function toggleBan(id, v) {
+  if (v) { if (!confirm('Bu kullanıcıyı banlamak istediğine emin misin?')) return; }
+  const d = await api('ban', { id, ban: v });
+  toast(d.message || 'İşlem tamam', d.success ? 'success' : 'error');
+  loadUsers(); loadStats();
+}
+
+async function setRank(id, current) {
+  const rank = prompt('Yeni rütbe:', current);
+  if (rank === null || rank.trim() === '') return;
+  const d = await api('set_rank', { id, rank: rank.trim() });
+  toast(d.message || 'İşlem tamam', d.success ? 'success' : 'error');
+  loadUsers();
+}
+
+async function delUser(id, username) {
+  if (!confirm(`"${username}" adlı kullanıcıyı silmek istediğine emin misin?`)) return;
+  const d = await api('delete_user', { id });
+  toast(d.message || 'İşlem tamam', d.success ? 'success' : 'error');
+  loadUsers(); loadStats();
+}
+
+async function logout() {
+  await fetch('auth.php?action=logout');
+  location.href = 'adminlogin.html';
+}
+
+// 30 saniyede bir otomatik yenile
+setInterval(() => { if (!document.getElementById('adminView').classList.contains('hidden')) loadUsers(); }, 30000);
+
+checkSession();
+</script>
+
+</body>
+</html>

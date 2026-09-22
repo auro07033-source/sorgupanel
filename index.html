@@ -8,452 +8,559 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   :root {
-    --bg: #0a0e1a; --card: rgba(30, 41, 59, 0.6); --card-solid: #1e293b;
-    --border: rgba(148, 163, 184, 0.12); --border-hover: rgba(148, 163, 184, 0.3);
+    --bg: #0a0e1a; --card: rgba(30,41,59,.6); --card-solid: #1e293b;
+    --border: rgba(148,163,184,.12); --border-hover: rgba(148,163,184,.3);
     --text: #f1f5f9; --text-dim: #94a3b8; --text-mute: #64748b;
-    --primary: #6366f1; --primary-2: #8b5cf6; --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
-    --shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5); --glow: 0 0 40px rgba(99, 102, 241, 0.3);
+    --primary: #6366f1; --primary-2: #8b5cf6;
+    --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
+    --shadow: 0 20px 40px -10px rgba(0,0,0,.5);
   }
   body.light {
-    --bg: #f8fafc; --card: rgba(255, 255, 255, 0.7); --card-solid: #ffffff;
-    --border: rgba(15, 23, 42, 0.08); --border-hover: rgba(15, 23, 42, 0.2);
+    --bg: #f8fafc; --card: rgba(255,255,255,.7); --card-solid: #ffffff;
+    --border: rgba(15,23,42,.08); --border-hover: rgba(15,23,42,.2);
     --text: #0f172a; --text-dim: #475569; --text-mute: #94a3b8;
-    --shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.15);
   }
   html, body { min-height: 100vh; }
   body {
     font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text);
-    padding: 2rem 1rem 3rem; transition: background .3s, color .3s; position: relative; overflow-x: hidden;
+    padding: 1.5rem 1rem 3rem; transition: background .3s, color .3s;
+    position: relative; overflow-x: hidden;
   }
   body::before {
-    content: ""; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
+    content: ""; position: fixed; inset: -50%; z-index: -1;
     background:
-      radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.18), transparent 45%),
-      radial-gradient(circle at 80% 60%, rgba(139, 92, 246, 0.14), transparent 45%),
-      radial-gradient(circle at 50% 90%, rgba(16, 185, 129, 0.08), transparent 40%);
-    z-index: -1; animation: float 20s ease-in-out infinite;
+      radial-gradient(circle at 20% 20%, rgba(99,102,241,.18), transparent 45%),
+      radial-gradient(circle at 80% 60%, rgba(139,92,246,.14), transparent 45%),
+      radial-gradient(circle at 50% 90%, rgba(16,185,129,.08), transparent 40%);
+    animation: float 20s ease-in-out infinite;
   }
-  @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-3%, -3%) scale(1.05); } }
+  @keyframes float { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-3%,-3%) scale(1.05)} }
   .container { max-width: 1200px; margin: 0 auto; }
   .hidden { display: none !important; }
 
-  /* ─── LOGIN ─── */
-  .login-wrap {
-    min-height: 80vh; display: flex; align-items: center; justify-content: center;
+  /* AUTH */
+  .auth-wrap { min-height: 85vh; display: flex; align-items: center; justify-content: center; }
+  .auth-box {
+    width: 100%; max-width: 440px; background: var(--card);
+    backdrop-filter: blur(20px); border: 1px solid var(--border);
+    border-radius: 1.25rem; padding: 2.25rem 2rem; box-shadow: var(--shadow);
   }
-  .login-box {
-    width: 100%; max-width: 420px;
-    background: var(--card); backdrop-filter: blur(20px);
-    border: 1px solid var(--border); border-radius: 1.25rem;
-    padding: 2.5rem 2rem; box-shadow: var(--shadow);
-    animation: fadeIn .4s ease;
-  }
-  .login-box .logo-icon {
-    width: 64px; height: 64px; border-radius: 16px;
+  .auth-logo {
+    width: 60px; height: 60px; border-radius: 16px; margin: 0 auto 1.1rem;
     background: linear-gradient(135deg, var(--primary), var(--primary-2));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 32px; margin: 0 auto 1.25rem;
-    box-shadow: var(--glow);
+    display: flex; align-items: center; justify-content: center; font-size: 30px;
+    box-shadow: 0 0 40px rgba(99,102,241,.4);
   }
-  .login-box h1 {
-    font-size: 1.4rem; font-weight: 800; text-align: center;
-    background: linear-gradient(135deg, var(--primary), var(--primary-2));
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-    margin-bottom: .35rem;
-  }
-  .login-box .sub {
-    text-align: center; font-size: .8rem; color: var(--text-dim);
-    font-family: 'JetBrains Mono', monospace; margin-bottom: 1.75rem;
-  }
-  .login-box label {
-    display: block; font-size: .78rem; font-weight: 600;
-    color: var(--text-dim); margin-bottom: .4rem;
-  }
-  .login-box input {
-    width: 100%; padding: .85rem 1rem; border-radius: .7rem;
-    border: 1px solid var(--border); background: var(--bg); color: var(--text);
-    font-family: 'JetBrains Mono', monospace; font-size: .9rem;
-    outline: none; transition: all .2s; margin-bottom: 1rem;
-  }
-  .login-box input:focus {
-    border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,.15);
-  }
-  .login-box button {
-    width: 100%; border: none; color: white; padding: .9rem;
-    border-radius: .7rem; font-weight: 700; font-size: .9rem;
-    cursor: pointer; font-family: inherit;
-    background: linear-gradient(135deg, var(--primary), var(--primary-2));
-    box-shadow: 0 4px 14px rgba(99,102,241,.4);
+  .auth-title { text-align: center; font-size: 1.35rem; font-weight: 800; margin-bottom: .3rem; }
+  .auth-sub { text-align: center; font-size: .78rem; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; margin-bottom: 1.5rem; }
+  .auth-tabs { display: flex; gap: .4rem; margin-bottom: 1.5rem; background: var(--bg); padding: .35rem; border-radius: .75rem; }
+  .auth-tab {
+    flex: 1; padding: .6rem; text-align: center; border-radius: .55rem;
+    cursor: pointer; font-weight: 600; font-size: .85rem; color: var(--text-dim);
     transition: all .2s;
   }
-  .login-box button:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(99,102,241,.55); }
-  .login-box button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-  .login-error {
-    background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.35);
-    color: #fca5a5; padding: .65rem .85rem; border-radius: .6rem;
-    font-size: .8rem; margin-bottom: 1rem; display: none;
+  .auth-tab.active { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; }
+  label { display: block; font-size: .76rem; font-weight: 600; color: var(--text-dim); margin-bottom: .35rem; }
+  .field { width: 100%; padding: .8rem 1rem; border-radius: .7rem; border: 1px solid var(--border);
+    background: var(--bg); color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: .88rem;
+    outline: none; margin-bottom: .9rem; transition: all .2s;
   }
-  .login-error.active { display: block; animation: shake .35s ease; }
-  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  .field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,.15); }
+  .btn-main {
+    width: 100%; border: none; color: white; padding: .85rem;
+    border-radius: .7rem; font-weight: 700; font-size: .9rem; cursor: pointer;
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    box-shadow: 0 4px 14px rgba(99,102,241,.4); transition: all .2s; font-family: inherit;
+  }
+  .btn-main:hover { transform: translateY(-1px); }
+  .btn-main:disabled { opacity: .5; cursor: not-allowed; }
+  .auth-err { background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.35);
+    color: #fca5a5; padding: .65rem .85rem; border-radius: .6rem; font-size: .8rem;
+    margin-bottom: 1rem; display: none; }
+  .auth-err.active { display: block; }
+  .auth-ok { background: rgba(16,185,129,.12); border: 1px solid rgba(16,185,129,.35);
+    color: #86efac; padding: .65rem .85rem; border-radius: .6rem; font-size: .8rem;
+    margin-bottom: 1rem; display: none; }
+  .auth-ok.active { display: block; }
 
-  /* ─── HEADER ─── */
-  .header {
-    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.2rem;
-    margin-bottom: 2.5rem; padding: 1.5rem 1.75rem; background: var(--card);
-    backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 1.25rem; box-shadow: var(--shadow);
-  }
-  .logo { display: flex; align-items: center; gap: 1rem; }
-  .logo-icon-h {
-    width: 52px; height: 52px; border-radius: 14px;
+  /* HEADER */
+  .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
+    margin-bottom: 1.5rem; padding: 1.25rem 1.5rem; background: var(--card);
+    backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 1.25rem; }
+  .logo { display: flex; align-items: center; gap: .85rem; }
+  .logo-icon { width: 46px; height: 46px; border-radius: 12px;
     background: linear-gradient(135deg, var(--primary), var(--primary-2));
-    display: flex; align-items: center; justify-content: center; font-size: 26px;
-    box-shadow: var(--glow); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .logo-text h1 { font-size: 1.2rem; font-weight: 800; letter-spacing: -.02em;
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .logo-text p { font-size: .72rem; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
+  .header-actions { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+  .btn-h {
+    background: var(--card-solid); border: 1px solid var(--border); border-radius: 999px;
+    padding: .5rem .9rem; cursor: pointer; font-weight: 600; font-size: .8rem;
+    color: var(--text); transition: all .2s; font-family: inherit;
   }
-  .logo-text h1 {
+  .btn-h:hover { border-color: var(--border-hover); }
+
+  /* NAV */
+  .nav { display: flex; gap: .4rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .nav-btn {
+    padding: .6rem 1.1rem; border-radius: .65rem; font-weight: 600; font-size: .82rem;
+    cursor: pointer; border: 1px solid var(--border); background: var(--card-solid);
+    color: var(--text-dim); transition: all .2s; font-family: inherit;
+  }
+  .nav-btn.active { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; border-color: transparent; }
+  .nav-btn:hover:not(.active) { border-color: var(--border-hover); color: var(--text); }
+
+  /* CARDS */
+  .category { margin-bottom: 2rem; }
+  .category-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem;
+    display: flex; align-items: center; gap: .5rem; }
+  .category-title::before { content: ""; width: 4px; height: 18px;
+    background: linear-gradient(180deg, var(--primary), var(--primary-2)); border-radius: 4px; }
+  .category-title .count { margin-left: auto; font-size: .68rem; font-weight: 600; color: var(--text-dim);
+    background: var(--card-solid); border: 1px solid var(--border); padding: .18rem .6rem; border-radius: 999px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.15rem; }
+  .card { background: var(--card); backdrop-filter: blur(20px); border-radius: 1.15rem;
+    border: 1px solid var(--border); padding: 1.35rem; transition: all .25s; }
+  .card:hover { transform: translateY(-3px); border-color: var(--border-hover); }
+  .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .75rem; }
+  .card-name { font-weight: 700; font-size: .98rem; }
+  .card-method { font-size: .62rem; font-weight: 700; padding: .25rem .6rem; border-radius: 5px;
+    background: rgba(16,185,129,.15); color: var(--success); border: 1px solid rgba(16,185,129,.3);
+    font-family: 'JetBrains Mono', monospace; }
+  .card-desc { font-size: .8rem; color: var(--text-dim); margin-bottom: .9rem; line-height: 1.45; }
+  .input-row { display: flex; gap: .5rem; margin-bottom: .75rem; flex-wrap: wrap; }
+  .input-row input { flex: 1; min-width: 0; padding: .65rem .85rem; border-radius: .6rem;
+    border: 1px solid var(--border); background: var(--bg); color: var(--text);
+    font-family: 'JetBrains Mono', monospace; font-size: .82rem; outline: none; }
+  .input-row input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,.15); }
+  .try-btn {
+    border: none; color: white; padding: .7rem 1rem; border-radius: .6rem;
+    font-weight: 600; font-size: .82rem; cursor: pointer; width: 100%;
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    box-shadow: 0 4px 14px rgba(99,102,241,.35); font-family: inherit; transition: all .2s;
+    display: flex; align-items: center; justify-content: center; gap: .4rem;
+  }
+  .try-btn:hover { transform: translateY(-1px); }
+  .try-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+  .result-area { margin-top: .9rem; background: var(--bg); border-radius: .7rem; padding: .9rem;
+    font-size: .74rem; font-family: 'JetBrains Mono', monospace; word-break: break-word;
+    display: none; border: 1px solid var(--border); max-height: 480px; overflow: auto;
+    line-height: 1.55; white-space: pre-wrap; }
+  .result-area.active { display: block; }
+  .badge { display: inline-flex; align-items: center; gap: .35rem; padding: .28rem .65rem;
+    border-radius: 5px; font-size: .68rem; font-weight: 700; margin-bottom: .6rem; }
+  .badge.ok { background: rgba(16,185,129,.15); color: var(--success); border: 1px solid rgba(16,185,129,.3); }
+  .badge.err { background: rgba(239,68,68,.15); color: var(--danger); border: 1px solid rgba(239,68,68,.3); }
+  .spinner { display: inline-block; width: 13px; height: 13px; border: 2px solid rgba(255,255,255,.3);
+    border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .kv-list { font-family: 'Inter', sans-serif; font-size: .8rem; }
+  .kv-row { display: flex; gap: .5rem; padding: .3rem 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .kv-row:last-child { border-bottom: none; }
+  .kv-key { color: var(--text-dim); font-weight: 600; min-width: 130px; font-size: .74rem; }
+  .kv-val { color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: .76rem;
+    word-break: break-word; flex: 1; }
+  .kv-val.hl { color: var(--success); font-weight: 700; }
+
+  /* PROFILE */
+  .profile-card {
+    background: var(--card); backdrop-filter: blur(20px); border: 1px solid var(--border);
+    border-radius: 1.25rem; padding: 2rem; margin-bottom: 1.5rem;
+  }
+  .profile-head { display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .profile-avatar {
+    width: 100px; height: 100px; border-radius: 50%; object-fit: cover;
+    border: 3px solid var(--primary); box-shadow: 0 0 30px rgba(99,102,241,.4);
+  }
+  .profile-info { flex: 1; min-width: 200px; }
+  .profile-name {
     font-size: 1.5rem; font-weight: 800;
-    background: linear-gradient(135deg, var(--primary), var(--primary-2));
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-    letter-spacing: -0.02em; line-height: 1.1;
+    display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
+    margin-bottom: .3rem;
   }
-  .logo-text p { font-size: .8rem; color: var(--text-dim); margin-top: .25rem; font-family: 'JetBrains Mono', monospace; }
-  .header-actions { display: flex; gap: .6rem; align-items: center; }
-  .btn-small {
-    background: var(--card-solid); border: 1px solid var(--border); border-radius: 999px;
-    padding: .55rem 1.1rem; cursor: pointer; display: flex; align-items: center; gap: .5rem;
-    font-weight: 600; font-size: .82rem; color: var(--text); transition: all .2s; font-family: inherit;
+  .tick { color: #60a5fa; font-size: 1.1rem; }
+  .rank-badge {
+    font-size: .7rem; font-weight: 700; padding: .22rem .65rem;
+    border-radius: 999px; background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    color: white; text-transform: uppercase;
   }
-  .btn-small:hover { border-color: var(--border-hover); transform: translateY(-1px); }
-  .status-pill {
-    background: var(--card-solid); border: 1px solid var(--border); border-radius: 999px;
-    padding: .55rem 1.1rem; display: flex; align-items: center; gap: .5rem;
-    font-weight: 600; font-size: .82rem; color: var(--text); cursor: default;
+  .rank-badge.admin { background: linear-gradient(135deg, #ef4444, #f97316); }
+  .profile-bio { color: var(--text-dim); font-size: .88rem; margin-top: .5rem; }
+  .profile-meta { font-size: .75rem; color: var(--text-mute); font-family: 'JetBrains Mono', monospace; margin-top: .5rem; }
+  .status-badge {
+    display: inline-flex; align-items: center; gap: .35rem;
+    font-size: .78rem; font-weight: 700; margin-left: .5rem;
   }
-  .status-pill .dot {
-    width: 8px; height: 8px; border-radius: 50%; background: var(--success);
-    box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite;
-  }
+  .status-badge .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .status-badge.online { color: #86efac; }
+  .status-badge.online .dot { background: #10b981; box-shadow: 0 0 8px #10b981; animation: pulse 2s infinite; }
+  .status-badge.offline { color: #64748b; }
+  .status-badge.offline .dot { background: #64748b; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
 
-  /* ─── CARDS ─── */
-  .category { margin-bottom: 2rem; }
-  .category-title {
-    font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;
-    display: flex; align-items: center; gap: .6rem;
+  /* CHAT */
+  .chat-wrap {
+    background: var(--card); backdrop-filter: blur(20px); border: 1px solid var(--border);
+    border-radius: 1.25rem; overflow: hidden; display: flex; flex-direction: column; height: 70vh;
   }
-  .category-title::before {
-    content: ""; width: 4px; height: 20px;
-    background: linear-gradient(180deg, var(--primary), var(--primary-2));
-    border-radius: 4px; box-shadow: 0 0 10px rgba(99,102,241,.6);
+  .chat-header {
+    padding: 1rem 1.25rem; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; gap: .75rem;
   }
-  .category-title .count {
-    margin-left: auto; font-size: .7rem; font-weight: 600; color: var(--text-dim);
+  .chat-title { font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: .5rem; }
+  .chat-online { font-size: .72rem; color: #86efac; font-weight: 600;
+    display: inline-flex; align-items: center; gap: .35rem; }
+  .chat-online .dot { width: 7px; height: 7px; background: #10b981; border-radius: 50%;
+    box-shadow: 0 0 8px #10b981; animation: pulse 2s infinite; }
+  .chat-messages {
+    flex: 1; overflow-y: auto; padding: 1.25rem;
+    display: flex; flex-direction: column; gap: .75rem;
+  }
+  .chat-messages::-webkit-scrollbar { width: 6px; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
+  .chat-msg {
+    display: flex; gap: .65rem; max-width: 80%;
+    animation: fadeIn .25s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .chat-msg.me { align-self: flex-end; flex-direction: row-reverse; }
+  .chat-msg .avatar {
+    width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+    object-fit: cover; border: 1.5px solid var(--border);
+  }
+  .chat-msg .body {
     background: var(--card-solid); border: 1px solid var(--border);
-    padding: .2rem .7rem; border-radius: 999px;
+    border-radius: .85rem; padding: .6rem .85rem;
   }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 1.25rem; }
-  .api-card {
-    background: var(--card); backdrop-filter: blur(20px);
-    border-radius: 1.25rem; border: 1px solid var(--border); padding: 1.5rem;
-    box-shadow: var(--shadow); transition: all .25s ease; position: relative; overflow: hidden;
+  .chat-msg.me .body { background: rgba(99,102,241,.18); border-color: rgba(99,102,241,.4); }
+  .chat-msg .name {
+    font-size: .72rem; font-weight: 700; color: var(--primary);
+    display: flex; align-items: center; gap: .35rem; margin-bottom: .25rem;
   }
-  .api-card::before {
-    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(90deg, var(--primary), var(--primary-2));
-    opacity: 0; transition: opacity .25s;
+  .chat-msg.me .name { color: #a5b4fc; }
+  .chat-msg .text { font-size: .87rem; line-height: 1.45; word-break: break-word; }
+  .chat-msg .time { font-size: .65rem; color: var(--text-mute); margin-top: .25rem;
+    font-family: 'JetBrains Mono', monospace; }
+  .chat-input-wrap {
+    padding: 1rem 1.25rem; border-top: 1px solid var(--border);
+    display: flex; gap: .6rem;
   }
-  .api-card:hover { transform: translateY(-3px); border-color: var(--border-hover); }
-  .api-card:hover::before { opacity: 1; }
-  .api-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .9rem; gap: .5rem; }
-  .api-name { font-weight: 700; font-size: 1.05rem; }
-  .api-method {
-    font-size: .68rem; font-weight: 700; padding: .3rem .7rem; border-radius: 6px;
-    background: rgba(16, 185, 129, 0.15); color: var(--success);
-    border: 1px solid rgba(16, 185, 129, 0.3);
-    font-family: 'JetBrains Mono', monospace;
-  }
-  .api-desc { font-size: .85rem; color: var(--text-dim); margin-bottom: 1.1rem; line-height: 1.5; }
-  .input-group { display: flex; gap: .5rem; margin-bottom: .85rem; flex-wrap: wrap; }
-  .input-group input {
-    flex: 1; min-width: 0; padding: .7rem .9rem; border-radius: .65rem;
+  .chat-input-wrap input {
+    flex: 1; padding: .75rem 1rem; border-radius: .7rem;
     border: 1px solid var(--border); background: var(--bg); color: var(--text);
-    font-family: 'JetBrains Mono', monospace; font-size: .85rem; outline: none;
+    font-size: .88rem; outline: none; font-family: inherit;
+  }
+  .chat-input-wrap input:focus { border-color: var(--primary); }
+  .chat-input-wrap button {
+    border: none; color: white; padding: .75rem 1.3rem; border-radius: .7rem;
+    font-weight: 600; cursor: pointer; font-family: inherit; font-size: .85rem;
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
     transition: all .2s;
   }
-  .input-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,.15); }
-  .api-url {
-    background: var(--bg); padding: .7rem .9rem; border-radius: .65rem;
-    font-family: 'JetBrains Mono', monospace; font-size: .72rem; word-break: break-all;
-    margin-bottom: .9rem; border: 1px solid var(--border); color: var(--primary);
-    display: flex; align-items: center; gap: .6rem;
+  .chat-input-wrap button:hover { transform: translateY(-1px); }
+  .chat-input-wrap button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+  /* SETTINGS */
+  .settings-card {
+    background: var(--card); backdrop-filter: blur(20px); border: 1px solid var(--border);
+    border-radius: 1.25rem; padding: 1.75rem; margin-bottom: 1.25rem;
   }
-  .api-url .url-text { flex: 1; }
-  .api-url .copy-btn {
-    background: transparent; border: 1px solid var(--border); color: var(--text-dim);
-    padding: .25rem .5rem; border-radius: .4rem; cursor: pointer; font-size: .65rem;
-    transition: all .2s; font-family: inherit;
+  .settings-card h3 {
+    font-size: 1rem; font-weight: 700; margin-bottom: 1rem;
+    display: flex; align-items: center; gap: .5rem;
   }
-  .api-url .copy-btn:hover { color: var(--primary); border-color: var(--primary); }
-  .button-group { display: flex; gap: .6rem; }
-  .try-btn, .go-btn {
-    border: none; color: white; padding: .75rem 1.1rem; border-radius: .65rem;
-    font-weight: 600; font-size: .85rem; cursor: pointer; flex: 1; text-align: center;
-    transition: all .2s; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: .4rem;
+  .settings-card h3::before {
+    content: ""; width: 4px; height: 16px;
+    background: linear-gradient(180deg, var(--primary), var(--primary-2)); border-radius: 4px;
   }
-  .try-btn { background: linear-gradient(135deg, var(--primary), var(--primary-2)); box-shadow: 0 4px 14px rgba(99,102,241,.4); }
-  .try-btn:hover { transform: translateY(-1px); }
-  .try-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
-  .go-btn { background: var(--card-solid); border: 1px solid var(--border); color: var(--text); }
-  .go-btn:hover { border-color: var(--primary); color: var(--primary); }
-  .result-area {
-    margin-top: 1rem; background: var(--bg); border-radius: .75rem; padding: 1rem;
-    font-size: .75rem; font-family: 'JetBrains Mono', monospace; word-break: break-word;
-    display: none; border: 1px solid var(--border); max-height: 500px; overflow: auto;
-    line-height: 1.6; white-space: pre-wrap;
+  .settings-input {
+    width: 100%; padding: .75rem .95rem; border-radius: .65rem;
+    border: 1px solid var(--border); background: var(--bg); color: var(--text);
+    font-family: 'JetBrains Mono', monospace; font-size: .85rem; outline: none;
+    margin-bottom: .75rem;
   }
-  .result-area.active { display: block; animation: fadeIn .3s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-  .result-area::-webkit-scrollbar { width: 6px; }
-  .result-area::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
-  .result-badge {
-    display: inline-flex; align-items: center; gap: .4rem; padding: .3rem .7rem;
-    border-radius: 6px; font-size: .7rem; font-weight: 700; margin-bottom: .7rem;
+  .settings-input:focus { border-color: var(--primary); }
+  .settings-btn {
+    border: none; color: white; padding: .7rem 1.3rem; border-radius: .65rem;
+    font-weight: 600; font-size: .85rem; cursor: pointer; font-family: inherit;
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    transition: all .2s;
   }
-  .result-badge.ok { background: rgba(16,185,129,.15); color: var(--success); border: 1px solid rgba(16,185,129,.3); }
-  .result-badge.err { background: rgba(239,68,68,.15); color: var(--danger); border: 1px solid rgba(239,68,68,.3); }
-  .spinner {
-    display: inline-block; width: 14px; height: 14px;
-    border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
-    border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .kv-list { display: flex; flex-direction: column; gap: .35rem; font-family: 'Inter', sans-serif; font-size: .82rem; }
-  .kv-row { display: flex; gap: .6rem; padding: .35rem 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
-  .kv-row:last-child { border-bottom: none; }
-  .kv-key { color: var(--text-dim); font-weight: 600; min-width: 140px; font-size: .76rem; }
-  .kv-val { color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: .78rem; word-break: break-word; flex: 1; }
-  .kv-val.hl { color: var(--success); font-weight: 700; }
-  .footer {
-    text-align: center; margin-top: 3rem; padding-top: 1.5rem;
-    border-top: 1px solid var(--border); color: var(--text-mute); font-size: .82rem;
-  }
+  .settings-btn:hover { transform: translateY(-1px); }
+
+  .footer { text-align: center; margin-top: 3rem; padding-top: 1.5rem;
+    border-top: 1px solid var(--border); color: var(--text-mute); font-size: .8rem; }
   .footer a { color: var(--primary); text-decoration: none; }
-  .toast {
-    position: fixed; bottom: 24px; right: 24px; padding: .85rem 1.2rem;
+
+  .toast { position: fixed; bottom: 24px; right: 24px; padding: .85rem 1.2rem;
     background: var(--card-solid); border: 1px solid var(--primary); border-radius: .75rem;
     color: var(--text); font-size: .85rem; font-weight: 600;
     box-shadow: 0 10px 30px rgba(99,102,241,.4);
-    opacity: 0; transform: translateY(12px); transition: all .3s; pointer-events: none; z-index: 999;
-  }
+    opacity: 0; transform: translateY(12px); transition: all .3s; pointer-events: none; z-index: 999; }
   .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.error { border-color: var(--danger); }
+  .toast.success { border-color: var(--success); }
+
   @media (max-width: 640px) {
     body { padding: 1rem; }
     .grid { grid-template-columns: 1fr; }
-    .header { padding: 1.1rem 1.2rem; }
-    .logo-text h1 { font-size: 1.2rem; }
-    .logo-icon-h { width: 44px; height: 44px; font-size: 22px; }
+    .header { padding: 1rem; }
   }
 </style>
 </head>
 <body class="dark">
 
-<!-- ══════════ LOGIN ══════════ -->
-<div id="loginView" class="container login-wrap">
-  <div class="login-box">
-    <div class="logo-icon">🔎</div>
-    <h1>Forex Sorgulama Hizmeti</h1>
-    <p class="sub">@cmrbaskani</p>
+<!-- ═══════════ AUTH ═══════════ -->
+<div id="authView" class="container auth-wrap">
+  <div class="auth-box">
+    <div class="auth-logo">🔎</div>
+    <h1 class="auth-title">Forex Sorgulama Hizmeti</h1>
+    <p class="auth-sub">@cmrbaskani</p>
 
-    <div class="login-error" id="loginError"></div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tabLogin" onclick="switchTab('login')">🔓 Giriş Yap</div>
+      <div class="auth-tab" id="tabRegister" onclick="switchTab('register')">✨ Kayıt Ol</div>
+    </div>
 
-    <label>Kullanıcı Adı</label>
-    <input type="text" id="loginUser" placeholder="kullanıcı adı" autocomplete="username">
+    <div class="auth-err" id="authErr"></div>
+    <div class="auth-ok" id="authOk"></div>
 
-    <label>Şifre</label>
-    <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+    <!-- Login form -->
+    <div id="formLogin">
+      <label>Kullanıcı Adı</label>
+      <input type="text" class="field" id="loginUser" placeholder="kullanıcı adı" autocomplete="username">
+      <label>Şifre</label>
+      <input type="password" class="field" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+      <button class="btn-main" id="loginBtn" onclick="doLogin()">🔓 Giriş Yap</button>
+    </div>
 
-    <button id="loginBtn" onclick="doLogin()">🔓 Giriş Yap</button>
+    <!-- Register form -->
+    <div id="formRegister" class="hidden">
+      <label>Kullanıcı Adı</label>
+      <input type="text" class="field" id="regUser" placeholder="kullanıcı adı (3-20 karakter)" autocomplete="username">
+      <label>Email (opsiyonel)</label>
+      <input type="email" class="field" id="regEmail" placeholder="ornek@mail.com" autocomplete="email">
+      <label>Şifre</label>
+      <input type="password" class="field" id="regPass" placeholder="en az 4 karakter" autocomplete="new-password">
+      <button class="btn-main" id="regBtn" onclick="doRegister()">✨ Kayıt Ol</button>
+    </div>
   </div>
 </div>
 
-<!-- ══════════ PANEL ══════════ -->
+<!-- ═══════════ PANEL ═══════════ -->
 <div id="panelView" class="container hidden">
   <div class="header">
     <div class="logo">
-      <div class="logo-icon-h">🔎</div>
+      <div class="logo-icon">🔎</div>
       <div class="logo-text">
         <h1>Forex Sorgulama Hizmeti</h1>
         <p>@cmrbaskani</p>
       </div>
     </div>
     <div class="header-actions">
-      <div class="status-pill"><span class="dot"></span> <span id="userLabel">ONLINE</span></div>
-      <button class="btn-small" id="themeToggle">☀️ Gündüz</button>
-      <button class="btn-small" onclick="doLogout()">🚪 Çıkış</button>
+      <button class="btn-h" id="themeToggle">☀️ Gündüz</button>
+      <button class="btn-h" onclick="showView('profile')">👤 Profil</button>
+      <button class="btn-h" onclick="showView('settings')">⚙️ Ayarlar</button>
+      <button class="btn-h" onclick="doLogout()">🚪 Çıkış</button>
     </div>
   </div>
 
-  <!-- KİŞİSEL -->
-  <div class="category">
-    <div class="category-title">👤 Kişisel Sorgular <span class="count">6 endpoint</span></div>
-    <div class="grid">
+  <!-- NAV -->
+  <div class="nav">
+    <button class="nav-btn active" onclick="showView('query')" id="navQuery">🔍 Sorgular</button>
+    <button class="nav-btn" onclick="showView('chat')" id="navChat">💬 Genel Sohbet</button>
+    <button class="nav-btn" onclick="showView('users')" id="navUsers">👥 Kullanıcılar</button>
+  </div>
 
-      <div class="api-card">
-        <div class="api-header">
-          <span class="api-name">👤 TC Sorgulama</span>
-          <span class="api-method">GET</span>
-        </div>
-        <div class="api-desc">TC ile kişi bilgilerini sorgular (ad, soyad, doğum, nüfus, anne/baba).</div>
-        <div class="input-group">
-          <input type="text" id="tcQuery" placeholder="17420629810" value="17420629810" maxlength="11">
-        </div>
-        <div class="button-group">
+  <!-- ═══════════ SORGULAR ═══════════ -->
+  <div id="viewQuery">
+    <div class="category">
+      <div class="category-title">👤 Kişisel Sorgular <span class="count">6 endpoint</span></div>
+      <div class="grid">
+        <div class="card">
+          <div class="card-header"><span class="card-name">👤 TC Sorgulama</span><span class="card-method">GET</span></div>
+          <div class="card-desc">TC ile kişi bilgilerini sorgular.</div>
+          <div class="input-row"><input id="tcQuery" placeholder="17420629810" value="17420629810" maxlength="11"></div>
           <button class="try-btn" onclick="query('tc','tcQuery','result-tc')">🔎 Sorgula</button>
+          <div id="result-tc" class="result-area"></div>
         </div>
-        <div id="result-tc" class="result-area"></div>
-      </div>
-
-      <div class="api-card">
-        <div class="api-header">
-          <span class="api-name">👤 TC Pro Sorgulama</span>
-          <span class="api-method">GET</span>
-        </div>
-        <div class="api-desc">TC ile detaylı kişi bilgisi sorgular.</div>
-        <div class="input-group">
-          <input type="text" id="tcproQuery" placeholder="17420629810" value="17420629810" maxlength="11">
-        </div>
-        <div class="button-group">
+        <div class="card">
+          <div class="card-header"><span class="card-name">👤 TC Pro</span><span class="card-method">GET</span></div>
+          <div class="card-desc">Detaylı kişi bilgisi.</div>
+          <div class="input-row"><input id="tcproQuery" placeholder="17420629810" value="17420629810" maxlength="11"></div>
           <button class="try-btn" onclick="query('tcpro','tcproQuery','result-tcpro')">🔎 Sorgula</button>
+          <div id="result-tcpro" class="result-area"></div>
         </div>
-        <div id="result-tcpro" class="result-area"></div>
-      </div>
-
-      <div class="api-card">
-        <div class="api-header">
-          <span class="api-name">👤 Ad Soyad Sorgulama</span>
-          <span class="api-method">GET</span>
-        </div>
-        <div class="api-desc">Ad ve soyad ile kişi sorgular.</div>
-        <div class="input-group">
-          <input type="text" id="adQuery" placeholder="ROKET" value="ROKET">
-          <input type="text" id="soyadQuery" placeholder="ATAR" value="ATAR">
-        </div>
-        <div class="button-group">
+        <div class="card">
+          <div class="card-header"><span class="card-name">👤 Ad Soyad</span><span class="card-method">GET</span></div>
+          <div class="card-desc">Ad ve soyad ile sorgular.</div>
+          <div class="input-row">
+            <input id="adQuery" placeholder="ROKET" value="ROKET">
+            <input id="soyadQuery" placeholder="ATAR" value="ATAR">
+          </div>
           <button class="try-btn" onclick="queryAdSoyad()">🔎 Sorgula</button>
+          <div id="result-adsoyad" class="result-area"></div>
         </div>
-        <div id="result-adsoyad" class="result-area"></div>
-      </div>
-
-      <div class="api-card">
-        <div class="api-header">
-          <span class="api-name">👥 Aile Sorgulama</span>
-          <span class="api-method">GET</span>
-        </div>
-        <div class="api-desc">TC ile aile bilgilerini sorgular.</div>
-        <div class="input-group">
-          <input type="text" id="aileQuery" placeholder="17420629810" value="17420629810" maxlength="11">
-        </div>
-        <div class="button-group">
+        <div class="card">
+          <div class="card-header"><span class="card-name">👥 Aile</span><span class="card-method">GET</span></div>
+          <div class="card-desc">TC ile aile bilgileri.</div>
+          <div class="input-row"><input id="aileQuery" placeholder="17420629810" value="17420629810" maxlength="11"></div>
           <button class="try-btn" onclick="query('aile','aileQuery','result-aile')">🔎 Sorgula</button>
+          <div id="result-aile" class="result-area"></div>
         </div>
-        <div id="result-aile" class="result-area"></div>
-      </div>
-
-      <div class="api-card">
-        <div class="api-header">
-          <span class="api-name">👥 Aile Pro Sorgulama</span>
-          <span class="api-method">GET</span>
-        </div>
-        <div class="api-desc">TC ile detaylı aile bilgisi sorgular.</div>
-        <div class="input-group">
-          <input type="text" id="aileproQuery" placeholder="17420629810" value="17420629810" maxlength="11">
-        </div>
-        <div class="button-group">
+        <div class="card">
+          <div class="card-header"><span class="card-name">👥 Aile Pro</span><span class="card-method">GET</span></div>
+          <div class="card-desc">Detaylı aile bilgisi.</div>
+          <div class="input-row"><input id="aileproQuery" placeholder="17420629810" value="17420629810" maxlength="11"></div>
           <button class="try-btn" onclick="query('ailepro','aileproQuery','result-ailepro')">🔎 Sorgula</button>
+          <div id="result-ailepro" class="result-area"></div>
         </div>
-        <div id="result-ailepro" class="result-area"></div>
-      </div>
-
-      <div class="api-card">
-        <div class="api-header">
-          <span class="api-name">👨‍👩‍👧 Sülale Sorgulama</span>
-          <span class="api-method">GET</span>
-        </div>
-        <div class="api-desc">TC ile sülale bilgilerini sorgular.</div>
-        <div class="input-group">
-          <input type="text" id="sulaleQuery" placeholder="17420629810" value="17420629810" maxlength="11">
-        </div>
-        <div class="button-group">
+        <div class="card">
+          <div class="card-header"><span class="card-name">👨‍👩‍👧 Sülale</span><span class="card-method">GET</span></div>
+          <div class="card-desc">TC ile sülale bilgileri.</div>
+          <div class="input-row"><input id="sulaleQuery" placeholder="17420629810" value="17420629810" maxlength="11"></div>
           <button class="try-btn" onclick="query('sulale','sulaleQuery','result-sulale')">🔎 Sorgula</button>
+          <div id="result-sulale" class="result-area"></div>
         </div>
-        <div id="result-sulale" class="result-area"></div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- GSM -->
-  <div class="category">
-    <div class="category-title">📱 GSM Sorguları <span class="count">2 endpoint</span></div>
-    <div class="grid">
-      <div class="api-card">
-        <div class="api-header"><span class="api-name">📱 TC → GSM</span><span class="api-method">GET</span></div>
-        <div class="api-desc">TC ile kayıtlı telefon numarasına ulaşır.</div>
-        <div class="input-group"><input type="text" id="tcgsmQuery" placeholder="11111111110" value="11111111110" maxlength="11"></div>
-        <div class="button-group"><button class="try-btn" onclick="query('tcgsm','tcgsmQuery','result-tcgsm')">🔎 Sorgula</button></div>
-        <div id="result-tcgsm" class="result-area"></div>
-      </div>
-      <div class="api-card">
-        <div class="api-header"><span class="api-name">📱 GSM → TC</span><span class="api-method">GET</span></div>
-        <div class="api-desc">GSM ile TC'ye ulaşır.</div>
-        <div class="input-group"><input type="text" id="gsmtcQuery" placeholder="5550000000" value="5550000000" maxlength="10"></div>
-        <div class="button-group"><button class="try-btn" onclick="query('gsmtc','gsmtcQuery','result-gsmtc')">🔎 Sorgula</button></div>
-        <div id="result-gsmtc" class="result-area"></div>
       </div>
     </div>
-  </div>
 
-  <!-- EĞİTİM -->
-  <div class="category">
-    <div class="category-title">🎓 Eğitim <span class="count">1 endpoint</span></div>
-    <div class="grid">
-      <div class="api-card">
-        <div class="api-header"><span class="api-name">🎓 E-Okul Sorgulama</span><span class="api-method">GET</span></div>
-        <div class="api-desc">TC ile e-okul bilgilerini sorgular.</div>
-        <div class="input-group"><input type="text" id="eokulQuery" placeholder="13334777982" value="13334777982" maxlength="11"></div>
-        <div class="button-group"><button class="try-btn" onclick="query('eokul','eokulQuery','result-eokul')">🔎 Sorgula</button></div>
-        <div id="result-eokul" class="result-area"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- TAPU -->
-  <div class="category">
-    <div class="category-title">🏠 Tapu & Adres <span class="count">3 endpoint</span></div>
-    <div class="grid">
-      <div class="api-card">
-        <div class="api-header"><span class="api-name">🏠 Adres Sorgulama</span><span class="api-method">GET</span></div>
-        <div class="api-desc">TC ile ikametgah bilgilerini sorgular.</div>
-        <div class="input-group"><input type="text" id="adresQuery" placeholder="11111111110" value="11111111110" maxlength="11"></div>
-        <div class="button-group"><button class="try-btn" onclick="query('adres','adresQuery','result-adres')">🔎 Sorgula</button></div>
-        <div id="result-adres" class="result-area"></div>
-      </div>
-      <div class="api-card">
-        <div class="api-header"><span class="api-name">🏡 Tapu Sorgulama</span><span class="api-method">GET</span></div>
-        <div class="api-desc">TC ile tapu kayıtlarını sorgular.</div>
-        <div class="input-group"><input type="text" id="tapuQuery" placeholder="27727166918" value="27727166918" maxlength="11"></div>
-        <div class="button-group"><button class="try-btn" onclick="query('tapu','tapuQuery','result-tapu')">🔎 Sorgula</button></div>
-        <div id="result-tapu" class="result-area"></div>
-      </div>
-      <div class="api-card">
-        <div class="api-header"><span class="api-name">📐 Ada Parsel Sorgulama</span><span class="api-method">GET</span></div>
-        <div class="api-desc">İl / ilçe ile ada parsel sorgular.</div>
-        <div class="input-group">
-          <input type="text" id="ilQuery" placeholder="İSTANBUL" value="İSTANBUL">
-          <input type="text" id="ilceQuery" placeholder="KADIKÖY" value="KADIKÖY">
+    <div class="category">
+      <div class="category-title">📱 GSM <span class="count">2 endpoint</span></div>
+      <div class="grid">
+        <div class="card">
+          <div class="card-header"><span class="card-name">📱 TC → GSM</span><span class="card-method">GET</span></div>
+          <div class="card-desc">TC ile telefon numarası.</div>
+          <div class="input-row"><input id="tcgsmQuery" placeholder="11111111110" value="11111111110" maxlength="11"></div>
+          <button class="try-btn" onclick="query('tcgsm','tcgsmQuery','result-tcgsm')">🔎 Sorgula</button>
+          <div id="result-tcgsm" class="result-area"></div>
         </div>
-        <div class="button-group"><button class="try-btn" onclick="queryAdaparsel()">🔎 Sorgula</button></div>
-        <div id="result-adaparsel" class="result-area"></div>
+        <div class="card">
+          <div class="card-header"><span class="card-name">📱 GSM → TC</span><span class="card-method">GET</span></div>
+          <div class="card-desc">GSM ile TC.</div>
+          <div class="input-row"><input id="gsmtcQuery" placeholder="5550000000" value="5550000000" maxlength="10"></div>
+          <button class="try-btn" onclick="query('gsmtc','gsmtcQuery','result-gsmtc')">🔎 Sorgula</button>
+          <div id="result-gsmtc" class="result-area"></div>
+        </div>
       </div>
+    </div>
+
+    <div class="category">
+      <div class="category-title">🎓 Eğitim <span class="count">1 endpoint</span></div>
+      <div class="grid">
+        <div class="card">
+          <div class="card-header"><span class="card-name">🎓 E-Okul</span><span class="card-method">GET</span></div>
+          <div class="card-desc">TC ile e-okul bilgileri.</div>
+          <div class="input-row"><input id="eokulQuery" placeholder="13334777982" value="13334777982" maxlength="11"></div>
+          <button class="try-btn" onclick="query('eokul','eokulQuery','result-eokul')">🔎 Sorgula</button>
+          <div id="result-eokul" class="result-area"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="category-title">🏠 Tapu & Adres <span class="count">3 endpoint</span></div>
+      <div class="grid">
+        <div class="card">
+          <div class="card-header"><span class="card-name">🏠 Adres</span><span class="card-method">GET</span></div>
+          <div class="card-desc">TC ile ikametgah.</div>
+          <div class="input-row"><input id="adresQuery" placeholder="11111111110" value="11111111110" maxlength="11"></div>
+          <button class="try-btn" onclick="query('adres','adresQuery','result-adres')">🔎 Sorgula</button>
+          <div id="result-adres" class="result-area"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-name">🏡 Tapu</span><span class="card-method">GET</span></div>
+          <div class="card-desc">TC ile tapu kayıtları.</div>
+          <div class="input-row"><input id="tapuQuery" placeholder="27727166918" value="27727166918" maxlength="11"></div>
+          <button class="try-btn" onclick="query('tapu','tapuQuery','result-tapu')">🔎 Sorgula</button>
+          <div id="result-tapu" class="result-area"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-name">📐 Ada Parsel</span><span class="card-method">GET</span></div>
+          <div class="card-desc">İl/ilçe ile ada parsel.</div>
+          <div class="input-row">
+            <input id="ilQuery" placeholder="İSTANBUL" value="İSTANBUL">
+            <input id="ilceQuery" placeholder="KADIKÖY" value="KADIKÖY">
+          </div>
+          <button class="try-btn" onclick="queryAdaparsel()">🔎 Sorgula</button>
+          <div id="result-adaparsel" class="result-area"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ CHAT ═══════════ -->
+  <div id="viewChat" class="hidden">
+    <div class="chat-wrap">
+      <div class="chat-header">
+        <div class="chat-title">💬 Genel Sohbet</div>
+        <div class="chat-online"><span class="dot"></span> <span id="chatOnlineCount">-</span> çevrimiçi</div>
+      </div>
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input-wrap">
+        <input id="chatInput" placeholder="Mesajını yaz..." maxlength="500" autocomplete="off">
+        <button id="chatSendBtn" onclick="sendMessage()">Gönder</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ USERS ═══════════ -->
+  <div id="viewUsers" class="hidden">
+    <div class="settings-card">
+      <h3>👥 Kayıtlı Kullanıcılar</h3>
+      <div id="usersList"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ PROFILE ═══════════ -->
+  <div id="viewProfile" class="hidden">
+    <div class="profile-card">
+      <div class="profile-head">
+        <img class="profile-avatar" id="pAvatar" src="" alt="">
+        <div class="profile-info">
+          <div class="profile-name">
+            <span id="pUsername">-</span>
+            <span id="pTick" class="tick hidden">✅</span>
+            <span class="rank-badge" id="pRank">Üye</span>
+            <span class="status-badge offline" id="pStatus"><span class="dot"></span> Çevrimdışı</span>
+          </div>
+          <div class="profile-bio" id="pBio">-</div>
+          <div class="profile-meta">
+            <span id="pEmail">-</span> · <span id="pCreated">-</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <h3>✏️ Profili Düzenle</h3>
+      <label>Email</label>
+      <input class="settings-input" id="editEmail" placeholder="ornek@mail.com">
+      <label>Biyografi</label>
+      <input class="settings-input" id="editBio" placeholder="Kısa açıklama" maxlength="200">
+      <label>Avatar URL (isteğe bağlı)</label>
+      <input class="settings-input" id="editAvatar" placeholder="https://...">
+      <button class="settings-btn" onclick="saveProfile()">💾 Kaydet</button>
+    </div>
+  </div>
+
+  <!-- ═══════════ SETTINGS ═══════════ -->
+  <div id="viewSettings" class="hidden">
+    <div class="settings-card">
+      <h3>🔒 Şifre Değiştir</h3>
+      <label>Mevcut Şifre</label>
+      <input type="password" class="settings-input" id="oldPass" placeholder="••••••••">
+      <label>Yeni Şifre</label>
+      <input type="password" class="settings-input" id="newPass" placeholder="••••••••">
+      <button class="settings-btn" onclick="changePassword()">🔐 Şifreyi Değiştir</button>
+    </div>
+
+    <div class="settings-card">
+      <h3>👤 Hesap Bilgileri</h3>
+      <div id="settingsAccountInfo" style="font-size:.85rem;color:var(--text-dim);line-height:1.8;"></div>
     </div>
   </div>
 
@@ -465,254 +572,509 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  // ═══════════ AYARLAR ═══════════
-  const API = "forexsystem.php";
+const API = 'forexsystem.php';
+const AUTH = 'auth.php';
+const CHAT = 'chat.php';
 
-  // ═══════════ UI YARDIMCI ═══════════
-  const toast = document.getElementById('toast');
-  function showToast(msg) {
-    toast.textContent = msg;
-    toast.classList.add('show');
-    clearTimeout(toast._t);
-    toast._t = setTimeout(() => toast.classList.remove('show'), 1600);
-  }
-  function escHtml(s) {
-    return String(s||"").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-  }
+let CURRENT_USER = null;
+let LAST_MSG_TS = 0;
+let CHAT_TIMER = null;
+let HEARTBEAT_TIMER = null;
 
-  // ═══════════ TEMA ═══════════
-  function setTheme(theme) {
-    const btn = document.getElementById('themeToggle');
-    if (!btn) return;
-    if (theme === 'dark') {
-      document.body.classList.add('dark'); document.body.classList.remove('light');
-      localStorage.setItem('theme', 'dark');
-      btn.innerHTML = '☀️ Gündüz';
+// ═══════════ YARDIMCI ═══════════
+const toastEl = document.getElementById('toast');
+function toast(msg, type='') {
+  toastEl.textContent = msg;
+  toastEl.className = 'toast show ' + type;
+  clearTimeout(toastEl._t);
+  toastEl._t = setTimeout(() => toastEl.className = 'toast', 2200);
+}
+function esc(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// ═══════════ TEMA ═══════════
+function setTheme(theme) {
+  const btn = document.getElementById('themeToggle');
+  if (theme === 'dark') {
+    document.body.classList.add('dark'); document.body.classList.remove('light');
+    localStorage.setItem('theme', 'dark');
+    if (btn) btn.textContent = '☀️ Gündüz';
+  } else {
+    document.body.classList.add('light'); document.body.classList.remove('dark');
+    localStorage.setItem('theme', 'light');
+    if (btn) btn.textContent = '🌙 Gece';
+  }
+}
+function toggleTheme() { setTheme(document.body.classList.contains('dark') ? 'light' : 'dark'); }
+setTheme(localStorage.getItem('theme') === 'light' ? 'light' : 'dark');
+
+// ═══════════ AUTH ═══════════
+function switchTab(tab) {
+  document.getElementById('authErr').classList.remove('active');
+  document.getElementById('authOk').classList.remove('active');
+  if (tab === 'login') {
+    document.getElementById('tabLogin').classList.add('active');
+    document.getElementById('tabRegister').classList.remove('active');
+    document.getElementById('formLogin').classList.remove('hidden');
+    document.getElementById('formRegister').classList.add('hidden');
+  } else {
+    document.getElementById('tabRegister').classList.add('active');
+    document.getElementById('tabLogin').classList.remove('active');
+    document.getElementById('formRegister').classList.remove('hidden');
+    document.getElementById('formLogin').classList.add('hidden');
+  }
+}
+
+function showAuthErr(msg) {
+  const e = document.getElementById('authErr');
+  e.textContent = msg;
+  e.classList.add('active');
+}
+function showAuthOk(msg) {
+  const e = document.getElementById('authOk');
+  e.textContent = msg;
+  e.classList.add('active');
+}
+
+async function doLogin() {
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const btn = document.getElementById('loginBtn');
+
+  document.getElementById('authErr').classList.remove('active');
+  if (!user || !pass) return showAuthErr('❌ Tüm alanları doldur');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Giriş yapılıyor...';
+
+  try {
+    const fd = new FormData();
+    fd.append('action', 'login');
+    fd.append('username', user);
+    fd.append('password', pass);
+    const r = await fetch(AUTH, { method: 'POST', body: fd });
+    const d = await r.json();
+
+    if (d.success) {
+      toast('✓ Hoş geldin, ' + d.user.username, 'success');
+      enterPanel(d.user);
     } else {
-      document.body.classList.add('light'); document.body.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-      btn.innerHTML = '🌙 Gece';
+      showAuthErr('❌ ' + (d.error || 'Giriş başarısız'));
     }
+  } catch (e) {
+    showAuthErr('❌ Bağlantı hatası');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔓 Giriş Yap';
   }
-  function toggleTheme() { setTheme(document.body.classList.contains('dark') ? 'light' : 'dark'); }
-  setTheme(localStorage.getItem('theme') === 'light' ? 'light' : 'dark');
+}
 
-  // ═══════════ LOGIN ═══════════
-  async function checkSession() {
-    try {
-      const r = await fetch(`${API}?action=check`);
-      const d = await r.json();
-      if (d.success && d.logged) {
-        showPanel(d.user);
-      } else {
-        showLogin();
-      }
-    } catch (e) {
-      showLogin();
+async function doRegister() {
+  const user = document.getElementById('regUser').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pass = document.getElementById('regPass').value;
+  const btn = document.getElementById('regBtn');
+
+  document.getElementById('authErr').classList.remove('active');
+  if (!user || !pass) return showAuthErr('❌ Kullanıcı adı ve şifre gerekli');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Kayıt olunuyor...';
+
+  try {
+    const fd = new FormData();
+    fd.append('action', 'register');
+    fd.append('username', user);
+    fd.append('email', email);
+    fd.append('password', pass);
+    const r = await fetch(AUTH, { method: 'POST', body: fd });
+    const d = await r.json();
+
+    if (d.success) {
+      toast('✓ Kayıt başarılı!', 'success');
+      enterPanel(d.user);
+    } else {
+      showAuthErr('❌ ' + (d.error || 'Kayıt başarısız'));
     }
+  } catch (e) {
+    showAuthErr('❌ Bağlantı hatası');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✨ Kayıt Ol';
   }
+}
 
-  function showPanel(user) {
-    document.getElementById('loginView').classList.add('hidden');
-    document.getElementById('panelView').classList.remove('hidden');
-    if (user) document.getElementById('userLabel').textContent = user.toUpperCase();
-    document.getElementById('themeToggle')?.addEventListener('click', toggleTheme);
-  }
+async function doLogout() {
+  await fetch(AUTH + '?action=logout');
+  if (CHAT_TIMER) clearInterval(CHAT_TIMER);
+  if (HEARTBEAT_TIMER) clearInterval(HEARTBEAT_TIMER);
+  CURRENT_USER = null;
+  document.getElementById('panelView').classList.add('hidden');
+  document.getElementById('authView').classList.remove('hidden');
+  document.getElementById('loginPass').value = '';
+  toast('Çıkış yapıldı');
+}
 
-  function showLogin() {
-    document.getElementById('panelView').classList.add('hidden');
-    document.getElementById('loginView').classList.remove('hidden');
-    setTimeout(() => document.getElementById('loginUser')?.focus(), 100);
-  }
-
-  async function doLogin() {
-    const user = document.getElementById('loginUser').value.trim();
-    const pass = document.getElementById('loginPass').value;
-    const errEl = document.getElementById('loginError');
-    const btn = document.getElementById('loginBtn');
-
-    errEl.classList.remove('active');
-
-    if (!user || !pass) {
-      errEl.textContent = '❌ Kullanıcı adı ve şifre gerekli';
-      errEl.classList.add('active');
-      return;
+async function checkSession() {
+  try {
+    const r = await fetch(AUTH + '?action=check');
+    const d = await r.json();
+    if (d.success && d.logged) {
+      enterPanel(d.user);
     }
+  } catch (e) {}
+}
 
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Giriş yapılıyor...';
+function enterPanel(user) {
+  CURRENT_USER = user;
+  document.getElementById('authView').classList.add('hidden');
+  document.getElementById('panelView').classList.remove('hidden');
+  document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+  showView('query');
+  startHeartbeat();
+  loadChat();
+  if (CHAT_TIMER) clearInterval(CHAT_TIMER);
+  CHAT_TIMER = setInterval(loadChat, 4000);
+}
 
-    try {
-      const fd = new FormData();
-      fd.append('action', 'login');
-      fd.append('user', user);
-      fd.append('pass', pass);
+function startHeartbeat() {
+  if (HEARTBEAT_TIMER) clearInterval(HEARTBEAT_TIMER);
+  HEARTBEAT_TIMER = setInterval(() => {
+    fetch(AUTH + '?action=heartbeat').catch(()=>{});
+  }, 120000); // 2 dk
+}
 
-      const r = await fetch(API, { method: 'POST', body: fd });
-      const d = await r.json();
-
-      if (d.success) {
-        showToast('✓ Giriş başarılı');
-        showPanel(d.user);
-      } else {
-        errEl.textContent = '❌ ' + (d.error || 'Giriş başarısız');
-        errEl.classList.add('active');
-      }
-    } catch (e) {
-      errEl.textContent = '❌ Bağlantı hatası: ' + e.message;
-      errEl.classList.add('active');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = '🔓 Giriş Yap';
-    }
-  }
-
-  async function doLogout() {
-    if (!confirm('Çıkış yapmak istediğine emin misin?')) return;
-    try {
-      await fetch(`${API}?action=logout`);
-    } catch (e) {}
-    showLogin();
-    showToast('Çıkış yapıldı');
-  }
-
-  // Enter tuşu ile login
-  document.getElementById('loginUser').addEventListener('keypress', e => {
-    if (e.key === 'Enter') document.getElementById('loginPass').focus();
+// ═══════════ NAV ═══════════
+function showView(view) {
+  ['query','chat','users','profile','settings'].forEach(v => {
+    const el = document.getElementById('view' + v.charAt(0).toUpperCase() + v.slice(1));
+    if (el) el.classList.add('hidden');
   });
-  document.getElementById('loginPass').addEventListener('keypress', e => {
-    if (e.key === 'Enter') doLogin();
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+  const map = {
+    query: 'viewQuery', chat: 'viewChat', users: 'viewUsers',
+    profile: 'viewProfile', settings: 'viewSettings'
+  };
+  const target = document.getElementById(map[view]);
+  if (target) target.classList.remove('hidden');
+
+  const navMap = { query: 'navQuery', chat: 'navChat', users: 'navUsers' };
+  if (navMap[view]) document.getElementById(navMap[view]).classList.add('active');
+
+  if (view === 'profile') loadProfile();
+  if (view === 'users') loadUsers();
+  if (view === 'settings') loadAccountInfo();
+  if (view === 'chat') scrollChatBottom();
+}
+
+// ═══════════ SORGULAR ═══════════
+async function query(type, inputId, resultId, paramName) {
+  const value = document.getElementById(inputId).value.trim();
+  if (!value) return toast('Değer gir', 'error');
+  paramName = paramName || 'tc';
+
+  const res = document.getElementById(resultId);
+  res.classList.add('active');
+  res.innerHTML = '<span class="spinner"></span> Sorgulanıyor...';
+
+  try {
+    const r = await fetch(`${API}?action=query&type=${type}&${paramName}=${encodeURIComponent(value)}`);
+    const d = await r.json();
+    if (r.status === 401) { doLogout(); return; }
+    renderData(res, d);
+  } catch (e) {
+    res.innerHTML = `<div class="badge err">✗ Hata: ${esc(e.message)}</div>`;
+  }
+}
+
+async function queryAdSoyad() {
+  const ad = document.getElementById('adQuery').value.trim();
+  const soyad = document.getElementById('soyadQuery').value.trim();
+  if (!ad || !soyad) return toast('Ad ve soyad gir', 'error');
+
+  const res = document.getElementById('result-adsoyad');
+  res.classList.add('active');
+  res.innerHTML = '<span class="spinner"></span> Sorgulanıyor...';
+
+  try {
+    const r = await fetch(`${API}?action=query&type=adsoyad&ad=${encodeURIComponent(ad)}&soyad=${encodeURIComponent(soyad)}`);
+    const d = await r.json();
+    if (r.status === 401) { doLogout(); return; }
+    renderData(res, d);
+  } catch (e) {
+    res.innerHTML = `<div class="badge err">✗ Hata</div>`;
+  }
+}
+
+async function queryAdaparsel() {
+  const il = document.getElementById('ilQuery').value.trim();
+  const ilce = document.getElementById('ilceQuery').value.trim();
+  if (!il && !ilce) return toast('En az il/ilçe gir', 'error');
+
+  const res = document.getElementById('result-adaparsel');
+  res.classList.add('active');
+  res.innerHTML = '<span class="spinner"></span> Sorgulanıyor...';
+
+  const p = new URLSearchParams({ action: 'query', type: 'adaparsel' });
+  if (il) p.set('il', il);
+  if (ilce) p.set('ilce', ilce);
+
+  try {
+    const r = await fetch(`${API}?${p}`);
+    const d = await r.json();
+    if (r.status === 401) { doLogout(); return; }
+    renderData(res, d);
+  } catch (e) {
+    res.innerHTML = `<div class="badge err">✗ Hata</div>`;
+  }
+}
+
+function renderData(container, data) {
+  if (data.error || data.hata) {
+    container.innerHTML = `<div class="badge err">✗ ${esc(data.error || data.hata)}</div>`;
+    return;
+  }
+  if (data.success === false) {
+    container.innerHTML = `<div class="badge err">✗ ${esc(data.error || 'Hata')}</div>`;
+    return;
+  }
+  let items = data.data || data.results || data;
+  if (!Array.isArray(items)) items = [items];
+  if (items.length === 0) {
+    container.innerHTML = `<div class="badge err">✗ Kayıt bulunamadı</div>`;
+    return;
+  }
+  let html = `<div class="badge ok">✓ ${items.length} kayıt</div><div class="kv-list">`;
+  items.forEach((item, idx) => {
+    if (items.length > 1) html += `<div style="color:var(--primary);font-weight:700;font-size:.78rem;margin-top:${idx>0?'.65rem':'0'}">#${idx+1}</div>`;
+    for (const [k, v] of Object.entries(item)) {
+      if (v === null || v === undefined || v === '') continue;
+      const val = typeof v === 'object' ? JSON.stringify(v) : String(v);
+      const hl = ['TC','KimlikNo','AdSoyad','ADI','SOYADI'].includes(k);
+      html += `<div class="kv-row"><span class="kv-key">${esc(k)}</span><span class="kv-val${hl?' hl':''}">${esc(val)}</span></div>`;
+    }
   });
+  html += `</div>`;
+  container.innerHTML = html;
+}
 
-  // ═══════════ VERİ GÖRSELLEŞTİRİCİ ═══════════
-  function renderData(container, data) {
-    // Hata varsa
-    if (data.error || data.hata) {
-      container.innerHTML = `<div class="result-badge err">✗ ${escHtml(data.error || data.hata)}</div>`;
-      return;
+// ═══════════ CHAT ═══════════
+async function loadChat() {
+  try {
+    const r = await fetch(`${CHAT}?action=messages&since=0`);
+    const d = await r.json();
+    if (!d.success) return;
+
+    const box = document.getElementById('chatMessages');
+    const wasAtBottom = (box.scrollHeight - box.scrollTop - box.clientHeight) < 80;
+
+    let html = '';
+    for (const m of d.messages) {
+      const me = CURRENT_USER && m.user_id === CURRENT_USER.id;
+      html += `
+        <div class="chat-msg ${me ? 'me' : ''}">
+          <img class="avatar" src="${esc(m.avatar)}" alt="">
+          <div>
+            <div class="body">
+              <div class="name">
+                ${esc(m.username)}
+                ${m.verified ? '<span style="color:#60a5fa">✅</span>' : ''}
+                <span class="rank-badge" style="font-size:.58rem;padding:.12rem .4rem;">${esc(m.rank)}</span>
+              </div>
+              <div class="text">${esc(m.text)}</div>
+              <div class="time">${esc(m.time)}</div>
+            </div>
+          </div>
+        </div>`;
     }
+    box.innerHTML = html || '<p style="color:var(--text-dim);text-align:center;padding:2rem;font-size:.85rem;">Henüz mesaj yok, ilk mesajı sen yaz!</p>';
+    if (wasAtBottom) box.scrollTop = box.scrollHeight;
 
-    // Başarısız
-    if (data.success === false) {
-      container.innerHTML = `<div class="result-badge err">✗ ${escHtml(data.error || 'Hata')}</div>`;
-      return;
-    }
-
-    // data veya results veya direkt array
-    let items = data.data || data.results || data;
-    if (!Array.isArray(items)) items = [items];
-
-    if (items.length === 0 || (items.length === 1 && Object.keys(items[0]).length === 0)) {
-      container.innerHTML = `<div class="result-badge err">✗ Kayıt bulunamadı</div>`;
-      return;
-    }
-
-    let html = `<div class="result-badge ok">✓ ${items.length} kayıt</div>`;
-    html += `<div class="kv-list">`;
-
-    items.forEach((item, idx) => {
-      if (items.length > 1) {
-        html += `<div style="color:var(--primary);font-weight:700;font-size:.8rem;margin-top:${idx>0?'.75rem':'0'}">#${idx+1}</div>`;
-      }
-      for (const [k, v] of Object.entries(item)) {
-        if (v === null || v === undefined || v === '') continue;
-        const val = typeof v === 'object' ? JSON.stringify(v) : String(v);
-        const hl = ['TC', 'KimlikNo', 'AdSoyad', 'ADI', 'SOYADI'].includes(k);
-        html += `<div class="kv-row"><span class="kv-key">${escHtml(k)}</span><span class="kv-val${hl?' hl':''}">${escHtml(val)}</span></div>`;
-      }
-    });
-
-    html += `</div>`;
-    container.innerHTML = html;
-  }
-
-  // ═══════════ SORGULAMA ═══════════
-  async function query(type, inputId, resultId) {
-    const value = document.getElementById(inputId).value.trim();
-    if (!value) { showToast('Değer gir'); return; }
-
-    const res = document.getElementById(resultId);
-    res.classList.add('active');
-    res.innerHTML = '<span class="spinner"></span> Sorgulanıyor...';
-
+    // Çevrimiçi sayısı
     try {
-      const r = await fetch(`${API}?action=query&type=${encodeURIComponent(type)}&${encodeURIComponent(getParamName(type))}=${encodeURIComponent(value)}`);
-      const d = await r.json();
-      if (r.status === 401) {
-        showLogin();
-        showToast('Oturum süresi doldu');
-        return;
+      const ur = await fetch(AUTH + '?action=users');
+      const ud = await ur.json();
+      if (ud.success) {
+        const online = ud.users.filter(u => u.online).length;
+        document.getElementById('chatOnlineCount').textContent = online;
       }
-      renderData(res, d);
-    } catch (e) {
-      res.innerHTML = `<div class="result-badge err">✗ Hata: ${escHtml(e.message)}</div>`;
+    } catch(e) {}
+  } catch (e) {}
+}
+
+function scrollChatBottom() {
+  const box = document.getElementById('chatMessages');
+  if (box) box.scrollTop = box.scrollHeight;
+}
+
+async function sendMessage() {
+  const inp = document.getElementById('chatInput');
+  const text = inp.value.trim();
+  if (!text) return;
+  const btn = document.getElementById('chatSendBtn');
+  btn.disabled = true;
+
+  try {
+    const fd = new FormData();
+    fd.append('action', 'send');
+    fd.append('text', text);
+    const r = await fetch(CHAT, { method: 'POST', body: fd });
+    const d = await r.json();
+    if (d.success) {
+      inp.value = '';
+      await loadChat();
+      scrollChatBottom();
+    } else {
+      toast('❌ ' + (d.error || 'Gönderilemedi'), 'error');
     }
+  } catch (e) {
+    toast('❌ Bağlantı hatası', 'error');
+  } finally {
+    btn.disabled = false;
   }
+}
 
-  function getParamName(type) {
-    const map = {
-      'tc': 'tc', 'tcpro': 'tc', 'aile': 'tc', 'ailepro': 'tc', 'sulale': 'tc',
-      'tcgsm': 'tc', 'eokul': 'tc', 'adres': 'tc', 'tapu': 'tc',
-      'gsmtc': 'gsm'
-    };
-    return map[type] || 'tc';
-  }
+document.getElementById('chatInput').addEventListener('keypress', e => {
+  if (e.key === 'Enter') sendMessage();
+});
 
-  async function queryAdSoyad() {
-    const ad = document.getElementById('adQuery').value.trim();
-    const soyad = document.getElementById('soyadQuery').value.trim();
-    if (!ad || !soyad) { showToast('Ad ve soyad gir'); return; }
+// ═══════════ USERS ═══════════
+async function loadUsers() {
+  try {
+    const r = await fetch(AUTH + '?action=users');
+    const d = await r.json();
+    if (!d.success) return;
 
-    const res = document.getElementById('result-adsoyad');
-    res.classList.add('active');
-    res.innerHTML = '<span class="spinner"></span> Sorgulanıyor...';
+    const users = d.users.sort((a, b) => (b.online - a.online) || a.username.localeCompare(b.username));
+    let html = '';
+    for (const u of users) {
+      const statusCls = u.banned ? 'banned' : (u.online ? 'online' : 'offline');
+      const statusText = u.banned ? 'BANLI' : (u.online ? 'Çevrimiçi' : 'Çevrimdışı');
+      const statusColor = u.banned ? '#fca5a5' : (u.online ? '#86efac' : '#64748b');
+      const dotColor = u.banned ? '#ef4444' : (u.online ? '#10b981' : '#64748b');
 
-    try {
-      const r = await fetch(`${API}?action=query&type=adsoyad&ad=${encodeURIComponent(ad)}&soyad=${encodeURIComponent(soyad)}`);
-      const d = await r.json();
-      if (r.status === 401) { showLogin(); return; }
-      renderData(res, d);
-    } catch (e) {
-      res.innerHTML = `<div class="result-badge err">✗ Hata: ${escHtml(e.message)}</div>`;
+      html += `
+        <div class="user-row">
+          <img class="user-avatar" src="${esc(u.avatar)}" alt="">
+          <div class="user-info">
+            <div class="user-name">
+              ${esc(u.username)}
+              ${u.verified ? '<span class="tick">✅</span>' : ''}
+              <span class="rank-badge ${u.is_admin ? 'admin' : ''}">${esc(u.rank)}</span>
+            </div>
+            <div class="user-meta">${esc(u.bio || 'Açıklama yok')}</div>
+            <div style="margin-top:.3rem;">
+              <span class="status ${statusCls}"><span class="dot" style="background:${dotColor}"></span> ${statusText}</span>
+            </div>
+          </div>
+        </div>`;
     }
-  }
+    document.getElementById('usersList').innerHTML = html || '<p style="color:var(--text-dim);">Kayıt yok</p>';
+  } catch (e) {}
+}
 
-  async function queryAdaparsel() {
-    const il = document.getElementById('ilQuery').value.trim();
-    const ilce = document.getElementById('ilceQuery').value.trim();
-    if (!il && !ilce) { showToast('En az il veya ilçe gir'); return; }
+// ═══════════ PROFILE ═══════════
+async function loadProfile() {
+  try {
+    const r = await fetch(AUTH + '?action=profile&user=' + encodeURIComponent(CURRENT_USER.username));
+    const d = await r.json();
+    if (!d.success) return;
+    const u = d.user;
 
-    const res = document.getElementById('result-adaparsel');
-    res.classList.add('active');
-    res.innerHTML = '<span class="spinner"></span> Sorgulanıyor...';
+    document.getElementById('pAvatar').src = u.avatar;
+    document.getElementById('pUsername').textContent = u.username;
+    document.getElementById('pTick').classList.toggle('hidden', !u.verified);
+    document.getElementById('pRank').textContent = u.rank;
+    document.getElementById('pRank').className = 'rank-badge ' + (u.is_admin ? 'admin' : '');
+    document.getElementById('pBio').textContent = u.bio || 'Açıklama yok';
+    document.getElementById('pEmail').textContent = u.email || 'email yok';
+    document.getElementById('pCreated').textContent = u.created_at ? new Date(u.created_at).toLocaleDateString('tr-TR') : '-';
 
-    const params = new URLSearchParams({ action: 'query', type: 'adaparsel' });
-    if (il) params.set('il', il);
-    if (ilce) params.set('ilce', ilce);
-
-    try {
-      const r = await fetch(`${API}?${params}`);
-      const d = await r.json();
-      if (r.status === 401) { showLogin(); return; }
-      renderData(res, d);
-    } catch (e) {
-      res.innerHTML = `<div class="result-badge err">✗ Hata: ${escHtml(e.message)}</div>`;
+    const st = document.getElementById('pStatus');
+    if (u.online) {
+      st.className = 'status-badge online';
+      st.innerHTML = '<span class="dot"></span> Çevrimiçi';
+    } else {
+      st.className = 'status-badge offline';
+      st.innerHTML = '<span class="dot"></span> Çevrimdışı';
     }
-  }
 
-  // Enter tuşu
-  document.querySelectorAll('.api-card input').forEach(inp => {
-    inp.addEventListener('keypress', e => {
-      if (e.key === 'Enter') {
-        const card = inp.closest('.api-card');
-        const btn = card?.querySelector('.try-btn');
-        if (btn) btn.click();
-      }
-    });
-  });
+    document.getElementById('editEmail').value = u.email || '';
+    document.getElementById('editBio').value = u.bio || '';
+    document.getElementById('editAvatar').value = u.avatar || '';
+  } catch (e) {}
+}
 
-  // Başlangıç
-  checkSession();
+async function saveProfile() {
+  const email = document.getElementById('editEmail').value.trim();
+  const bio = document.getElementById('editBio').value.trim();
+  const avatar = document.getElementById('editAvatar').value.trim();
+
+  const fd = new FormData();
+  fd.append('action', 'update_profile');
+  fd.append('email', email);
+  fd.append('bio', bio);
+  fd.append('avatar', avatar);
+
+  try {
+    const r = await fetch(AUTH, { method: 'POST', body: fd });
+    const d = await r.json();
+    if (d.success) {
+      toast('✓ Profil güncellendi', 'success');
+      loadProfile();
+    } else {
+      toast('❌ ' + d.error, 'error');
+    }
+  } catch (e) { toast('❌ Bağlantı hatası', 'error'); }
+}
+
+// ═══════════ SETTINGS ═══════════
+async function changePassword() {
+  const oldP = document.getElementById('oldPass').value;
+  const newP = document.getElementById('newPass').value;
+  if (!oldP || !newP) return toast('Şifre alanlarını doldur', 'error');
+
+  const fd = new FormData();
+  fd.append('action', 'change_password');
+  fd.append('old_password', oldP);
+  fd.append('new_password', newP);
+
+  try {
+    const r = await fetch(AUTH, { method: 'POST', body: fd });
+    const d = await r.json();
+    if (d.success) {
+      toast('✓ Şifre değiştirildi', 'success');
+      document.getElementById('oldPass').value = '';
+      document.getElementById('newPass').value = '';
+    } else {
+      toast('❌ ' + d.error, 'error');
+    }
+  } catch (e) { toast('❌ Bağlantı hatası', 'error'); }
+}
+
+async function loadAccountInfo() {
+  try {
+    const r = await fetch(AUTH + '?action=check');
+    const d = await r.json();
+    if (!d.success || !d.logged) return;
+    const u = d.user;
+    document.getElementById('settingsAccountInfo').innerHTML = `
+      <div>👤 <b>Kullanıcı:</b> ${esc(u.username)}</div>
+      <div>📧 <b>Email:</b> ${esc(u.email || '-')}</div>
+      <div>🏅 <b>Rütbe:</b> ${esc(u.rank)}</div>
+      <div>✅ <b>Doğrulanmış:</b> ${u.verified ? 'Evet' : 'Hayır'}</div>
+      <div>📅 <b>Kayıt:</b> ${u.created_at ? new Date(u.created_at).toLocaleString('tr-TR') : '-'}</div>
+      <div>🕒 <b>Son görülme:</b> ${u.last_seen ? new Date(u.last_seen).toLocaleString('tr-TR') : '-'}</div>
+    `;
+  } catch (e) {}
+}
+
+// Enter tuşu
+document.getElementById('loginPass')?.addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('regPass')?.addEventListener('keypress', e => { if (e.key === 'Enter') doRegister(); });
+
+// Başlangıç
+checkSession();
 </script>
 
 </body>
