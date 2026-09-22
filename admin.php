@@ -23,7 +23,7 @@ switch ($action) {
                 'username'   => ADMIN_USER,
                 'email'      => 'admin@forex.local',
                 'password'   => password_hash($pass, PASSWORD_DEFAULT),
-                'avatar'     => '',
+                'avatar'     => DEFAULT_AVATAR,
                 'bio'        => 'Yönetici',
                 'rank'       => 'Baş Admin',
                 'verified'   => true,
@@ -35,7 +35,6 @@ switch ($action) {
             $users[] = $admin;
             save_users($users);
         } else {
-            // Şifre güncellendiyse hash'i yenile
             $users = load_users();
             foreach ($users as &$u) {
                 if ($u['id'] === $admin['id']) {

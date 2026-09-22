@@ -27,27 +27,40 @@
     transition: background .2s, color .2s;
     overflow: hidden; user-select: none; -webkit-user-select: none;
   }
+  body.custom-bg {
+    background-image:
+      linear-gradient(rgba(13,17,23,.88), rgba(13,17,23,.92)),
+      url('https://i.hizliresim.com/loreuqk4.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
+  body.light.custom-bg {
+    background-image:
+      linear-gradient(rgba(255,255,255,.9), rgba(255,255,255,.95)),
+      url('https://i.hizliresim.com/loreuqk4.jpg');
+  }
   input, textarea { user-select: text; -webkit-user-select: text; }
   .hidden { display: none !important; }
-  img { -webkit-user-drag: none; user-drag: none; pointer-events: none; }
+  img { -webkit-user-drag: none; user-drag: none; }
 
   /* ══════════ LOGIN ══════════ */
   .auth-wrap {
     min-height: 100vh; display: flex; align-items: center; justify-content: center;
-    padding: 1.25rem; background:
-      radial-gradient(ellipse at top left, rgba(31,111,235,.15), transparent 50%),
-      radial-gradient(ellipse at bottom right, rgba(163,113,247,.12), transparent 50%),
-      var(--bg);
+    padding: 1.25rem;
   }
   .auth-box {
-    width: 100%; max-width: 400px; background: var(--card);
-    border: 1px solid var(--border); border-radius: 16px;
+    width: 100%; max-width: 400px; background: rgba(22,27,34,.95);
+    backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 16px;
     padding: 2rem 1.75rem; box-shadow: var(--shadow);
   }
+  body.light .auth-box { background: rgba(255,255,255,.95); }
   .auth-logo {
-    width: 52px; height: 52px; margin: 0 auto 1rem;
-    background: linear-gradient(135deg, var(--blue2), var(--purple));
-    border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 26px;
+    width: 64px; height: 64px; margin: 0 auto 1rem; border-radius: 16px;
+    object-fit: cover; display: block;
+    box-shadow: 0 0 30px rgba(88,166,255,.5);
+    border: 2px solid var(--blue);
   }
   .auth-title { text-align: center; font-size: 1.25rem; font-weight: 800; margin-bottom: .35rem; }
   .auth-sub { text-align: center; font-size: .72rem; color: var(--text-mute); font-family: 'JetBrains Mono', monospace; margin-bottom: 1.5rem; }
@@ -77,19 +90,20 @@
 
   /* SIDEBAR */
   .sidebar {
-    width: var(--sidebar-w); background: var(--bg2);
+    width: var(--sidebar-w); background: rgba(22,27,34,.95);
+    backdrop-filter: blur(20px);
     border-right: 1px solid var(--border); display: flex; flex-direction: column;
     flex-shrink: 0; transition: transform .25s cubic-bezier(.4,0,.2,1); z-index: 50;
   }
+  body.light .sidebar { background: rgba(246,248,250,.95); }
   .sb-brand {
     height: var(--topbar-h); padding: 0 1rem;
     display: flex; align-items: center; gap: .6rem;
     border-bottom: 1px solid var(--border); flex-shrink: 0;
   }
-  .sb-logo {
-    width: 32px; height: 32px; border-radius: 8px;
-    background: linear-gradient(135deg, var(--blue2), var(--purple));
-    display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  .sb-brand-logo {
+    width: 32px; height: 32px; border-radius: 8px; object-fit: cover;
+    flex-shrink: 0; border: 1px solid var(--border2);
   }
   .sb-brand-txt { font-weight: 800; font-size: .9rem; letter-spacing: -.01em; }
   .sb-brand-txt small { display: block; font-size: .6rem; font-weight: 500; color: var(--text-mute); font-family: 'JetBrains Mono', monospace; }
@@ -158,9 +172,12 @@
   .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
   .topbar {
     height: var(--topbar-h); display: none; padding: 0 1rem;
-    background: var(--bg2); border-bottom: 1px solid var(--border);
+    background: rgba(22,27,34,.95); backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
     align-items: center; justify-content: space-between; flex-shrink: 0;
+    position: relative; z-index: 60;
   }
+  body.light .topbar { background: rgba(246,248,250,.95); }
   .topbar-btn { background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: .45rem .6rem; color: var(--text); cursor: pointer; font-size: 1rem; font-family: inherit; }
   .topbar-title { font-weight: 700; font-size: .9rem; }
 
@@ -170,7 +187,8 @@
 
   /* SORGU */
   .q-wrap { max-width: 900px; margin: 0 auto; }
-  .q-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .q-card { background: rgba(22,27,34,.92); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  body.light .q-card { background: rgba(255,255,255,.92); }
   .q-head { display: flex; align-items: center; gap: .85rem; margin-bottom: 1.25rem; }
   .q-head-ico { width: 42px; height: 42px; border-radius: 10px; background: rgba(88,166,255,.12); border: 1px solid rgba(88,166,255,.25); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
   .q-head-txt h2 { font-size: 1.05rem; font-weight: 700; letter-spacing: -.01em; }
@@ -197,7 +215,8 @@
   .q-btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
   .q-btn-secondary:hover { background: var(--hover); border-color: var(--border2); }
 
-  .q-results { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: none; }
+  .q-results { background: rgba(22,27,34,.92); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: none; }
+  body.light .q-results { background: rgba(255,255,255,.92); }
   .q-results.active { display: block; animation: fadeIn .25s; }
   @keyframes fadeIn { from { opacity:0; transform: translateY(6px);} to {opacity:1; transform:translateY(0);} }
   .q-results-head { padding: .7rem 1rem; background: var(--bg3); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--text-mute); }
@@ -212,7 +231,8 @@
   .q-error { padding: 1.5rem 1rem; text-align: center; background: rgba(248,81,73,.08); color: #ffa198; font-size: .85rem; border-radius: 10px; }
 
   /* CHAT */
-  .chat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; height: calc(100vh - 3rem - var(--topbar-h)); min-height: 400px; }
+  .chat-card { background: rgba(22,27,34,.92); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; height: calc(100vh - 3rem - var(--topbar-h)); min-height: 400px; }
+  body.light .chat-card { background: rgba(255,255,255,.92); }
   .chat-head { padding: .85rem 1.1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
   .chat-head-title { font-weight: 700; font-size: .92rem; display: flex; align-items: center; gap: .5rem; }
   .chat-online { font-size: .72rem; font-weight: 600; color: var(--green); display: inline-flex; align-items: center; gap: .35rem; }
@@ -278,7 +298,7 @@
   .spinner { display: inline-block; width: 13px; height: 13px; border: 2px solid rgba(255,255,255,.25); border-top-color: currentColor; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* BAN MESSAGE */
+  /* BAN SHIELD */
   .ban-shield { position: fixed; inset: 0; background: #000; z-index: 99999; display: none; align-items: center; justify-content: center; padding: 2rem; }
   .ban-shield.active { display: flex; }
   .ban-content { max-width: 600px; text-align: center; }
@@ -289,10 +309,11 @@
   .ban-text-2 { font-size: .85rem; color: #8b949e; line-height: 1.6; }
   .ban-text strong { color: var(--red); font-weight: 800; }
 
+  /* MOBİL MENÜ BUTONU - HER ZAMAN GÖRÜNÜR */
   @media (max-width: 900px) {
-    .sidebar { position: fixed; top: 0; left: 0; bottom: 0; transform: translateX(-100%); }
-    .sidebar.open { transform: translateX(0); }
-    .topbar { display: flex; }
+    .sidebar { position: fixed; top: 0; left: 0; bottom: 0; transform: translateX(-100%); visibility: hidden; }
+    .sidebar.open { transform: translateX(0); visibility: visible; box-shadow: 4px 0 24px rgba(0,0,0,.5); }
+    .topbar { display: flex !important; }
     .content { padding: 1rem; }
     .chat-card { height: calc(100vh - 5rem - var(--topbar-h)); }
     .q-head-txt h2 { font-size: .95rem; }
@@ -308,9 +329,9 @@
   }
 </style>
 </head>
-<body class="dark">
+<body class="dark custom-bg">
 
-<!-- ══════════ BAN SHIELD ══════════ -->
+<!-- BAN SHIELD -->
 <div id="banShield" class="ban-shield">
   <div class="ban-content">
     <div class="ban-skull">💀</div>
@@ -321,18 +342,14 @@
     <div class="ban-text-2">
       F12 / Developer Tools / Network Monitor / Proxy / Sniffer kullanarak
       bu panelin API trafiğini izlemeye çalıştığın tespit edildi.<br><br>
-      
       <strong>Bu davranış:</strong><br>
       → Türkiye Cumhuriyeti <strong>TCK 243. Madde</strong> (Bilişim Sistemine Girme)<br>
       → Türkiye Cumhuriyeti <strong>TCK 245. Madde</strong> (Banka/Kredi Kartı Kötüye Kullanımı)<br>
       → Türkiye Cumhuriyeti <strong>TCK 132. Madde</strong> (Haberleşmenin Gizliliğini İhlal)<br>
       kapsamında <strong>suç teşkil etmektedir.</strong><br><br>
-      
       IP adresin, cihaz parmak izin ve oturum bilgilerin kayıt altına alındı.
       Tarayıcın kalıcı olarak kara listeye eklendi.<br><br>
-      
       <strong>Bu sayfayı kapatmak bir şey değiştirmez. Log kayıtların sistemde.</strong><br><br>
-      
       <em>Yaptığın şeyden utanç duymalısın. Başkasının emeğini, verisini,
       sistemini izinsiz kurcalamak hırsızlıktan farksızdır. Bir daha
       düşünmeden tıklamadan önce iki kere düşün.</em>
@@ -340,10 +357,10 @@
   </div>
 </div>
 
-<!-- ══════════ LOGIN ══════════ -->
+<!-- LOGIN -->
 <div id="authView" class="auth-wrap">
   <div class="auth-box">
-    <div class="auth-logo">🔎</div>
+    <img class="auth-logo" src="https://i.hizliresim.com/midnihxu.jpg" alt="">
     <h1 class="auth-title">Forex Sorgulama</h1>
     <p class="auth-sub">@cmrbaskani</p>
     <div class="tabs">
@@ -370,17 +387,17 @@
   </div>
 </div>
 
-<!-- ══════════ APP ══════════ -->
+<!-- APP -->
 <div id="panelView" class="app hidden">
   <aside class="sidebar" id="sidebar">
     <div class="sb-brand">
-      <div class="sb-logo">🔎</div>
+      <img class="sb-brand-logo" src="https://i.hizliresim.com/midnihxu.jpg" alt="">
       <div class="sb-brand-txt">Forex Sorgu<small>@cmrbaskani</small></div>
     </div>
 
     <div class="sb-profile">
       <div class="sb-profile-btn" id="profileBtn" onclick="toggleProfileMenu(event)">
-        <img class="av" id="sideAvatar" src="" alt="">
+        <img class="av" id="sideAvatar" src="https://i.hizliresim.com/midnihxu.jpg" alt="">
         <div class="info">
           <div class="nm">
             <span id="sideUsername">-</span>
@@ -404,9 +421,7 @@
       </div>
     </div>
 
-    <nav class="sb-nav" id="sbNav">
-      <!-- İçerik app.js tarafından doldurulur -->
-    </nav>
+    <nav class="sb-nav" id="sbNav"></nav>
   </aside>
 
   <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
@@ -420,7 +435,6 @@
 
     <div class="content" id="content">
 
-      <!-- SORGU -->
       <div id="viewQuery" class="q-wrap">
         <div class="q-card">
           <div class="q-head">
@@ -450,7 +464,6 @@
         </div>
       </div>
 
-      <!-- CHAT -->
       <div id="viewChat" class="hidden">
         <div class="chat-card">
           <div class="chat-head">
@@ -465,7 +478,6 @@
         </div>
       </div>
 
-      <!-- USERS -->
       <div id="viewUsers" class="hidden q-wrap">
         <div class="q-card">
           <div class="q-head">
@@ -479,10 +491,9 @@
         </div>
       </div>
 
-      <!-- PROFILE -->
       <div id="viewProfile" class="hidden q-wrap">
         <div class="profile-head-card">
-          <img class="profile-av-lg" id="pAvatar" src="" alt="">
+          <img class="profile-av-lg" id="pAvatar" src="https://i.hizliresim.com/midnihxu.jpg" alt="">
           <div style="flex:1;min-width:200px;">
             <div class="profile-name-lg">
               <span id="pUsername">-</span>
@@ -511,7 +522,6 @@
         </div>
       </div>
 
-      <!-- SETTINGS -->
       <div id="viewSettings" class="hidden q-wrap">
         <div class="q-card">
           <div class="q-head">

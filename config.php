@@ -23,7 +23,13 @@ define('CHAT_FILE', DATA_DIR . '/chat.json');
 define('SESSION_TTL', 86400 * 7);
 
 // ═══════════════════════════════════════════
-// ADMIN — düz metin şifre (basit ve çalışır)
+// GÖRSEL YOLLARI
+// ═══════════════════════════════════════════
+define('BG_IMAGE',    'https://i.hizliresim.com/loreuqk4.jpg');
+define('DEFAULT_AVATAR', 'https://i.hizliresim.com/midnihxu.jpg');
+
+// ═══════════════════════════════════════════
+// ADMIN
 // ═══════════════════════════════════════════
 define('ADMIN_USER', 'admin');
 define('ADMIN_PASS', 'forex:qw24');
@@ -94,10 +100,10 @@ function sanitize_username($u) { return preg_replace('/[^a-zA-Z0-9_]/', '', $u);
 function now_iso() { return date('c'); }
 
 function avatar_url($user) {
-    if (!empty($user['avatar'])) return $user['avatar'];
-    $renk = substr(md5($user['username'] ?? 'user'), 0, 6);
-    $harf = strtoupper(substr($user['username'] ?? 'U', 0, 1));
-    return "https://ui-avatars.com/api/?name={$harf}&background={$renk}&color=fff&bold=true&size=128";
+    if (!empty($user['avatar']) && strpos($user['avatar'], 'ui-avatars.com') === false) {
+        return $user['avatar'];
+    }
+    return DEFAULT_AVATAR;
 }
 
 function is_online($user) {

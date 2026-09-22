@@ -8,7 +8,7 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   :root {
-    --bg: #0a0e1a; --card: rgba(30,41,59,.6); --card-solid: #1e293b;
+    --bg: #0a0e1a; --card: rgba(30,41,59,.85); --card-solid: #1e293b;
     --border: rgba(148,163,184,.12); --border-hover: rgba(148,163,184,.3);
     --text: #f1f5f9; --text-dim: #94a3b8; --text-mute: #64748b;
     --primary: #6366f1; --primary-2: #8b5cf6;
@@ -18,11 +18,13 @@
     font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text);
     min-height: 100vh; padding: 1.5rem 1rem 3rem; position: relative; overflow-x: hidden;
   }
-  body::before {
-    content: ""; position: fixed; inset: -50%; z-index: -1;
-    background:
-      radial-gradient(circle at 20% 20%, rgba(239, 68, 68, 0.12), transparent 45%),
-      radial-gradient(circle at 80% 60%, rgba(139, 92, 246, 0.1), transparent 45%);
+  body.custom-bg {
+    background-image:
+      linear-gradient(rgba(10,14,26,.88), rgba(10,14,26,.92)),
+      url('https://i.hizliresim.com/loreuqk4.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
   }
   .container { max-width: 1200px; margin: 0 auto; }
   .hidden { display: none !important; }
@@ -33,9 +35,8 @@
   }
   .logo { display: flex; align-items: center; gap: .85rem; }
   .logo-icon {
-    width: 44px; height: 44px; border-radius: 12px;
-    background: linear-gradient(135deg, #ef4444, #f97316);
-    display: flex; align-items: center; justify-content: center; font-size: 22px;
+    width: 44px; height: 44px; border-radius: 12px; object-fit: cover;
+    border: 2px solid #ef4444;
   }
   .logo-text h1 { font-size: 1.2rem; font-weight: 800; letter-spacing: -.02em; }
   .logo-text p { font-size: .72rem; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
@@ -106,9 +107,7 @@
     font-size: .72rem; font-weight: 700;
     display: inline-flex; align-items: center; gap: .35rem;
   }
-  .status .dot {
-    width: 7px; height: 7px; border-radius: 50%;
-  }
+  .status .dot { width: 7px; height: 7px; border-radius: 50%; }
   .status.online { color: #86efac; }
   .status.online .dot { background: #10b981; box-shadow: 0 0 8px #10b981; animation: pulse 2s infinite; }
   .status.offline { color: #64748b; }
@@ -128,13 +127,6 @@
   .btn-sm.success:hover { background: rgba(16,185,129,.1); }
   .btn-sm.warn { color: #fcd34d; border-color: rgba(245,158,11,.3); }
 
-  input, select {
-    padding: .6rem .8rem; border-radius: .5rem;
-    border: 1px solid var(--border); background: var(--bg); color: var(--text);
-    font-family: 'JetBrains Mono', monospace; font-size: .78rem; outline: none;
-  }
-  input:focus, select:focus { border-color: var(--primary); }
-
   .toast {
     position: fixed; bottom: 24px; right: 24px; padding: .85rem 1.2rem;
     background: var(--card-solid); border: 1px solid var(--primary); border-radius: .75rem;
@@ -147,9 +139,8 @@
   .toast.success { border-color: var(--success); }
 </style>
 </head>
-<body>
+<body class="custom-bg">
 
-<!-- Yetkisiz görünüm -->
 <div id="unauthView" class="container hidden">
   <div class="panel" style="text-align:center;padding:3rem 2rem;">
     <div style="font-size:3rem;margin-bottom:1rem;">🛡️</div>
@@ -159,11 +150,10 @@
   </div>
 </div>
 
-<!-- Admin panel -->
 <div id="adminView" class="container hidden">
   <div class="header">
     <div class="logo">
-      <div class="logo-icon">🛡️</div>
+      <img class="logo-icon" src="https://i.hizliresim.com/midnihxu.jpg" alt="">
       <div class="logo-text">
         <h1>Admin Panel</h1>
         <p>Forex Sorgulama Hizmeti</p>
@@ -188,6 +178,7 @@
 
 <script>
 const ADMIN_API = 'admin.php';
+const DEFAULT_AVATAR = 'https://i.hizliresim.com/midnihxu.jpg';
 
 function toast(msg, type='') {
   const t = document.getElementById('toast');
@@ -198,6 +189,7 @@ function toast(msg, type='') {
 }
 
 function esc(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function avatarOf(u) { return (u.avatar && !u.avatar.includes('ui-avatars.com')) ? u.avatar : DEFAULT_AVATAR; }
 
 async function api(action, params = {}) {
   const fd = new FormData();
@@ -236,7 +228,6 @@ async function loadStats() {
 async function loadUsers() {
   const d = await api('list_users');
   if (!d.success) return;
-
   const list = d.users.sort((a, b) => (b.online - a.online) || a.username.localeCompare(b.username));
 
   let html = '';
@@ -250,10 +241,11 @@ async function loadUsers() {
     const tick = u.verified ? '<span class="tick" title="Doğrulanmış">✅</span>' : '';
     const rankCls = u.is_admin ? 'admin' : '';
     const lastSeen = u.last_seen ? new Date(u.last_seen).toLocaleString('tr-TR') : 'Bilinmiyor';
+    const av = avatarOf(u);
 
     html += `
       <div class="user-row">
-        <img class="user-avatar" src="${esc(u.avatar)}" alt="">
+        <img class="user-avatar" src="${esc(av)}" alt="">
         <div class="user-info">
           <div class="user-name">
             ${esc(u.username)}
@@ -315,7 +307,6 @@ async function logout() {
   location.href = 'adminlogin.html';
 }
 
-// 30 saniyede bir otomatik yenile
 setInterval(() => { if (!document.getElementById('adminView').classList.contains('hidden')) loadUsers(); }, 30000);
 
 checkSession();

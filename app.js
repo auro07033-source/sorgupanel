@@ -3,48 +3,36 @@
    @cmrbaskani
    ═══════════════════════════════════════════════════════════ */
 
+const API   = 'forexsystem.php';
+const AUTH  = 'auth.php';
+const CHAT  = 'chat.php';
+const DEFAULT_AVATAR = 'https://i.hizliresim.com/midnihxu.jpg';
+
 // ═══════════ AĞ TRAFİĞİ KORUMASI ═══════════
 (function(){
   let ihlal = 0;
-  const esik = 1;
+  const esik = 2;
 
   function ban(){
-    document.getElementById('banShield').classList.add('active');
-    document.getElementById('authView').classList.add('hidden');
-    document.getElementById('panelView').classList.add('hidden');
-    // Tüm veriyi temizle
+    const shield = document.getElementById('banShield');
+    if (shield) shield.classList.add('active');
+    document.getElementById('authView')?.classList.add('hidden');
+    document.getElementById('panelView')?.classList.add('hidden');
     try { sessionStorage.clear(); localStorage.removeItem('theme'); } catch(e){}
-    // Sonsuz döngü
-    while(true) { debugger; }
   }
+  function ihlalEkle(){ ihlal++; if (ihlal >= esik) ban(); }
 
-  function ihlalEkle(){
-    ihlal++;
-    if (ihlal >= esik) ban();
-  }
-
-  // 1) F12 / Ctrl+Shift+I / Ctrl+Shift+J / Ctrl+U engelle
   document.addEventListener('keydown', function(e){
-    // F12
     if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); ihlalEkle(); return false; }
-    // Ctrl+Shift+I (DevTools)
-    if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.keyCode === 73)) { e.preventDefault(); ihlalEkle(); return false; }
-    // Ctrl+Shift+J (Console)
-    if (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j' || e.keyCode === 74)) { e.preventDefault(); ihlalEkle(); return false; }
-    // Ctrl+Shift+C (Element inspect)
-    if (e.ctrlKey && e.shiftKey && (e.key === 'C' || e.key === 'c' || e.keyCode === 67)) { e.preventDefault(); ihlalEkle(); return false; }
-    // Ctrl+U (View source)
-    if (e.ctrlKey && (e.key === 'U' || e.key === 'u' || e.keyCode === 85)) { e.preventDefault(); ihlalEkle(); return false; }
-    // Ctrl+S (Save)
-    if (e.ctrlKey && (e.key === 'S' || e.key === 's' || e.keyCode === 83)) { e.preventDefault(); return false; }
-    // Ctrl+P (Print)
-    if (e.ctrlKey && (e.key === 'P' || e.key === 'p' || e.keyCode === 80)) { e.preventDefault(); return false; }
+    if (e.ctrlKey && e.shiftKey && ['I','i'].includes(e.key)) { e.preventDefault(); ihlalEkle(); return false; }
+    if (e.ctrlKey && e.shiftKey && ['J','j'].includes(e.key)) { e.preventDefault(); ihlalEkle(); return false; }
+    if (e.ctrlKey && e.shiftKey && ['C','c'].includes(e.key)) { e.preventDefault(); ihlalEkle(); return false; }
+    if (e.ctrlKey && ['U','u'].includes(e.key)) { e.preventDefault(); ihlalEkle(); return false; }
+    if (e.ctrlKey && ['S','s','P','p'].includes(e.key)) { e.preventDefault(); return false; }
   }, true);
 
-  // 2) Sağ tık engelle
   document.addEventListener('contextmenu', function(e){ e.preventDefault(); return false; }, true);
 
-  // 3) Metin seçme/sürükleme engelle
   document.addEventListener('selectstart', function(e){
     const t = e.target;
     if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA') return true;
@@ -52,82 +40,61 @@
   }, true);
   document.addEventListener('dragstart', function(e){ e.preventDefault(); return false; }, true);
 
-  // 4) DevTools açık mı diye kontrol et (boyut farkı)
   function devToolsKontrol(){
-    const genislik = window.outerWidth - window.innerWidth;
-    const yukseklik = window.outerHeight - window.innerHeight;
-    if (genislik > 160 || yukseklik > 160) {
-      ihlalEkle();
-    }
+    const w = window.outerWidth - window.innerWidth;
+    const h = window.outerHeight - window.innerHeight;
+    if (w > 200 || h > 200) ihlalEkle();
   }
-  setInterval(devToolsKontrol, 500);
-  window.addEventListener('resize', devToolsKontrol);
+  setInterval(devToolsKontrol, 1000);
 
-  // 5) Debugger tuzak (devtools açıksa durur)
-  (function tuzak(){
-    const t = new Date().getTime();
-    debugger;
-    if (new Date().getTime() - t > 100) {
-      ihlalEkle();
-    }
-    setTimeout(tuzak, 1000);
-  })();
-
-  // 6) Console üzerinden erişim engeli
   try {
+    const noop = () => {};
     Object.defineProperty(window, 'console', {
-      get: function(){ ihlalEkle(); return { log:()=>{}, error:()=>{}, warn:()=>{}, info:()=>{} }; }
+      get: function(){ ihlalEkle(); return { log:noop, error:noop, warn:noop, info:noop, debug:noop }; }
     });
   } catch(e){}
-
-  // 7) __proto__ erişim kontrolü
-  Object.freeze(Object.prototype);
 })();
 
-// ═══════════ SABİTLER ═══════════
-const API   = 'forexsystem.php';
-const AUTH  = 'auth.php';
-const CHAT  = 'chat.php';
-
-let CURRENT_USER      = null;
-let CHAT_TIMER        = null;
-let HEARTBEAT_TIMER   = null;
-let CURRENT_QUERY     = 'tc';
+let CURRENT_USER = null;
+let CHAT_TIMER = null;
+let HEARTBEAT_TIMER = null;
+let CURRENT_QUERY = 'tc';
 
 // ═══════════ QUERIES ═══════════
 const QUERIES = {
-  tc:        { icon:'🆔', baslik:'TC Sorgulama',           alt:'Kimlik numarası ile kişi bilgisi', inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, val:'', label:'TC Kimlik Numarası'}], type:'tc' },
-  tcpro:     { icon:'🆔', baslik:'TC Pro Sorgulama',       alt:'Detaylı kişi bilgisi',             inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, val:'', label:'TC Kimlik Numarası'}], type:'tcpro' },
-  adsoyad:   { icon:'👥', baslik:'Ad Soyad Sorgulama',     alt:'Ad ve soyad ile TC bulma',         inputs:[{id:'ad', ph:'Ad', val:'', label:'Ad'},{id:'soyad', ph:'Soyad', val:'', label:'Soyad'}], type:'adsoyad' },
-  aile:      { icon:'👪', baslik:'Aile Sorgulama',         alt:'TC ile aile bireyleri',            inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'aile' },
-  ailepro:   { icon:'👪', baslik:'Aile Pro Sorgulama',     alt:'Detaylı aile bilgisi',             inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'ailepro' },
-  sulale:    { icon:'🌳', baslik:'Sülale Sorgulama',       alt:'Sülale kayıtları',                 inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'sulale' },
-  tcgsm:     { icon:'📱', baslik:'TC → GSM Sorgulama',     alt:'TC ile telefon numarası',          inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'tcgsm' },
-  gsmtc:     { icon:'📞', baslik:'GSM → TC Sorgulama',     alt:'Telefon ile TC kimlik',            inputs:[{id:'gsm', ph:'GSM No (5XX XXX XX XX)', max:10, val:'', label:'GSM Numarası'}], type:'gsmtc' },
-  eokul:     { icon:'🎓', baslik:'E-Okul Sorgulama',       alt:'Öğrenci okul bilgileri',           inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'eokul' },
-  adres:     { icon:'🏠', baslik:'Adres Sorgulama',        alt:'İkametgah adresi',                 inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'adres' },
-  tapu:      { icon:'🏡', baslik:'Tapu Sorgulama',         alt:'Tapu kayıtları',                   inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'tapu' },
-  adaparsel: { icon:'📐', baslik:'Ada Parsel Sorgulama',   alt:'İl/ilçe ile parsel',               inputs:[{id:'il', ph:'İl', val:'', label:'İl'},{id:'ilce', ph:'İlçe', val:'', label:'İlçe'},{id:'mahalle', ph:'Mahalle (opsiyonel)', val:'', label:'Mahalle'},{id:'ada', ph:'Ada (opsiyonel)', val:'', label:'Ada'},{id:'parsel', ph:'Parsel (opsiyonel)', val:'', label:'Parsel'}], type:'adaparsel' },
+  tc:        { icon:'🆔', baslik:'TC Sorgulama',         alt:'Kimlik numarası ile kişi bilgisi', inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, val:'', label:'TC Kimlik Numarası'}], type:'tc' },
+  tcpro:     { icon:'🆔', baslik:'TC Pro Sorgulama',     alt:'Detaylı kişi bilgisi',             inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, val:'', label:'TC Kimlik Numarası'}], type:'tcpro' },
+  adsoyad:   { icon:'👥', baslik:'Ad Soyad Sorgulama',   alt:'Ad ve soyad ile TC bulma',         inputs:[{id:'ad', ph:'Ad', val:'', label:'Ad'},{id:'soyad', ph:'Soyad', val:'', label:'Soyad'}], type:'adsoyad' },
+  aile:      { icon:'👪', baslik:'Aile Sorgulama',       alt:'TC ile aile bireyleri',            inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'aile' },
+  ailepro:   { icon:'👪', baslik:'Aile Pro Sorgulama',   alt:'Detaylı aile bilgisi',             inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'ailepro' },
+  sulale:    { icon:'🌳', baslik:'Sülale Sorgulama',     alt:'Sülale kayıtları',                 inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'sulale' },
+  tcgsm:     { icon:'📱', baslik:'TC → GSM Sorgulama',   alt:'TC ile telefon numarası',          inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'tcgsm' },
+  gsmtc:     { icon:'📞', baslik:'GSM → TC Sorgulama',   alt:'Telefon ile TC kimlik',            inputs:[{id:'gsm', ph:'GSM No (5XX XXX XX XX)', max:10, val:'', label:'GSM Numarası'}], type:'gsmtc' },
+  eokul:     { icon:'🎓', baslik:'E-Okul Sorgulama',     alt:'Öğrenci okul bilgileri',           inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'eokul' },
+  adres:     { icon:'🏠', baslik:'Adres Sorgulama',      alt:'İkametgah adresi',                 inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'adres' },
+  tapu:      { icon:'🏡', baslik:'Tapu Sorgulama',       alt:'Tapu kayıtları',                   inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'tapu' },
+  adaparsel: { icon:'📐', baslik:'Ada Parsel Sorgulama', alt:'İl/ilçe ile parsel',               inputs:[{id:'il', ph:'İl', val:'', label:'İl'},{id:'ilce', ph:'İlçe', val:'', label:'İlçe'},{id:'mahalle', ph:'Mahalle (opsiyonel)', val:'', label:'Mahalle'},{id:'ada', ph:'Ada (opsiyonel)', val:'', label:'Ada'},{id:'parsel', ph:'Parsel (opsiyonel)', val:'', label:'Parsel'}], type:'adaparsel' },
 };
 
 const INFO_TEXT = {
-  tc:        'TC kimlik numarası ile kişinin ad, soyad, doğum tarihi, nüfus ve ebeveyn bilgilerini sorgular.',
-  tcpro:     'TC kimlik numarası ile kişinin detaylı bilgilerini (nüfus kayıtları, adres geçmişi) sorgular.',
-  adsoyad:   'Ad ve soyad girerek o kişiye ait TC kimlik numarasını bulur.',
-  aile:      'TC ile kişinin aile bireylerini listeler.',
-  ailepro:   'TC ile detaylı aile bilgilerini gösterir.',
-  sulale:    'TC ile kişinin sülale kayıtlarını çıkarır.',
-  tcgsm:     'TC ile o kişiye kayıtlı GSM numarasını bulur.',
-  gsmtc:     'GSM numarası ile numaranın sahibinin TC kimlik numarasını bulur.',
-  eokul:     'TC ile öğrencinin e-okul bilgilerini sorgular.',
-  adres:     'TC ile kişinin kayıtlı ikametgah adresini gösterir.',
-  tapu:      'TC ile kişinin üzerine kayıtlı tapu kayıtlarını listeler.',
-  adaparsel: 'İl / ilçe / mahalle / ada / parsel ile arsa kaydı sorgular.',
+  tc:'TC kimlik numarası ile kişinin ad, soyad, doğum tarihi, nüfus ve ebeveyn bilgilerini sorgular.',
+  tcpro:'TC kimlik numarası ile kişinin detaylı bilgilerini sorgular.',
+  adsoyad:'Ad ve soyad girerek o kişiye ait TC kimlik numarasını bulur.',
+  aile:'TC ile kişinin aile bireylerini listeler.',
+  ailepro:'TC ile detaylı aile bilgilerini gösterir.',
+  sulale:'TC ile kişinin sülale kayıtlarını çıkarır.',
+  tcgsm:'TC ile o kişiye kayıtlı GSM numarasını bulur.',
+  gsmtc:'GSM numarası ile numaranın sahibinin TC kimlik numarasını bulur.',
+  eokul:'TC ile öğrencinin e-okul bilgilerini sorgular.',
+  adres:'TC ile kişinin kayıtlı ikametgah adresini gösterir.',
+  tapu:'TC ile kişinin üzerine kayıtlı tapu kayıtlarını listeler.',
+  adaparsel:'İl / ilçe / mahalle / ada / parsel ile arsa kaydı sorgular.'
 };
 
 // ═══════════ YARDIMCI ═══════════
 const toastEl = document.getElementById('toast');
 function toast(msg, type='') {
+  if (!toastEl) return;
   toastEl.textContent = msg;
   toastEl.className = 'toast show ' + type;
   clearTimeout(toastEl._t);
@@ -136,11 +103,17 @@ function toast(msg, type='') {
 function esc(s) {
   return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
+function avatarOf(user) {
+  const a = user && user.avatar;
+  if (a && a !== '' && !a.includes('ui-avatars.com')) return a;
+  return DEFAULT_AVATAR;
+}
 
 // ═══════════ TEMA ═══════════
 function setTheme(theme) {
   const ic = document.getElementById('themeIcon');
   const lb = document.getElementById('themeLabel');
+  document.body.classList.add('custom-bg');
   if (theme === 'dark') {
     document.body.classList.add('dark');
     document.body.classList.remove('light');
@@ -155,9 +128,7 @@ function setTheme(theme) {
     if (lb) lb.textContent = 'Gündüz Modu';
   }
 }
-function toggleTheme() {
-  setTheme(document.body.classList.contains('dark') ? 'light' : 'dark');
-}
+function toggleTheme() { setTheme(document.body.classList.contains('dark') ? 'light' : 'dark'); }
 setTheme(localStorage.getItem('theme') === 'light' ? 'light' : 'dark');
 
 // ═══════════ AUTH ═══════════
@@ -175,11 +146,9 @@ function switchTab(tab) {
     document.getElementById('formLogin').classList.add('hidden');
   }
 }
-
 function showErr(m) {
   const e = document.getElementById('authErr');
-  e.textContent = m;
-  e.classList.add('active');
+  e.textContent = m; e.classList.add('active');
 }
 
 async function doLogin() {
@@ -188,28 +157,16 @@ async function doLogin() {
   const btn = document.getElementById('loginBtn');
   document.getElementById('authErr').classList.remove('active');
   if (!u || !p) return showErr('❌ Tüm alanları doldur');
-
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Giriş...';
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Giriş...';
   try {
     const fd = new FormData();
-    fd.append('action', 'login');
-    fd.append('username', u);
-    fd.append('password', p);
-    const r = await fetch(AUTH, { method: 'POST', body: fd });
+    fd.append('action','login'); fd.append('username',u); fd.append('password',p);
+    const r = await fetch(AUTH, { method:'POST', body: fd });
     const d = await r.json();
-    if (d.success) {
-      toast('✓ Hoş geldin, ' + d.user.username, 'success');
-      enterPanel(d.user);
-    } else {
-      showErr('❌ ' + (d.error || 'Giriş başarısız'));
-    }
-  } catch (e) {
-    showErr('❌ Bağlantı hatası');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Giriş Yap';
-  }
+    if (d.success) { toast('✓ Hoş geldin, ' + d.user.username, 'success'); enterPanel(d.user); }
+    else showErr('❌ ' + (d.error || 'Giriş başarısız'));
+  } catch (e) { showErr('❌ Bağlantı hatası'); }
+  finally { btn.disabled = false; btn.textContent = 'Giriş Yap'; }
 }
 
 async function doRegister() {
@@ -219,29 +176,16 @@ async function doRegister() {
   const btn = document.getElementById('regBtn');
   document.getElementById('authErr').classList.remove('active');
   if (!u || !p) return showErr('❌ Kullanıcı adı ve şifre gerekli');
-
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Kayıt...';
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Kayıt...';
   try {
     const fd = new FormData();
-    fd.append('action', 'register');
-    fd.append('username', u);
-    fd.append('email', e);
-    fd.append('password', p);
-    const r = await fetch(AUTH, { method: 'POST', body: fd });
+    fd.append('action','register'); fd.append('username',u); fd.append('email',e); fd.append('password',p);
+    const r = await fetch(AUTH, { method:'POST', body: fd });
     const d = await r.json();
-    if (d.success) {
-      toast('✓ Kayıt başarılı!', 'success');
-      enterPanel(d.user);
-    } else {
-      showErr('❌ ' + (d.error || 'Kayıt başarısız'));
-    }
-  } catch (e) {
-    showErr('❌ Bağlantı hatası');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Kayıt Ol';
-  }
+    if (d.success) { toast('✓ Kayıt başarılı!', 'success'); enterPanel(d.user); }
+    else showErr('❌ ' + (d.error || 'Kayıt başarısız'));
+  } catch (e) { showErr('❌ Bağlantı hatası'); }
+  finally { btn.disabled = false; btn.textContent = 'Kayıt Ol'; }
 }
 
 async function doLogout() {
@@ -264,32 +208,33 @@ async function checkSession() {
   } catch (e) {}
 }
 
-// ═══════════ SIDEBAR NAV İNŞASI ═══════════
+// ═══════════ NAV ═══════════
 function navInsa() {
   const nav = document.getElementById('sbNav');
+  if (!nav) return;
   nav.innerHTML = `
     <div class="sb-item" id="navChat" onclick="showView('chat', this)"><span class="ico">💬</span> Genel Sohbet</div>
     <div class="sb-item" id="navUsers" onclick="showView('users', this)"><span class="ico">👥</span> Kullanıcılar</div>
 
     <div class="sb-section">Kişisel</div>
-    <div class="sb-item" onclick="openQuery('tc','TC Sorgulama')"><span class="ico">🆔</span> TC Sorgulama</div>
-    <div class="sb-item" onclick="openQuery('tcpro','TC Pro Sorgulama')"><span class="ico">🆔</span> TC Pro</div>
-    <div class="sb-item" onclick="openQuery('adsoyad','Ad Soyad Sorgulama')"><span class="ico">👥</span> Ad Soyad</div>
-    <div class="sb-item" onclick="openQuery('aile','Aile Sorgulama')"><span class="ico">👪</span> Aile</div>
-    <div class="sb-item" onclick="openQuery('ailepro','Aile Pro Sorgulama')"><span class="ico">👪</span> Aile Pro</div>
-    <div class="sb-item" onclick="openQuery('sulale','Sülale Sorgulama')"><span class="ico">🌳</span> Sülale</div>
+    <div class="sb-item" onclick="openQuery('tc')"><span class="ico">🆔</span> TC Sorgulama</div>
+    <div class="sb-item" onclick="openQuery('tcpro')"><span class="ico">🆔</span> TC Pro</div>
+    <div class="sb-item" onclick="openQuery('adsoyad')"><span class="ico">👥</span> Ad Soyad</div>
+    <div class="sb-item" onclick="openQuery('aile')"><span class="ico">👪</span> Aile</div>
+    <div class="sb-item" onclick="openQuery('ailepro')"><span class="ico">👪</span> Aile Pro</div>
+    <div class="sb-item" onclick="openQuery('sulale')"><span class="ico">🌳</span> Sülale</div>
 
     <div class="sb-section">GSM</div>
-    <div class="sb-item" onclick="openQuery('tcgsm','TC → GSM')"><span class="ico">📱</span> TC → GSM</div>
-    <div class="sb-item" onclick="openQuery('gsmtc','GSM → TC')"><span class="ico">📞</span> GSM → TC</div>
+    <div class="sb-item" onclick="openQuery('tcgsm')"><span class="ico">📱</span> TC → GSM</div>
+    <div class="sb-item" onclick="openQuery('gsmtc')"><span class="ico">📞</span> GSM → TC</div>
 
     <div class="sb-section">Eğitim</div>
-    <div class="sb-item" onclick="openQuery('eokul','E-Okul Sorgulama')"><span class="ico">🎓</span> E-Okul</div>
+    <div class="sb-item" onclick="openQuery('eokul')"><span class="ico">🎓</span> E-Okul</div>
 
     <div class="sb-section">Tapu & Adres</div>
-    <div class="sb-item" onclick="openQuery('adres','Adres Sorgulama')"><span class="ico">🏠</span> Adres</div>
-    <div class="sb-item" onclick="openQuery('tapu','Tapu Sorgulama')"><span class="ico">🏡</span> Tapu</div>
-    <div class="sb-item" onclick="openQuery('adaparsel','Ada Parsel')"><span class="ico">📐</span> Ada Parsel</div>
+    <div class="sb-item" onclick="openQuery('adres')"><span class="ico">🏠</span> Adres</div>
+    <div class="sb-item" onclick="openQuery('tapu')"><span class="ico">🏡</span> Tapu</div>
+    <div class="sb-item" onclick="openQuery('adaparsel')"><span class="ico">📐</span> Ada Parsel</div>
   `;
 }
 
@@ -299,7 +244,9 @@ function enterPanel(user) {
   document.getElementById('authView').classList.add('hidden');
   document.getElementById('panelView').classList.remove('hidden');
 
-  document.getElementById('sideAvatar').src = user.avatar;
+  const av = document.getElementById('sideAvatar');
+  if (av) av.src = avatarOf(user);
+
   document.getElementById('sideUsername').textContent = user.username;
   document.getElementById('sideTick').classList.toggle('hidden', !user.verified);
 
@@ -314,7 +261,9 @@ function enterPanel(user) {
 
   navInsa();
 
-  // Direkt sohbet ekranı açılır
+  const sidebar = document.getElementById('sidebar');
+  if (sidebar) { sidebar.style.visibility = 'visible'; sidebar.style.opacity = '1'; }
+
   showView('chat');
 
   loadChat();
@@ -327,8 +276,11 @@ function enterPanel(user) {
 
 // ═══════════ SIDEBAR ═══════════
 function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('overlay').classList.toggle('active');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+  if (!sidebar) return;
+  sidebar.classList.toggle('open');
+  if (overlay) overlay.classList.toggle('active');
 }
 
 function toggleProfileMenu(e) {
@@ -353,7 +305,7 @@ function showView(view) {
   document.getElementById('view' + view.charAt(0).toUpperCase() + view.slice(1))?.classList.remove('hidden');
 
   document.querySelectorAll('.sb-nav .sb-item').forEach(el => el.classList.remove('active'));
-  const navMap = { chat: 'navChat', users: 'navUsers' };
+  const navMap = { chat:'navChat', users:'navUsers' };
   if (navMap[view]) document.getElementById(navMap[view])?.classList.add('active');
 
   if (view === 'profile') loadProfile();
@@ -361,12 +313,12 @@ function showView(view) {
   if (view === 'settings') loadAccountInfo();
   if (view === 'chat') { loadChat(); scrollChatBottom(); }
 
-  document.getElementById('profileDropdown').classList.remove('open');
-  document.getElementById('profileBtn').classList.remove('open');
+  document.getElementById('profileDropdown')?.classList.remove('open');
+  document.getElementById('profileBtn')?.classList.remove('open');
 
   if (window.innerWidth < 900) {
-    document.getElementById('sidebar').classList.remove('open');
-    document.getElementById('overlay').classList.remove('active');
+    document.getElementById('sidebar')?.classList.remove('open');
+    document.getElementById('overlay')?.classList.remove('active');
   }
 }
 
@@ -386,14 +338,12 @@ function openQuery(type) {
   for (const inp of q.inputs) {
     const group = document.createElement('div');
     group.className = 'q-input-group';
-
     if (inp.label) {
       const lb = document.createElement('label');
       lb.className = 'q-input-label';
       lb.innerHTML = inp.label + (inp.max ? ` <span class="q-input-hint">(${inp.max} hane)</span>` : '');
       group.appendChild(lb);
     }
-
     const i = document.createElement('input');
     i.type = 'text';
     i.id = 'input_' + inp.id;
@@ -405,7 +355,6 @@ function openQuery(type) {
     i.setAttribute('spellcheck', 'false');
     i.addEventListener('keypress', e => { if (e.key === 'Enter') runQuery(); });
     group.appendChild(i);
-
     wrap.appendChild(group);
   }
 
@@ -429,7 +378,6 @@ function resetQuery() {
 async function runQuery() {
   const q = QUERIES[CURRENT_QUERY];
   if (!q) return;
-
   const btn = document.getElementById('queryBtn');
   const wrap = document.getElementById('resultWrap');
   const table = document.getElementById('resultTable');
@@ -502,7 +450,6 @@ function renderResult(data) {
     html += '</tr>';
   }
   html += '</tbody></table>';
-
   table.innerHTML = html;
   cnt.textContent = items.length + ' kayıt';
 }
@@ -513,7 +460,6 @@ async function loadChat() {
     const r = await fetch(CHAT + '?action=messages&since=0');
     const d = await r.json();
     if (!d.success) return;
-
     const box = document.getElementById('chatMessages');
     if (!box) return;
     const atBottom = (box.scrollHeight - box.scrollTop - box.clientHeight) < 80;
@@ -521,9 +467,10 @@ async function loadChat() {
     let html = '';
     for (const m of d.messages) {
       const me = CURRENT_USER && m.user_id === CURRENT_USER.id;
+      const av = (m.avatar && !m.avatar.includes('ui-avatars.com')) ? m.avatar : DEFAULT_AVATAR;
       html += `
         <div class="msg ${me ? 'me' : ''}">
-          <img class="av" src="${esc(m.avatar)}" alt="">
+          <img class="av" src="${esc(av)}" alt="">
           <div>
             <div class="msg-bubble">
               <div class="msg-name">
@@ -564,22 +511,13 @@ async function sendMessage() {
   btn.disabled = true;
   try {
     const fd = new FormData();
-    fd.append('action', 'send');
-    fd.append('text', t);
-    const r = await fetch(CHAT, { method: 'POST', body: fd });
+    fd.append('action','send'); fd.append('text',t);
+    const r = await fetch(CHAT, { method:'POST', body: fd });
     const d = await r.json();
-    if (d.success) {
-      inp.value = '';
-      await loadChat();
-      scrollChatBottom();
-    } else {
-      toast('❌ ' + (d.error || 'Gönderilemedi'), 'error');
-    }
-  } catch (e) {
-    toast('❌ Bağlantı hatası', 'error');
-  } finally {
-    btn.disabled = false;
-  }
+    if (d.success) { inp.value=''; await loadChat(); scrollChatBottom(); }
+    else toast('❌ ' + (d.error || 'Gönderilemedi'), 'error');
+  } catch (e) { toast('❌ Bağlantı hatası', 'error'); }
+  finally { btn.disabled = false; }
 }
 
 // ═══════════ USERS ═══════════
@@ -588,17 +526,17 @@ async function loadUsers() {
     const r = await fetch(AUTH + '?action=users');
     const d = await r.json();
     if (!d.success) return;
-    const users = d.users.sort((a, b) => (b.online - a.online) || a.username.localeCompare(b.username));
-
+    const users = d.users.sort((a,b) => (b.online - a.online) || a.username.localeCompare(b.username));
     document.getElementById('usersCount').textContent = users.length + ' kullanıcı';
 
     let html = '';
     for (const u of users) {
       const cls = u.banned ? 'banned' : (u.online ? 'on' : 'off');
       const txt = u.banned ? 'BANLI' : (u.online ? 'Çevrimiçi' : 'Çevrimdışı');
+      const av = avatarOf(u);
       html += `
         <div class="user-card">
-          <img class="av" src="${esc(u.avatar)}" alt="">
+          <img class="av" src="${esc(av)}" alt="">
           <div class="info">
             <div class="nm">
               ${esc(u.username)}
@@ -621,7 +559,7 @@ async function loadProfile() {
     const d = await r.json();
     if (!d.success) return;
     const u = d.user;
-    document.getElementById('pAvatar').src = u.avatar;
+    document.getElementById('pAvatar').src = avatarOf(u);
     document.getElementById('pUsername').textContent = u.username;
     document.getElementById('pTick').classList.toggle('hidden', !u.verified);
     document.getElementById('pRank').textContent = u.rank;
@@ -635,22 +573,16 @@ async function loadProfile() {
 
 async function saveProfile() {
   const fd = new FormData();
-  fd.append('action', 'update_profile');
+  fd.append('action','update_profile');
   fd.append('email', document.getElementById('editEmail').value.trim());
   fd.append('bio', document.getElementById('editBio').value.trim());
   fd.append('avatar', document.getElementById('editAvatar').value.trim());
   try {
-    const r = await fetch(AUTH, { method: 'POST', body: fd });
+    const r = await fetch(AUTH, { method:'POST', body: fd });
     const d = await r.json();
-    if (d.success) {
-      toast('✓ Profil güncellendi', 'success');
-      loadProfile();
-    } else {
-      toast('❌ ' + d.error, 'error');
-    }
-  } catch (e) {
-    toast('❌ Bağlantı hatası', 'error');
-  }
+    if (d.success) { toast('✓ Profil güncellendi', 'success'); loadProfile(); }
+    else toast('❌ ' + d.error, 'error');
+  } catch (e) { toast('❌ Bağlantı hatası', 'error'); }
 }
 
 // ═══════════ SETTINGS ═══════════
@@ -659,22 +591,14 @@ async function changePassword() {
   const n = document.getElementById('newPass').value;
   if (!o || !n) return toast('Şifre alanlarını doldur', 'error');
   const fd = new FormData();
-  fd.append('action', 'change_password');
-  fd.append('old_password', o);
-  fd.append('new_password', n);
+  fd.append('action','change_password');
+  fd.append('old_password',o); fd.append('new_password',n);
   try {
-    const r = await fetch(AUTH, { method: 'POST', body: fd });
+    const r = await fetch(AUTH, { method:'POST', body: fd });
     const d = await r.json();
-    if (d.success) {
-      toast('✓ Şifre değiştirildi', 'success');
-      document.getElementById('oldPass').value = '';
-      document.getElementById('newPass').value = '';
-    } else {
-      toast('❌ ' + d.error, 'error');
-    }
-  } catch (e) {
-    toast('❌ Bağlantı hatası', 'error');
-  }
+    if (d.success) { toast('✓ Şifre değiştirildi', 'success'); document.getElementById('oldPass').value=''; document.getElementById('newPass').value=''; }
+    else toast('❌ ' + d.error, 'error');
+  } catch (e) { toast('❌ Bağlantı hatası', 'error'); }
 }
 
 async function loadAccountInfo() {
@@ -699,5 +623,4 @@ document.getElementById('loginPass')?.addEventListener('keypress', e => { if (e.
 document.getElementById('regPass')?.addEventListener('keypress', e => { if (e.key === 'Enter') doRegister(); });
 document.getElementById('chatInput')?.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
 
-// Başlangıç
 checkSession();

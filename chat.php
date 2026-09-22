@@ -9,22 +9,17 @@ $action = $_REQUEST['action'] ?? '';
 
 switch ($action) {
 
-    // ─── MESAJLARI ÇEK ───
     case 'messages':
         require_login();
         $since = (int)($_GET['since'] ?? 0);
         $messages = read_json(CHAT_FILE, []);
-
-        // Sadece son 200 mesaj
         $messages = array_slice($messages, -200);
 
-        // since'den sonrakiler
         if ($since > 0) {
             $messages = array_filter($messages, fn($m) => $m['ts'] > $since);
             $messages = array_values($messages);
         }
 
-        // Kullanıcı bilgisi ekle
         $out = [];
         foreach ($messages as $m) {
             $sender = find_user_by_id($m['user_id']);
@@ -41,10 +36,8 @@ switch ($action) {
                 'date'     => date('d.m.Y', $m['ts']),
             ];
         }
-
         json_out(["success"=>true, "messages"=>$out]);
 
-    // ─── MESAJ GÖNDER ───
     case 'send':
         require_login();
         $me = current_user();
@@ -60,16 +53,10 @@ switch ($action) {
             'text'    => $text,
             'ts'      => time(),
         ];
-
-        // Son 500 mesajı tut
-        if (count($messages) > 500) {
-            $messages = array_slice($messages, -500);
-        }
-
+        if (count($messages) > 500) $messages = array_slice($messages, -500);
         write_json(CHAT_FILE, $messages);
         json_out(["success"=>true, "message"=>"Gönderildi"]);
 
-    // ─── MESAJ SİL (kendi mesajını veya admin) ───
     case 'delete':
         require_login();
         $me = current_user();
@@ -79,9 +66,7 @@ switch ($action) {
         $new = [];
         foreach ($messages as $m) {
             if ($m['id'] === $msgId) {
-                if ($m['user_id'] === $me['id'] || is_admin()) {
-                    continue; // sil
-                }
+                if ($m['user_id'] === $me['id'] || is_admin()) continue;
             }
             $new[] = $m;
         }
