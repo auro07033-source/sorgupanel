@@ -3,345 +3,668 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Forex Sorgulama Hizmeti — @cmrbaskani</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<title>Forex Sorgulama Hizmeti</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   :root {
-    --bg: #0a0e1a; --bg-side: #0f1626; --bg-card: #131c2e;
-    --card: rgba(30,41,59,.6); --card-solid: #1e293b;
-    --border: rgba(148,163,184,.12); --border-hover: rgba(148,163,184,.3);
-    --text: #f1f5f9; --text-dim: #94a3b8; --text-mute: #64748b;
-    --primary: #6366f1; --primary-2: #8b5cf6;
-    --blue: #3b82f6; --blue-hover: #2563eb;
-    --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
+    --bg: #0d1117;
+    --bg2: #161b22;
+    --bg3: #1c2128;
+    --card: #161b22;
+    --hover: #21262d;
+    --border: #30363d;
+    --border2: #3d444d;
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --text-mute: #6e7681;
+    --blue: #58a6ff;
+    --blue2: #1f6feb;
+    --green: #3fb950;
+    --red: #f85149;
+    --yellow: #d29922;
+    --purple: #a371f7;
+    --orange: #db6d28;
+    --shadow: 0 8px 24px rgba(0,0,0,.6);
+    --radius: 12px;
+    --sidebar-w: 260px;
+    --topbar-h: 56px;
   }
   body.light {
-    --bg: #f1f5f9; --bg-side: #ffffff; --bg-card: #ffffff;
-    --card: #ffffff; --card-solid: #f8fafc;
-    --border: rgba(15,23,42,.08); --border-hover: rgba(15,23,42,.2);
-    --text: #0f172a; --text-dim: #475569; --text-mute: #94a3b8;
+    --bg: #ffffff;
+    --bg2: #f6f8fa;
+    --bg3: #eaeef2;
+    --card: #ffffff;
+    --hover: #f3f4f6;
+    --border: #d0d7de;
+    --border2: #afb8c1;
+    --text: #1f2328;
+    --text-dim: #59636e;
+    --text-mute: #818b98;
+    --shadow: 0 8px 24px rgba(0,0,0,.08);
   }
-  html, body { min-height: 100vh; }
+
+  html, body { height: 100%; }
   body {
-    font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text);
-    transition: background .3s, color .3s; overflow-x: hidden;
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg); color: var(--text);
+    font-size: 14px; line-height: 1.5;
+    transition: background .2s, color .2s;
+    overflow: hidden;
   }
   .hidden { display: none !important; }
 
-  /* ═══════════ LOGIN ═══════════ */
+  /* ═══════════════ LOGIN ═══════════════ */
   .auth-wrap {
-    min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem;
-    background:
-      radial-gradient(circle at 20% 20%, rgba(99,102,241,.18), transparent 45%),
-      radial-gradient(circle at 80% 60%, rgba(139,92,246,.14), transparent 45%);
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 1.25rem; background:
+      radial-gradient(ellipse at top left, rgba(31,111,235,.15), transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(163,113,247,.12), transparent 50%),
+      var(--bg);
   }
   .auth-box {
-    width: 100%; max-width: 440px; background: var(--bg-card);
-    border: 1px solid var(--border); border-radius: 1.25rem;
-    padding: 2.25rem 2rem; box-shadow: 0 20px 40px -10px rgba(0,0,0,.5);
+    width: 100%; max-width: 400px; background: var(--card);
+    border: 1px solid var(--border); border-radius: 16px;
+    padding: 2rem 1.75rem; box-shadow: var(--shadow);
   }
   .auth-logo {
-    width: 60px; height: 60px; border-radius: 16px; margin: 0 auto 1.1rem;
-    background: linear-gradient(135deg, var(--primary), var(--primary-2));
-    display: flex; align-items: center; justify-content: center; font-size: 30px;
+    width: 52px; height: 52px; margin: 0 auto 1rem;
+    background: linear-gradient(135deg, var(--blue2), var(--purple));
+    border-radius: 14px; display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
   }
-  .auth-title { text-align: center; font-size: 1.35rem; font-weight: 800; margin-bottom: .3rem; }
-  .auth-sub { text-align: center; font-size: .78rem; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; margin-bottom: 1.5rem; }
-  .auth-tabs { display: flex; gap: .4rem; margin-bottom: 1.5rem; background: var(--bg); padding: .35rem; border-radius: .75rem; }
-  .auth-tab { flex: 1; padding: .6rem; text-align: center; border-radius: .55rem; cursor: pointer;
-    font-weight: 600; font-size: .85rem; color: var(--text-dim); transition: all .2s; }
-  .auth-tab.active { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; }
-  label { display: block; font-size: .76rem; font-weight: 600; color: var(--text-dim); margin-bottom: .35rem; }
-  .field { width: 100%; padding: .8rem 1rem; border-radius: .7rem; border: 1px solid var(--border);
-    background: var(--bg); color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: .88rem;
-    outline: none; margin-bottom: .9rem; transition: all .2s; }
-  .field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,.15); }
-  .btn-main {
-    width: 100%; border: none; color: white; padding: .85rem;
-    border-radius: .7rem; font-weight: 700; font-size: .9rem; cursor: pointer;
-    background: linear-gradient(135deg, var(--primary), var(--primary-2));
-    transition: all .2s; font-family: inherit;
+  .auth-title { text-align: center; font-size: 1.25rem; font-weight: 800; margin-bottom: .35rem; }
+  .auth-sub { text-align: center; font-size: .72rem; color: var(--text-mute); font-family: 'JetBrains Mono', monospace; margin-bottom: 1.5rem; }
+  .tabs {
+    display: flex; gap: .25rem; margin-bottom: 1.5rem;
+    background: var(--bg3); padding: .25rem; border-radius: 10px;
   }
-  .btn-main:hover { transform: translateY(-1px); }
-  .btn-main:disabled { opacity: .5; cursor: not-allowed; }
-  .auth-err { background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.35);
-    color: #fca5a5; padding: .65rem .85rem; border-radius: .6rem; font-size: .8rem;
-    margin-bottom: 1rem; display: none; }
-  .auth-err.active { display: block; }
+  .tab {
+    flex: 1; padding: .55rem; text-align: center; border-radius: 7px;
+    cursor: pointer; font-weight: 600; font-size: .82rem; color: var(--text-dim);
+    transition: all .15s;
+  }
+  .tab.active { background: var(--card); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+  .fld-label {
+    display: block; font-size: .75rem; font-weight: 600;
+    color: var(--text-dim); margin-bottom: .35rem;
+  }
+  .fld {
+    width: 100%; padding: .7rem .9rem; border-radius: 8px;
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); font-family: inherit; font-size: .85rem;
+    outline: none; transition: all .15s; margin-bottom: .85rem;
+  }
+  .fld:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(88,166,255,.15); }
+  .fld-mono { font-family: 'JetBrains Mono', monospace; font-size: .82rem; }
+  .btn-primary {
+    width: 100%; padding: .75rem; border: none; border-radius: 8px;
+    background: linear-gradient(135deg, var(--blue2), #388bfd);
+    color: white; font-weight: 700; font-size: .85rem;
+    cursor: pointer; font-family: inherit; transition: all .15s;
+  }
+  .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+  .alert {
+    padding: .65rem .9rem; border-radius: 8px; font-size: .8rem;
+    margin-bottom: 1rem; display: none;
+  }
+  .alert.active { display: block; }
+  .alert-error { background: rgba(248,81,73,.1); border: 1px solid rgba(248,81,73,.3); color: #ffa198; }
 
-  /* ═══════════ LAYOUT ═══════════ */
-  .layout { display: flex; min-height: 100vh; }
+  /* ═══════════════ LAYOUT ═══════════════ */
+  .app { display: flex; height: 100vh; overflow: hidden; }
 
   /* SIDEBAR */
   .sidebar {
-    width: 260px; background: var(--bg-side); border-right: 1px solid var(--border);
-    display: flex; flex-direction: column; transition: transform .3s;
-    position: fixed; top: 0; bottom: 0; left: 0; z-index: 100; overflow-y: auto;
+    width: var(--sidebar-w);
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    flex-shrink: 0;
+    transition: transform .25s cubic-bezier(.4,0,.2,1);
+    z-index: 50;
   }
-  .sidebar.hidden-mobile { transform: translateX(-100%); }
-  .sidebar-header {
-    padding: 1rem 1.1rem; border-bottom: 1px solid var(--border);
+  .sb-brand {
+    height: var(--topbar-h);
+    padding: 0 1rem;
     display: flex; align-items: center; gap: .6rem;
-  }
-  .sidebar-logo {
-    width: 34px; height: 34px; border-radius: 10px;
-    background: linear-gradient(135deg, var(--primary), var(--primary-2));
-    display: flex; align-items: center; justify-content: center; font-size: 18px;
+    border-bottom: 1px solid var(--border);
     flex-shrink: 0;
   }
-  .sidebar-title { font-weight: 800; font-size: .95rem; letter-spacing: -.02em; line-height: 1.1; }
-  .sidebar-title small { display: block; font-size: .65rem; color: var(--text-mute);
-    font-family: 'JetBrains Mono', monospace; font-weight: 500; margin-top: .15rem; }
+  .sb-logo {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--blue2), var(--purple));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .sb-brand-txt { font-weight: 800; font-size: .9rem; letter-spacing: -.01em; }
+  .sb-brand-txt small {
+    display: block; font-size: .6rem; font-weight: 500;
+    color: var(--text-mute); font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0;
+  }
 
-  /* Profil alanı (üstte) */
-  .profile-area {
-    padding: .9rem 1rem; border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; gap: .75rem; cursor: pointer;
-    position: relative;
+  .sb-nav { flex: 1; overflow-y: auto; padding: .5rem .5rem 1rem; }
+  .sb-nav::-webkit-scrollbar { width: 6px; }
+  .sb-nav::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .sb-nav::-webkit-scrollbar-thumb:hover { background: var(--border2); }
+
+  .sb-section {
+    padding: .85rem .75rem .35rem;
+    font-size: .62rem; font-weight: 800; color: var(--text-mute);
+    text-transform: uppercase; letter-spacing: .1em;
   }
-  .profile-area:hover { background: var(--card-solid); }
-  .profile-avatar-sm {
-    width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
-    border: 2px solid var(--primary); flex-shrink: 0;
+
+  .sb-item {
+    display: flex; align-items: center; gap: .6rem;
+    padding: .55rem .7rem; border-radius: 7px;
+    cursor: pointer; font-size: .82rem; font-weight: 500;
+    color: var(--text-dim); transition: all .12s;
+    user-select: none; position: relative;
   }
-  .profile-info-sm { flex: 1; min-width: 0; }
-  .profile-name-sm {
-    font-weight: 700; font-size: .85rem; display: flex; align-items: center; gap: .3rem;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  .sb-item:hover { background: var(--hover); color: var(--text); }
+  .sb-item.active {
+    background: rgba(31,111,235,.15);
+    color: var(--blue);
+    font-weight: 600;
   }
-  .profile-name-sm .tick { color: #60a5fa; font-size: .75rem; }
-  .profile-status-sm {
-    font-size: .68rem; font-weight: 600; color: #86efac;
-    display: flex; align-items: center; gap: .3rem; margin-top: .1rem;
+  .sb-item.active::before {
+    content: ""; position: absolute; left: -0.5rem; top: 20%; bottom: 20%;
+    width: 3px; background: var(--blue); border-radius: 0 3px 3px 0;
   }
-  .profile-status-sm .dot {
-    width: 6px; height: 6px; border-radius: 50%; background: #10b981;
-    box-shadow: 0 0 6px #10b981;
-  }
-  .profile-status-sm.offline { color: var(--text-mute); }
-  .profile-status-sm.offline .dot { background: #64748b; box-shadow: none; }
-  .profile-arrow {
-    color: var(--text-dim); font-size: 1rem; padding: .2rem; border-radius: .35rem;
+  .sb-item .ico { font-size: .95rem; width: 18px; text-align: center; flex-shrink: 0; }
+  .sb-item .arrow {
+    margin-left: auto; font-size: .6rem; opacity: .5;
     transition: transform .2s;
   }
-  .profile-area.open .profile-arrow { transform: rotate(180deg); }
+  .sb-item.open .arrow { transform: rotate(90deg); }
+  .sb-item .badge {
+    margin-left: auto; font-size: .52rem; font-weight: 800;
+    padding: .15rem .4rem; border-radius: 4px;
+    text-transform: uppercase; letter-spacing: .04em;
+  }
+  .badge.premium { background: linear-gradient(135deg, var(--yellow), var(--orange)); color: #000; }
+  .badge.new { background: linear-gradient(135deg, var(--green), var(--blue)); color: #000; }
 
-  /* Profil menüsü */
-  .profile-menu {
-    position: absolute; top: 100%; left: .5rem; right: .5rem;
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: .7rem; box-shadow: 0 10px 30px rgba(0,0,0,.5);
-    padding: .35rem; z-index: 200; display: none; margin-top: .25rem;
+  .sb-sub {
+    max-height: 0; overflow: hidden;
+    transition: max-height .25s ease;
+    padding-left: .85rem;
   }
-  .profile-menu.open { display: block; animation: fadeIn .15s; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
-  .profile-menu-item {
-    display: flex; align-items: center; gap: .6rem; padding: .6rem .75rem;
-    border-radius: .5rem; cursor: pointer; font-size: .82rem; font-weight: 500;
-    color: var(--text); transition: background .15s;
-  }
-  .profile-menu-item:hover { background: var(--card-solid); }
-  .profile-menu-item.danger { color: #fca5a5; }
-  .profile-menu-item.danger:hover { background: rgba(239,68,68,.1); }
-  .profile-menu-divider {
-    height: 1px; background: var(--border); margin: .35rem 0;
-  }
-  .menu-badge {
-    margin-left: auto; font-size: .6rem; padding: .12rem .4rem;
-    border-radius: 999px; font-weight: 700;
-  }
-  .menu-badge.admin { background: linear-gradient(135deg, #ef4444, #f97316); color: white; }
-
-  /* Sidebar nav */
-  .sidebar-nav { flex: 1; padding: .75rem .5rem; overflow-y: auto; }
-  .sidebar-nav::-webkit-scrollbar { width: 4px; }
-  .sidebar-nav::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-  .sidebar-section-label {
-    font-size: .62rem; font-weight: 700; color: var(--text-mute);
-    text-transform: uppercase; letter-spacing: .08em;
-    padding: .85rem .75rem .35rem;
-  }
-  .sidebar-link {
-    display: flex; align-items: center; gap: .65rem; padding: .6rem .75rem;
-    border-radius: .5rem; cursor: pointer; font-size: .82rem; font-weight: 500;
-    color: var(--text-dim); transition: all .15s; user-select: none;
-  }
-  .sidebar-link:hover { background: var(--card-solid); color: var(--text); }
-  .sidebar-link.active { background: rgba(99,102,241,.15); color: #a5b4fc; font-weight: 600; }
-  .sidebar-link .ico { font-size: 1rem; flex-shrink: 0; }
-  .sidebar-link .badge {
-    margin-left: auto; font-size: .55rem; padding: .12rem .4rem;
-    border-radius: 999px; font-weight: 700; text-transform: uppercase;
-  }
-  .badge.premium { background: linear-gradient(135deg, #f59e0b, #ef4444); color: white; }
-  .badge.new { background: linear-gradient(135deg, #10b981, #3b82f6); color: white; }
-  .sidebar-link .arrow {
-    margin-left: auto; font-size: .7rem; transition: transform .2s;
-  }
-  .sidebar-link.open .arrow { transform: rotate(90deg); }
-
-  .sidebar-sub {
-    padding-left: 1.4rem;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height .3s;
-  }
-  .sidebar-sub.open { max-height: 400px; }
-  .sidebar-sub .sidebar-link {
-    font-size: .78rem;
-    padding: .45rem .7rem;
+  .sb-sub.open { max-height: 500px; }
+  .sb-sub .sb-item {
+    padding: .4rem .7rem; font-size: .76rem;
   }
 
-  /* MOBILE HEADER */
-  .mobile-header {
-    display: none; position: fixed; top: 0; left: 0; right: 0;
-    background: var(--bg-side); border-bottom: 1px solid var(--border);
-    padding: .75rem 1rem; z-index: 90; align-items: center; justify-content: space-between;
+  /* PROFİL BÖLÜMÜ (üstte) */
+  .sb-profile {
+    position: relative;
+    border-bottom: 1px solid var(--border);
+    padding: .75rem;
+    flex-shrink: 0;
   }
-  .mobile-header-btn {
-    background: var(--card-solid); border: 1px solid var(--border);
-    border-radius: .5rem; padding: .45rem .65rem; cursor: pointer;
-    color: var(--text); font-size: 1rem; font-family: inherit;
+  .sb-profile-btn {
+    display: flex; align-items: center; gap: .65rem;
+    padding: .5rem .55rem; border-radius: 8px; cursor: pointer;
+    transition: background .12s; position: relative;
   }
+  .sb-profile-btn:hover { background: var(--hover); }
+  .sb-profile-btn .av {
+    width: 36px; height: 36px; border-radius: 50%;
+    object-fit: cover; flex-shrink: 0;
+    border: 2px solid var(--border2);
+  }
+  .sb-profile-btn .info { flex: 1; min-width: 0; }
+  .sb-profile-btn .nm {
+    font-weight: 700; font-size: .82rem;
+    display: flex; align-items: center; gap: .3rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .sb-profile-btn .nm .tk { color: var(--blue); font-size: .72rem; }
+  .sb-profile-btn .st {
+    font-size: .65rem; font-weight: 600;
+    display: inline-flex; align-items: center; gap: .3rem;
+    margin-top: 1px;
+  }
+  .sb-profile-btn .st.on { color: var(--green); }
+  .sb-profile-btn .st.off { color: var(--text-mute); }
+  .sb-profile-btn .st .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .sb-profile-btn .st.on .dot { box-shadow: 0 0 6px var(--green); }
+  .sb-profile-btn .chev {
+    color: var(--text-mute); font-size: .7rem;
+    transition: transform .2s;
+  }
+  .sb-profile-btn.open .chev { transform: rotate(180deg); }
 
-  /* MAIN */
+  /* Dropdown menü */
+  .sb-dropdown {
+    position: absolute; top: calc(100% - .4rem); left: .5rem; right: .5rem;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; box-shadow: var(--shadow);
+    padding: .35rem; z-index: 100;
+    display: none;
+  }
+  .sb-dropdown.open {
+    display: block;
+    animation: dropIn .15s ease;
+  }
+  @keyframes dropIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .dd-item {
+    display: flex; align-items: center; gap: .6rem;
+    padding: .55rem .7rem; border-radius: 6px;
+    cursor: pointer; font-size: .8rem; font-weight: 500;
+    color: var(--text); transition: background .12s;
+  }
+  .dd-item:hover { background: var(--hover); }
+  .dd-item .ico { font-size: .9rem; width: 16px; text-align: center; }
+  .dd-item.danger { color: var(--red); }
+  .dd-item.danger:hover { background: rgba(248,81,73,.1); }
+  .dd-item .badge-admin {
+    margin-left: auto; font-size: .55rem; font-weight: 800;
+    padding: .12rem .4rem; border-radius: 4px;
+    background: linear-gradient(135deg, var(--red), var(--orange));
+    color: white; text-transform: uppercase;
+  }
+  .dd-divider { height: 1px; background: var(--border); margin: .35rem .25rem; }
+
+  /* MAIN AREA */
   .main {
-    flex: 1; margin-left: 260px; padding: 1.5rem 1.5rem 5rem;
-    min-height: 100vh; transition: margin-left .3s;
+    flex: 1; display: flex; flex-direction: column;
+    overflow: hidden; min-width: 0;
   }
-  .main.full { margin-left: 0; }
 
-  /* ═══════════ SORGU SAYFASI (fotoğraftaki gibi) ═══════════ */
-  .query-card {
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 1.25rem; padding: 2rem 1.75rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,.3);
-    max-width: 900px; margin: 0 auto;
+  /* TOPBAR (mobil) */
+  .topbar {
+    height: var(--topbar-h);
+    display: none;
+    padding: 0 1rem;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    align-items: center; justify-content: space-between;
+    flex-shrink: 0;
   }
-  .query-header {
-    display: flex; align-items: center; gap: .85rem; margin-bottom: 1.75rem;
+  .topbar-btn {
+    background: transparent; border: 1px solid var(--border);
+    border-radius: 8px; padding: .45rem .6rem;
+    color: var(--text); cursor: pointer; font-size: 1rem;
+    font-family: inherit;
   }
-  .query-header-icon {
-    width: 46px; height: 46px; border-radius: 12px;
-    background: rgba(59,130,246,.15); border: 1px solid rgba(59,130,246,.3);
+  .topbar-title { font-weight: 700; font-size: .9rem; }
+
+  /* Content */
+  .content {
+    flex: 1; overflow-y: auto; padding: 1.5rem;
+    scroll-behavior: smooth;
+  }
+  .content::-webkit-scrollbar { width: 10px; }
+  .content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
+  .content::-webkit-scrollbar-thumb:hover { background: var(--border2); }
+
+  /* ═══════════════ SORGU EKRANI ═══════════════ */
+  .q-wrap { max-width: 900px; margin: 0 auto; }
+
+  .q-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  }
+  .q-head {
+    display: flex; align-items: center; gap: .85rem;
+    margin-bottom: 1.5rem;
+  }
+  .q-head-ico {
+    width: 42px; height: 42px; border-radius: 10px;
+    background: rgba(88,166,255,.12);
+    border: 1px solid rgba(88,166,255,.25);
     display: flex; align-items: center; justify-content: center;
-    font-size: 22px; color: #60a5fa; flex-shrink: 0;
+    font-size: 20px; flex-shrink: 0;
   }
-  .query-header h2 { font-size: 1.15rem; font-weight: 700; letter-spacing: -.01em; }
+  .q-head-txt h2 {
+    font-size: 1.05rem; font-weight: 700; letter-spacing: -.01em;
+  }
+  .q-head-txt p {
+    font-size: .72rem; color: var(--text-mute);
+    font-family: 'JetBrains Mono', monospace;
+  }
 
-  .form-group { margin-bottom: 1rem; }
-  .form-input {
-    width: 100%; padding: 1rem 1.1rem; border-radius: .75rem;
-    border: 1px solid var(--border); background: var(--bg);
-    color: var(--text); font-family: 'Inter', sans-serif;
-    font-size: .92rem; outline: none; transition: all .2s;
+  .q-inputs { display: flex; flex-direction: column; gap: .75rem; margin-bottom: 1.25rem; }
+  .q-input {
+    width: 100%; padding: .85rem 1rem;
+    background: var(--bg);
+    border: 1px solid var(--border); border-radius: 10px;
+    color: var(--text); font-family: inherit; font-size: .88rem;
+    outline: none; transition: all .15s;
   }
-  .form-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
-  .form-input::placeholder { color: var(--text-mute); }
+  .q-input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(88,166,255,.15);
+  }
+  .q-input::placeholder { color: var(--text-mute); }
 
-  .btn-row { display: flex; gap: .6rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
-  .btn {
-    padding: .85rem 1.4rem; border-radius: .7rem; font-weight: 600;
-    font-size: .88rem; cursor: pointer; border: none;
-    font-family: inherit; transition: all .2s;
-    display: inline-flex; align-items: center; gap: .45rem;
+  .q-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .q-btn {
+    padding: .75rem 1.25rem; border-radius: 10px;
+    font-weight: 700; font-size: .85rem;
+    cursor: pointer; border: none; font-family: inherit;
+    display: inline-flex; align-items: center; gap: .5rem;
+    transition: all .15s;
   }
-  .btn-blue {
-    background: var(--blue); color: white; flex: 1; justify-content: center;
-    box-shadow: 0 4px 14px rgba(59,130,246,.35);
+  .q-btn-primary {
+    background: var(--blue2); color: white;
+    flex: 1; justify-content: center;
+    min-width: 140px;
   }
-  .btn-blue:hover { background: var(--blue-hover); transform: translateY(-1px); }
-  .btn-blue:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-  .btn-gray {
-    background: var(--card-solid); color: var(--text); border: 1px solid var(--border);
+  .q-btn-primary:hover { background: #388bfd; }
+  .q-btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+  .q-btn-secondary {
+    background: var(--bg3); color: var(--text);
+    border: 1px solid var(--border);
   }
-  .btn-gray:hover { border-color: var(--border-hover); }
+  .q-btn-secondary:hover { background: var(--hover); border-color: var(--border2); }
 
-  .result-table-wrap {
-    margin-top: 1.5rem; border: 1px solid var(--border); border-radius: .75rem;
-    overflow: hidden; display: none;
+  /* Results */
+  .q-results {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+    display: none;
   }
-  .result-table-wrap.active { display: block; }
-  .result-table-head {
-    background: var(--card-solid); padding: .65rem 1rem;
-    font-size: .72rem; font-weight: 700; color: var(--text-dim);
-    text-transform: uppercase; letter-spacing: .06em;
+  .q-results.active { display: block; animation: fadeIn .25s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .q-results-head {
+    padding: .7rem 1rem;
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
     display: flex; align-items: center; justify-content: space-between;
+    font-size: .68rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: .08em;
+    color: var(--text-mute);
+  }
+  .q-results-count { color: var(--blue); font-weight: 700; }
+
+  .q-table-wrap { overflow-x: auto; }
+  .q-table {
+    width: 100%; border-collapse: collapse;
+    font-size: .78rem;
+  }
+  .q-table th {
+    text-align: left; padding: .7rem 1rem;
+    background: var(--bg2);
+    font-size: .68rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: .06em;
+    color: var(--text-dim);
+    white-space: nowrap;
     border-bottom: 1px solid var(--border);
   }
-  .result-table { width: 100%; overflow-x: auto; }
-  .result-table table {
-    width: 100%; border-collapse: collapse; font-size: .8rem;
+  .q-table td {
+    padding: .75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem;
+    color: var(--text);
+    vertical-align: top;
+    word-break: break-word;
   }
-  .result-table th {
-    text-align: left; padding: .75rem 1rem;
-    font-size: .68rem; font-weight: 700; color: var(--text-dim);
-    text-transform: uppercase; letter-spacing: .04em;
-    border-bottom: 1px solid var(--border); white-space: nowrap;
-    background: var(--bg-side);
-  }
-  .result-table td {
-    padding: .7rem 1rem; border-bottom: 1px solid var(--border);
-    font-family: 'JetBrains Mono', monospace; font-size: .76rem;
-    color: var(--text); word-break: break-word;
-  }
-  .result-table tr:last-child td { border-bottom: none; }
-  .result-table tr:hover td { background: rgba(99,102,241,.04); }
+  .q-table tr:last-child td { border-bottom: none; }
+  .q-table tbody tr:hover td { background: var(--hover); }
 
-  .result-error {
-    padding: 1.25rem; text-align: center; color: #fca5a5;
-    background: rgba(239,68,68,.08); border-radius: .75rem;
-    font-size: .85rem; margin-top: 1rem;
+  .q-empty {
+    padding: 2.5rem 1rem; text-align: center;
+    color: var(--text-mute); font-size: .85rem;
   }
-  .result-empty {
-    padding: 2rem; text-align: center; color: var(--text-dim);
-    font-size: .85rem;
+  .q-error {
+    padding: 1.5rem 1rem; text-align: center;
+    background: rgba(248,81,73,.08);
+    color: #ffa198; font-size: .85rem;
+    border-radius: 10px;
   }
 
-  .spinner {
-    display: inline-block; width: 14px; height: 14px;
-    border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
-    border-radius: 50%; animation: spin .7s linear infinite;
+  /* ═══════════════ CHAT ═══════════════ */
+  .chat-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+    display: flex; flex-direction: column;
+    height: calc(100vh - 3rem - var(--topbar-h));
+    min-height: 400px;
   }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  .chat-head {
+    padding: .85rem 1.1rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .chat-head-title { font-weight: 700; font-size: .92rem; display: flex; align-items: center; gap: .5rem; }
+  .chat-online {
+    font-size: .72rem; font-weight: 600;
+    color: var(--green);
+    display: inline-flex; align-items: center; gap: .35rem;
+  }
+  .chat-online .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green); box-shadow: 0 0 6px var(--green);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
 
-  /* Footer */
+  .chat-msgs {
+    flex: 1; overflow-y: auto;
+    padding: 1rem 1.1rem;
+    display: flex; flex-direction: column; gap: .75rem;
+  }
+  .chat-msgs::-webkit-scrollbar { width: 6px; }
+  .chat-msgs::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .msg { display: flex; gap: .6rem; max-width: 85%; }
+  .msg.me { align-self: flex-end; flex-direction: row-reverse; }
+  .msg .av {
+    width: 32px; height: 32px; border-radius: 50%;
+    object-fit: cover; flex-shrink: 0;
+    border: 1px solid var(--border);
+  }
+  .msg-bubble {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 12px; padding: .55rem .85rem;
+  }
+  .msg.me .msg-bubble {
+    background: rgba(31,111,235,.15);
+    border-color: rgba(31,111,235,.35);
+  }
+  .msg-name {
+    font-size: .7rem; font-weight: 700;
+    color: var(--purple);
+    display: flex; align-items: center; gap: .3rem;
+    margin-bottom: .25rem;
+  }
+  .msg.me .msg-name { color: var(--blue); }
+  .msg-rank {
+    font-size: .55rem; font-weight: 800;
+    padding: .1rem .35rem; border-radius: 3px;
+    background: var(--bg); color: var(--text-mute);
+  }
+  .msg-text { font-size: .85rem; line-height: 1.45; word-break: break-word; }
+  .msg-time {
+    font-size: .6rem; color: var(--text-mute);
+    margin-top: .25rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .chat-input-wrap {
+    padding: .75rem 1rem;
+    border-top: 1px solid var(--border);
+    display: flex; gap: .5rem;
+    flex-shrink: 0;
+    background: var(--bg2);
+  }
+  .chat-input {
+    flex: 1; padding: .7rem 1rem;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text);
+    font-family: inherit; font-size: .85rem;
+    outline: none; transition: all .15s;
+  }
+  .chat-input:focus { border-color: var(--blue); }
+  .chat-send {
+    padding: .7rem 1.15rem;
+    background: var(--blue2); color: white;
+    border: none; border-radius: 8px;
+    font-weight: 700; font-size: .82rem;
+    cursor: pointer; font-family: inherit;
+    transition: all .15s;
+  }
+  .chat-send:hover { background: #388bfd; }
+  .chat-send:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* ═══════════════ USERS ═══════════════ */
+  .users-grid { display: flex; flex-direction: column; gap: .5rem; }
+  .user-card {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 10px; padding: .75rem .9rem;
+    display: flex; align-items: center; gap: .85rem;
+    transition: all .15s;
+  }
+  .user-card:hover { border-color: var(--border2); background: var(--hover); }
+  .user-card .av {
+    width: 44px; height: 44px; border-radius: 50%;
+    object-fit: cover; flex-shrink: 0;
+    border: 2px solid var(--border2);
+  }
+  .user-card .info { flex: 1; min-width: 0; }
+  .user-card .nm {
+    font-weight: 700; font-size: .88rem;
+    display: flex; align-items: center; gap: .35rem;
+    flex-wrap: wrap;
+  }
+  .user-card .nm .tk { color: var(--blue); font-size: .75rem; }
+  .user-card .nm .rk {
+    font-size: .58rem; font-weight: 800;
+    padding: .15rem .4rem; border-radius: 4px;
+    background: var(--bg); color: var(--text-mute);
+    text-transform: uppercase; letter-spacing: .03em;
+  }
+  .user-card .nm .rk.admin {
+    background: linear-gradient(135deg, var(--red), var(--orange));
+    color: white;
+  }
+  .user-card .bio {
+    font-size: .72rem; color: var(--text-dim);
+    margin-top: .15rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .user-card .st {
+    font-size: .68rem; font-weight: 700;
+    display: inline-flex; align-items: center; gap: .3rem;
+    margin-top: .25rem;
+  }
+  .user-card .st.on { color: var(--green); }
+  .user-card .st.off { color: var(--text-mute); }
+  .user-card .st.banned { color: var(--red); }
+  .user-card .st .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* ═══════════════ PROFILE / SETTINGS ═══════════════ */
+  .profile-head-card {
+    background: linear-gradient(135deg, rgba(31,111,235,.12), rgba(163,113,247,.08));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    display: flex; gap: 1.25rem; align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+  }
+  .profile-av-lg {
+    width: 84px; height: 84px; border-radius: 50%;
+    object-fit: cover; border: 3px solid var(--blue);
+  }
+  .profile-name-lg {
+    font-size: 1.3rem; font-weight: 800;
+    display: flex; align-items: center; gap: .5rem;
+    flex-wrap: wrap;
+  }
+  .profile-name-lg .tk { color: var(--blue); font-size: 1rem; }
+  .profile-rank-badge {
+    font-size: .62rem; font-weight: 800;
+    padding: .2rem .55rem; border-radius: 5px;
+    background: linear-gradient(135deg, var(--blue2), var(--purple));
+    color: white; text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .profile-bio { color: var(--text-dim); font-size: .85rem; margin-top: .35rem; }
+  .profile-meta {
+    font-size: .72rem; color: var(--text-mute);
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: .4rem;
+  }
+
+  /* ═══════════════ FOOTER ═══════════════ */
   .footer {
-    text-align: center; padding: 1.5rem 1rem;
-    color: var(--text-mute); font-size: .8rem;
-    border-top: 1px solid var(--border); margin-top: 2rem;
+    text-align: center;
+    padding: 1.25rem 1rem;
+    color: var(--text-mute);
+    font-size: .75rem;
+    border-top: 1px solid var(--border);
+    margin-top: 1.5rem;
   }
-  .footer a { color: var(--primary); text-decoration: none; }
+  .footer a { color: var(--blue); text-decoration: none; }
 
-  /* Toast */
+  /* ═══════════════ TOAST ═══════════════ */
   .toast {
-    position: fixed; bottom: 24px; right: 24px; padding: .85rem 1.2rem;
-    background: var(--bg-card); border: 1px solid var(--primary); border-radius: .75rem;
-    color: var(--text); font-size: .85rem; font-weight: 600;
-    box-shadow: 0 10px 30px rgba(99,102,241,.4);
-    opacity: 0; transform: translateY(12px); transition: all .3s;
-    pointer-events: none; z-index: 999;
+    position: fixed; bottom: 20px; right: 20px;
+    padding: .75rem 1.1rem;
+    background: var(--card); border: 1px solid var(--border2);
+    border-radius: 10px;
+    color: var(--text); font-size: .82rem; font-weight: 600;
+    box-shadow: var(--shadow);
+    opacity: 0; transform: translateY(10px);
+    transition: all .25s; pointer-events: none;
+    z-index: 999;
   }
   .toast.show { opacity: 1; transform: translateY(0); }
-  .toast.error { border-color: var(--danger); }
-  .toast.success { border-color: var(--success); }
+  .toast.error { border-color: var(--red); }
+  .toast.success { border-color: var(--green); }
 
-  /* Overlay */
+  /* ═══════════════ OVERLAY ═══════════════ */
   .overlay {
     display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,.5); z-index: 95;
+    background: rgba(0,0,0,.5); z-index: 40;
   }
   .overlay.active { display: block; }
 
+  /* SPINNER */
+  .spinner {
+    display: inline-block; width: 13px; height: 13px;
+    border: 2px solid rgba(255,255,255,.25); border-top-color: currentColor;
+    border-radius: 50%; animation: spin .7s linear infinite;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ═══════════════ RESPONSIVE ═══════════════ */
   @media (max-width: 900px) {
-    .sidebar { transform: translateX(-100%); }
+    .sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0;
+      transform: translateX(-100%);
+    }
     .sidebar.open { transform: translateX(0); }
-    .main { margin-left: 0; padding-top: 4rem; }
-    .mobile-header { display: flex; }
-    .query-card { padding: 1.5rem 1.15rem; }
-    .query-header h2 { font-size: 1rem; }
+    .topbar { display: flex; }
+    .content { padding: 1rem; }
+    .chat-card { height: calc(100vh - 5rem - var(--topbar-h)); }
+    .q-head-txt h2 { font-size: .95rem; }
+    .q-btn { padding: .7rem 1rem; font-size: .8rem; }
+    .profile-head-card { padding: 1.1rem; }
+    .profile-av-lg { width: 68px; height: 68px; }
+    .profile-name-lg { font-size: 1.1rem; }
+  }
+
+  @media (max-width: 480px) {
+    .q-actions { flex-direction: column; }
+    .q-btn-primary { min-width: 100%; }
+    .msg { max-width: 95%; }
   }
 </style>
 </head>
@@ -351,282 +674,283 @@
 <div id="authView" class="auth-wrap">
   <div class="auth-box">
     <div class="auth-logo">🔎</div>
-    <h1 class="auth-title">Forex Sorgulama Hizmeti</h1>
+    <h1 class="auth-title">Forex Sorgulama</h1>
     <p class="auth-sub">@cmrbaskani</p>
 
-    <div class="auth-tabs">
-      <div class="auth-tab active" id="tabLogin" onclick="switchTab('login')">🔓 Giriş Yap</div>
-      <div class="auth-tab" id="tabRegister" onclick="switchTab('register')">✨ Kayıt Ol</div>
+    <div class="tabs">
+      <div class="tab active" id="tabLogin" onclick="switchTab('login')">Giriş Yap</div>
+      <div class="tab" id="tabRegister" onclick="switchTab('register')">Kayıt Ol</div>
     </div>
 
-    <div class="auth-err" id="authErr"></div>
+    <div class="alert alert-error" id="authErr"></div>
 
     <div id="formLogin">
-      <label>Kullanıcı Adı</label>
-      <input type="text" class="field" id="loginUser" placeholder="kullanıcı adı" autocomplete="username">
-      <label>Şifre</label>
-      <input type="password" class="field" id="loginPass" placeholder="••••••••" autocomplete="current-password">
-      <button class="btn-main" id="loginBtn" onclick="doLogin()">🔓 Giriş Yap</button>
+      <label class="fld-label">Kullanıcı Adı</label>
+      <input type="text" class="fld" id="loginUser" placeholder="kullanıcı adı" autocomplete="username">
+      <label class="fld-label">Şifre</label>
+      <input type="password" class="fld" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+      <button class="btn-primary" id="loginBtn" onclick="doLogin()">Giriş Yap</button>
     </div>
 
     <div id="formRegister" class="hidden">
-      <label>Kullanıcı Adı</label>
-      <input type="text" class="field" id="regUser" placeholder="3-20 karakter" autocomplete="username">
-      <label>Email (opsiyonel)</label>
-      <input type="email" class="field" id="regEmail" placeholder="ornek@mail.com" autocomplete="email">
-      <label>Şifre</label>
-      <input type="password" class="field" id="regPass" placeholder="en az 4 karakter" autocomplete="new-password">
-      <button class="btn-main" id="regBtn" onclick="doRegister()">✨ Kayıt Ol</button>
+      <label class="fld-label">Kullanıcı Adı</label>
+      <input type="text" class="fld" id="regUser" placeholder="3-20 karakter" autocomplete="username">
+      <label class="fld-label">Email (opsiyonel)</label>
+      <input type="email" class="fld" id="regEmail" placeholder="ornek@mail.com" autocomplete="email">
+      <label class="fld-label">Şifre</label>
+      <input type="password" class="fld" id="regPass" placeholder="en az 4 karakter" autocomplete="new-password">
+      <button class="btn-primary" id="regBtn" onclick="doRegister()">Kayıt Ol</button>
     </div>
   </div>
 </div>
 
-<!-- ═══════════ PANEL ═══════════ -->
-<div id="panelView" class="hidden">
+<!-- ═══════════ APP ═══════════ -->
+<div id="panelView" class="app hidden">
 
-  <!-- MOBILE HEADER -->
-  <div class="mobile-header">
-    <button class="mobile-header-btn" onclick="toggleSidebar()">☰</button>
-    <div style="font-weight:700;font-size:.9rem;">Forex Sorgulama</div>
-    <button class="mobile-header-btn" onclick="showView('profile')">👤</button>
-  </div>
-
-  <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
-
-  <div class="layout">
-    <!-- SIDEBAR -->
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <div class="sidebar-logo">🔎</div>
-        <div class="sidebar-title">
-          Forex Sorgu
-          <small>@cmrbaskani</small>
-        </div>
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <!-- Brand -->
+    <div class="sb-brand">
+      <div class="sb-logo">🔎</div>
+      <div class="sb-brand-txt">
+        Forex Sorgu
+        <small>@cmrbaskani</small>
       </div>
+    </div>
 
-      <!-- Profil alanı -->
-      <div class="profile-area" id="profileArea" onclick="toggleProfileMenu(event)">
-        <img class="profile-avatar-sm" id="sideAvatar" src="" alt="">
-        <div class="profile-info-sm">
-          <div class="profile-name-sm">
+    <!-- Profil Bölümü -->
+    <div class="sb-profile">
+      <div class="sb-profile-btn" id="profileBtn" onclick="toggleProfileMenu(event)">
+        <img class="av" id="sideAvatar" src="" alt="">
+        <div class="info">
+          <div class="nm">
             <span id="sideUsername">-</span>
-            <span class="tick hidden" id="sideTick">✅</span>
+            <span class="tk hidden" id="sideTick">✅</span>
           </div>
-          <div class="profile-status-sm" id="sideStatus">
+          <div class="st on" id="sideStatus">
             <span class="dot"></span> Çevrimiçi
           </div>
         </div>
-        <div class="profile-arrow">⌄</div>
+        <div class="chev">▾</div>
 
-        <!-- Profil menüsü -->
-        <div class="profile-menu" id="profileMenu" onclick="event.stopPropagation()">
-          <div class="profile-menu-item" onclick="showView('profile')">👤 Profilim</div>
-          <div class="profile-menu-item" onclick="showView('settings')">⚙️ Ayarlar</div>
-          <div class="profile-menu-item" onclick="showView('chat')">💬 Genel Sohbet</div>
-          <div class="profile-menu-divider"></div>
-          <div class="profile-menu-item" id="adminLink" onclick="location.href='adminlogin.html'" style="display:none;">
-            🛡️ Admin Panel
-            <span class="menu-badge admin">ADMIN</span>
+        <!-- Dropdown -->
+        <div class="sb-dropdown" id="profileDropdown" onclick="event.stopPropagation()">
+          <div class="dd-item" onclick="showView('profile')">
+            <span class="ico">👤</span> Profilim
           </div>
-          <div class="profile-menu-divider" id="adminDivider" style="display:none;"></div>
-          <div class="profile-menu-item danger" onclick="doLogout()">🚪 Çıkış Yap</div>
+          <div class="dd-item" onclick="showView('settings')">
+            <span class="ico">⚙️</span> Ayarlar
+          </div>
+          <div class="dd-item" onclick="toggleTheme()">
+            <span class="ico" id="themeIcon">🌙</span> <span id="themeLabel">Gece Modu</span>
+          </div>
+          <div class="dd-divider"></div>
+          <div class="dd-item" id="adminLink" onclick="location.href='adminlogin.html'" style="display:none;">
+            <span class="ico">🛡️</span> Admin Panel
+            <span class="badge-admin">ADMIN</span>
+          </div>
+          <div class="dd-divider" id="adminDivider" style="display:none;"></div>
+          <div class="dd-item danger" onclick="doLogout()">
+            <span class="ico">🚪</span> Çıkış Yap
+          </div>
         </div>
       </div>
+    </div>
 
-      <!-- Sorgular menüsü -->
-      <nav class="sidebar-nav">
-        <div class="sidebar-section-label">Sorgular</div>
+    <!-- NAV -->
+    <nav class="sb-nav">
+      <div class="sb-item active" id="navQuery" onclick="showView('query', this)">
+        <span class="ico">🔍</span> Sorgu Paneli
+      </div>
+      <div class="sb-item" id="navChat" onclick="showView('chat', this)">
+        <span class="ico">💬</span> Genel Sohbet
+      </div>
+      <div class="sb-item" id="navUsers" onclick="showView('users', this)">
+        <span class="ico">👥</span> Kullanıcılar
+      </div>
 
-        <div class="sidebar-link active" onclick="showView('query', this)">
-          <span class="ico">🔍</span> Sorgu Panel
-        </div>
+      <div class="sb-section">Sorgular</div>
 
-        <!-- KİŞİSEL -->
-        <div class="sidebar-link" onclick="toggleSub(event, 'subKisisel', this)">
-          <span class="ico">👤</span> Kişisel Sorgular
-          <span class="arrow">▸</span>
-        </div>
-        <div class="sidebar-sub" id="subKisisel">
-          <div class="sidebar-link" onclick="openQuery('tc','TC Sorgulama')">
-            <span class="ico">🆔</span> TC Sorgulama
-          </div>
-          <div class="sidebar-link" onclick="openQuery('tcpro','TC Pro Sorgulama')">
-            <span class="ico">🆔</span> TC Pro
-          </div>
-          <div class="sidebar-link" onclick="openQuery('adsoyad','Ad Soyad Sorgulama')">
-            <span class="ico">👥</span> Ad Soyad
-          </div>
-          <div class="sidebar-link" onclick="openQuery('aile','Aile Sorgulama')">
-            <span class="ico">👪</span> Aile
-          </div>
-          <div class="sidebar-link" onclick="openQuery('ailepro','Aile Pro Sorgulama')">
-            <span class="ico">👪</span> Aile Pro
-          </div>
-          <div class="sidebar-link" onclick="openQuery('sulale','Sülale Sorgulama')">
-            <span class="ico">🌳</span> Sülale
-          </div>
-        </div>
+      <!-- Kişisel -->
+      <div class="sb-item" onclick="toggleSub(event, 'subKisisel', this)">
+        <span class="ico">👤</span> Kişisel
+        <span class="arrow">▸</span>
+      </div>
+      <div class="sb-sub" id="subKisisel">
+        <div class="sb-item" onclick="openQuery('tc','TC Sorgulama')"><span class="ico">🆔</span> TC Sorgulama</div>
+        <div class="sb-item" onclick="openQuery('tcpro','TC Pro Sorgulama')"><span class="ico">🆔</span> TC Pro</div>
+        <div class="sb-item" onclick="openQuery('adsoyad','Ad Soyad Sorgulama')"><span class="ico">👥</span> Ad Soyad</div>
+        <div class="sb-item" onclick="openQuery('aile','Aile Sorgulama')"><span class="ico">👪</span> Aile</div>
+        <div class="sb-item" onclick="openQuery('ailepro','Aile Pro Sorgulama')"><span class="ico">👪</span> Aile Pro</div>
+        <div class="sb-item" onclick="openQuery('sulale','Sülale Sorgulama')"><span class="ico">🌳</span> Sülale</div>
+      </div>
 
-        <!-- GSM -->
-        <div class="sidebar-link" onclick="toggleSub(event, 'subGsm', this)">
-          <span class="ico">📱</span> GSM Çözümleri
-          <span class="arrow">▸</span>
-        </div>
-        <div class="sidebar-sub" id="subGsm">
-          <div class="sidebar-link" onclick="openQuery('tcgsm','TC → GSM')">
-            <span class="ico">📱</span> TC → GSM
-          </div>
-          <div class="sidebar-link" onclick="openQuery('gsmtc','GSM → TC')">
-            <span class="ico">📞</span> GSM → TC
-          </div>
-        </div>
+      <!-- GSM -->
+      <div class="sb-item" onclick="toggleSub(event, 'subGsm', this)">
+        <span class="ico">📱</span> GSM
+        <span class="arrow">▸</span>
+      </div>
+      <div class="sb-sub" id="subGsm">
+        <div class="sb-item" onclick="openQuery('tcgsm','TC → GSM')"><span class="ico">📱</span> TC → GSM</div>
+        <div class="sb-item" onclick="openQuery('gsmtc','GSM → TC')"><span class="ico">📞</span> GSM → TC</div>
+      </div>
 
-        <!-- EĞİTİM -->
-        <div class="sidebar-link" onclick="openQuery('eokul','E-Okul Sorgulama')">
-          <span class="ico">🎓</span> E-Okul
-        </div>
+      <!-- Eğitim -->
+      <div class="sb-item" onclick="openQuery('eokul','E-Okul Sorgulama')">
+        <span class="ico">🎓</span> E-Okul
+      </div>
 
-        <!-- TAPU & ADRES -->
-        <div class="sidebar-link" onclick="toggleSub(event, 'subAdres', this)">
-          <span class="ico">🏠</span> Adres Çözümleri
-          <span class="arrow">▸</span>
-        </div>
-        <div class="sidebar-sub" id="subAdres">
-          <div class="sidebar-link" onclick="openQuery('adres','Adres Sorgulama')">
-            <span class="ico">🏠</span> Adres
-          </div>
-          <div class="sidebar-link" onclick="openQuery('tapu','Tapu Sorgulama')">
-            <span class="ico">🏡</span> Tapu
-          </div>
-          <div class="sidebar-link" onclick="openQuery('adaparsel','Ada Parsel')">
-            <span class="ico">📐</span> Ada Parsel
-          </div>
-        </div>
+      <!-- Adres & Tapu -->
+      <div class="sb-item" onclick="toggleSub(event, 'subAdres', this)">
+        <span class="ico">🏠</span> Tapu & Adres
+        <span class="arrow">▸</span>
+      </div>
+      <div class="sb-sub" id="subAdres">
+        <div class="sb-item" onclick="openQuery('adres','Adres Sorgulama')"><span class="ico">🏠</span> Adres</div>
+        <div class="sb-item" onclick="openQuery('tapu','Tapu Sorgulama')"><span class="ico">🏡</span> Tapu</div>
+        <div class="sb-item" onclick="openQuery('adaparsel','Ada Parsel')"><span class="ico">📐</span> Ada Parsel</div>
+      </div>
+    </nav>
+  </aside>
 
-        <div class="sidebar-section-label">Sosyal</div>
-        <div class="sidebar-link" onclick="showView('chat', this)">
-          <span class="ico">💬</span> Genel Sohbet
-        </div>
-        <div class="sidebar-link" onclick="showView('users', this)">
-          <span class="ico">👥</span> Kullanıcılar
-        </div>
-      </nav>
-    </aside>
+  <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-    <!-- MAIN -->
-    <main class="main" id="main">
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- TOPBAR (mobil) -->
+    <div class="topbar">
+      <button class="topbar-btn" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-title">Forex Sorgulama</div>
+      <button class="topbar-btn" onclick="showView('profile')">👤</button>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content" id="content">
 
       <!-- SORGU VIEW -->
-      <div id="viewQuery">
-        <div class="query-card">
-          <div class="query-header">
-            <div class="query-header-icon" id="queryIcon">🆔</div>
-            <h2 id="queryTitle">TC Sorgulama</h2>
+      <div id="viewQuery" class="q-wrap">
+        <div class="q-card">
+          <div class="q-head">
+            <div class="q-head-ico" id="queryIcon">🆔</div>
+            <div class="q-head-txt">
+              <h2 id="queryTitle">TC Sorgulama</h2>
+              <p id="querySubtitle">Kimlik bilgisi sorgulama</p>
+            </div>
           </div>
 
-          <!-- Input alanları (JS doldurur) -->
-          <div id="queryInputs"></div>
+          <div class="q-inputs" id="queryInputs"></div>
 
-          <div class="btn-row">
-            <button class="btn btn-blue" id="queryBtn" onclick="runQuery()">
+          <div class="q-actions">
+            <button class="q-btn q-btn-primary" id="queryBtn" onclick="runQuery()">
               🔎 Sorgula
             </button>
-            <button class="btn btn-gray" onclick="resetQuery()">
+            <button class="q-btn q-btn-secondary" onclick="resetQuery()">
               🔄 Sıfırla
             </button>
-            <button class="btn btn-gray" onclick="window.print()">
+            <button class="q-btn q-btn-secondary" onclick="window.print()">
               🖨️ Yazdır
             </button>
           </div>
+        </div>
 
-          <div class="result-table-wrap" id="resultWrap">
-            <div class="result-table-head">
-              <span>Sonuçlar</span>
-              <span id="resultCount"></span>
-            </div>
-            <div class="result-table" id="resultTable"></div>
+        <div class="q-results" id="resultWrap">
+          <div class="q-results-head">
+            <span>Sonuçlar</span>
+            <span class="q-results-count" id="resultCount"></span>
           </div>
+          <div class="q-table-wrap" id="resultTable"></div>
         </div>
       </div>
 
       <!-- CHAT VIEW -->
       <div id="viewChat" class="hidden">
-        <div class="query-card" style="padding:0;overflow:hidden;">
-          <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-            <div style="font-weight:700;">💬 Genel Sohbet</div>
-            <div style="font-size:.72rem;color:#86efac;font-weight:600;">
-              <span id="chatOnlineCount">-</span> çevrimiçi
-            </div>
+        <div class="chat-card">
+          <div class="chat-head">
+            <div class="chat-head-title">💬 Genel Sohbet</div>
+            <div class="chat-online"><span class="dot"></span> <span id="chatOnlineCount">-</span> çevrimiçi</div>
           </div>
-          <div id="chatMessages" style="height:55vh;overflow-y:auto;padding:1.25rem;display:flex;flex-direction:column;gap:.75rem;"></div>
-          <div style="padding:1rem 1.25rem;border-top:1px solid var(--border);display:flex;gap:.6rem;">
-            <input id="chatInput" class="form-input" placeholder="Mesajını yaz..." maxlength="500" autocomplete="off">
-            <button class="btn btn-blue" style="flex:0 0 auto;" id="chatSendBtn" onclick="sendMessage()">Gönder</button>
+          <div class="chat-msgs" id="chatMessages"></div>
+          <div class="chat-input-wrap">
+            <input class="chat-input" id="chatInput" placeholder="Mesajını yaz..." maxlength="500" autocomplete="off">
+            <button class="chat-send" id="chatSendBtn" onclick="sendMessage()">Gönder</button>
           </div>
         </div>
       </div>
 
       <!-- USERS VIEW -->
-      <div id="viewUsers" class="hidden">
-        <div class="query-card">
-          <div class="query-header">
-            <div class="query-header-icon">👥</div>
-            <h2>Kayıtlı Kullanıcılar</h2>
+      <div id="viewUsers" class="hidden q-wrap">
+        <div class="q-card">
+          <div class="q-head">
+            <div class="q-head-ico">👥</div>
+            <div class="q-head-txt">
+              <h2>Kayıtlı Kullanıcılar</h2>
+              <p id="usersCount">- kullanıcı</p>
+            </div>
           </div>
-          <div id="usersList"></div>
+          <div class="users-grid" id="usersList"></div>
         </div>
       </div>
 
       <!-- PROFILE VIEW -->
-      <div id="viewProfile" class="hidden">
-        <div class="query-card">
-          <div class="query-header">
-            <div class="query-header-icon">👤</div>
-            <h2>Profilim</h2>
+      <div id="viewProfile" class="hidden q-wrap">
+        <div class="profile-head-card">
+          <img class="profile-av-lg" id="pAvatar" src="" alt="">
+          <div style="flex:1;min-width:200px;">
+            <div class="profile-name-lg">
+              <span id="pUsername">-</span>
+              <span class="tk hidden" id="pTick">✅</span>
+              <span class="profile-rank-badge" id="pRank">Üye</span>
+            </div>
+            <div class="profile-bio" id="pBio">-</div>
+            <div class="profile-meta" id="pMeta">-</div>
           </div>
-          <div style="display:flex;gap:1.25rem;align-items:center;flex-wrap:wrap;margin-bottom:1.5rem;">
-            <img id="pAvatar" style="width:100px;height:100px;border-radius:50%;border:3px solid var(--primary);object-fit:cover;" src="" alt="">
-            <div style="flex:1;min-width:200px;">
-              <div style="font-size:1.4rem;font-weight:800;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
-                <span id="pUsername">-</span>
-                <span class="tick hidden" id="pTick" style="color:#60a5fa;">✅</span>
-                <span id="pRank" style="font-size:.65rem;padding:.22rem .6rem;border-radius:999px;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:white;text-transform:uppercase;font-weight:700;">Üye</span>
-              </div>
-              <div id="pBio" style="color:var(--text-dim);margin-top:.4rem;font-size:.88rem;">-</div>
-              <div style="font-size:.75rem;color:var(--text-mute);font-family:'JetBrains Mono',monospace;margin-top:.4rem;">
-                <span id="pEmail">-</span> · <span id="pCreated">-</span>
-              </div>
+        </div>
+
+        <div class="q-card">
+          <div class="q-head">
+            <div class="q-head-ico">✏️</div>
+            <div class="q-head-txt">
+              <h2>Profili Düzenle</h2>
+              <p>Bilgilerini güncelle</p>
             </div>
           </div>
-
-          <h3 style="font-size:1rem;margin-bottom:1rem;">✏️ Profili Düzenle</h3>
-          <label>Email</label>
-          <input class="form-input" id="editEmail" placeholder="ornek@mail.com" style="margin-bottom:.85rem;">
-          <label>Biyografi</label>
-          <input class="form-input" id="editBio" placeholder="Kısa açıklama" maxlength="200" style="margin-bottom:.85rem;">
-          <label>Avatar URL</label>
-          <input class="form-input" id="editAvatar" placeholder="https://..." style="margin-bottom:1rem;">
-          <button class="btn btn-blue" onclick="saveProfile()">💾 Kaydet</button>
+          <label class="fld-label">Email</label>
+          <input class="fld" id="editEmail" placeholder="ornek@mail.com">
+          <label class="fld-label">Biyografi</label>
+          <input class="fld" id="editBio" placeholder="Kısa açıklama" maxlength="200">
+          <label class="fld-label">Avatar URL</label>
+          <input class="fld" id="editAvatar" placeholder="https://..." style="margin-bottom:1rem;">
+          <button class="q-btn q-btn-primary" style="width:100%;" onclick="saveProfile()">💾 Kaydet</button>
         </div>
       </div>
 
       <!-- SETTINGS VIEW -->
-      <div id="viewSettings" class="hidden">
-        <div class="query-card">
-          <div class="query-header">
-            <div class="query-header-icon">⚙️</div>
-            <h2>Ayarlar</h2>
+      <div id="viewSettings" class="hidden q-wrap">
+        <div class="q-card">
+          <div class="q-head">
+            <div class="q-head-ico">🔒</div>
+            <div class="q-head-txt">
+              <h2>Şifre Değiştir</h2>
+              <p>Hesap güvenliği</p>
+            </div>
           </div>
+          <label class="fld-label">Mevcut Şifre</label>
+          <input type="password" class="fld" id="oldPass" placeholder="••••••••">
+          <label class="fld-label">Yeni Şifre</label>
+          <input type="password" class="fld" id="newPass" placeholder="••••••••" style="margin-bottom:1rem;">
+          <button class="q-btn q-btn-primary" style="width:100%;" onclick="changePassword()">🔐 Şifreyi Değiştir</button>
+        </div>
 
-          <h3 style="font-size:1rem;margin-bottom:1rem;">🔒 Şifre Değiştir</h3>
-          <label>Mevcut Şifre</label>
-          <input type="password" class="form-input" id="oldPass" placeholder="••••••••" style="margin-bottom:.85rem;">
-          <label>Yeni Şifre</label>
-          <input type="password" class="form-input" id="newPass" placeholder="••••••••" style="margin-bottom:1rem;">
-          <button class="btn btn-blue" onclick="changePassword()">🔐 Şifreyi Değiştir</button>
-
-          <h3 style="font-size:1rem;margin:2rem 0 1rem;">👤 Hesap Bilgileri</h3>
-          <div id="settingsAccountInfo" style="font-size:.85rem;color:var(--text-dim);line-height:1.9;"></div>
+        <div class="q-card">
+          <div class="q-head">
+            <div class="q-head-ico">👤</div>
+            <div class="q-head-txt">
+              <h2>Hesap Bilgileri</h2>
+              <p>Hesabına ait detaylar</p>
+            </div>
+          </div>
+          <div id="settingsAccountInfo" style="font-size:.85rem;color:var(--text-dim);line-height:2;"></div>
         </div>
       </div>
 
@@ -634,7 +958,8 @@
       <div class="footer">
         © Tüm Hakları Saklıdır ©
       </div>
-    </main>
+
+    </div>
   </div>
 </div>
 
@@ -650,20 +975,19 @@ let CHAT_TIMER = null;
 let HEARTBEAT_TIMER = null;
 let CURRENT_QUERY = 'tc';
 
-// ─── Sorgu tanımları ───
 const QUERIES = {
-  tc:       { icon: '🆔', baslik: 'TC Sorgulama',       inputs: [{id:'tc', ph:'TC Kimlik No', max:11, val:'17420629810'}], type:'tc', params:['tc'] },
-  tcpro:    { icon: '🆔', baslik: 'TC Pro Sorgulama',   inputs: [{id:'tc', ph:'TC Kimlik No', max:11, val:'17420629810'}], type:'tcpro', params:['tc'] },
-  adsoyad:  { icon: '👥', baslik: 'Ad Soyad Sorgulama', inputs: [{id:'ad', ph:'Ad', val:'ROKET'}, {id:'soyad', ph:'Soyad', val:'ATAR'}], type:'adsoyad', params:['ad','soyad'] },
-  aile:     { icon: '👪', baslik: 'Aile Sorgulama',     inputs: [{id:'tc', ph:'TC Kimlik No', max:11, val:'17420629810'}], type:'aile', params:['tc'] },
-  ailepro:  { icon: '👪', baslik: 'Aile Pro Sorgulama', inputs: [{id:'tc', ph:'TC Kimlik No', max:11, val:'17420629810'}], type:'ailepro', params:['tc'] },
-  sulale:   { icon: '🌳', baslik: 'Sülale Sorgulama',   inputs: [{id:'tc', ph:'TC Kimlik No', max:11, val:'17420629810'}], type:'sulale', params:['tc'] },
-  tcgsm:    { icon: '📱', baslik: 'TC → GSM',           inputs: [{id:'tc', ph:'TC Kimlik No', max:11, val:'11111111110'}], type:'tcgsm', params:['tc'] },
-  gsmtc:    { icon: '📞', baslik: 'GSM → TC',           inputs: [{id:'gsm', ph:'GSM No (5XX...)', max:10, val:'5550000000'}], type:'gsmtc', params:['gsm'] },
-  eokul:    { icon: '🎓', baslik: 'E-Okul Sorgulama',   inputs: [{id:'tc', ph:'TC Kimlik No', max:11, val:'13334777982'}], type:'eokul', params:['tc'] },
-  adres:    { icon: '🏠', baslik: 'Adres Sorgulama',    inputs: [{id:'tc', ph:'TC Kimlik No', max:11, val:'11111111110'}], type:'adres', params:['tc'] },
-  tapu:     { icon: '🏡', baslik: 'Tapu Sorgulama',     inputs: [{id:'tc', ph:'TC Kimlik No', max:11, val:'27727166918'}], type:'tapu', params:['tc'] },
-  adaparsel:{ icon: '📐', baslik: 'Ada Parsel Sorgulama', inputs: [{id:'il', ph:'İl (İsteğe Bağlı)', val:'İSTANBUL'}, {id:'ilce', ph:'İlçe (İsteğe Bağlı)', val:'KADIKÖY'}], type:'adaparsel', params:['il','ilce'] },
+  tc:       { icon:'🆔', baslik:'TC Sorgulama',          alt:'Kimlik bilgisi sorgulama',       inputs:[{id:'tc',ph:'TC Kimlik No (11 hane)',max:11,val:'17420629810'}], type:'tc' },
+  tcpro:    { icon:'🆔', baslik:'TC Pro Sorgulama',      alt:'Detaylı kişi bilgisi',           inputs:[{id:'tc',ph:'TC Kimlik No (11 hane)',max:11,val:'17420629810'}], type:'tcpro' },
+  adsoyad:  { icon:'👥', baslik:'Ad Soyad Sorgulama',    alt:'Ad ve soyad ile arama',          inputs:[{id:'ad',ph:'Ad',val:'ROKET'},{id:'soyad',ph:'Soyad',val:'ATAR'}], type:'adsoyad' },
+  aile:     { icon:'👪', baslik:'Aile Sorgulama',        alt:'Aile bilgileri',                 inputs:[{id:'tc',ph:'TC Kimlik No',max:11,val:'17420629810'}], type:'aile' },
+  ailepro:  { icon:'👪', baslik:'Aile Pro Sorgulama',    alt:'Detaylı aile bilgisi',           inputs:[{id:'tc',ph:'TC Kimlik No',max:11,val:'17420629810'}], type:'ailepro' },
+  sulale:   { icon:'🌳', baslik:'Sülale Sorgulama',      alt:'Sülale bilgileri',               inputs:[{id:'tc',ph:'TC Kimlik No',max:11,val:'17420629810'}], type:'sulale' },
+  tcgsm:    { icon:'📱', baslik:'TC → GSM',              alt:'TC ile telefon numarası',        inputs:[{id:'tc',ph:'TC Kimlik No',max:11,val:'11111111110'}], type:'tcgsm' },
+  gsmtc:    { icon:'📞', baslik:'GSM → TC',              alt:'GSM ile TC',                     inputs:[{id:'gsm',ph:'GSM No (5XX...)',max:10,val:'5550000000'}], type:'gsmtc' },
+  eokul:    { icon:'🎓', baslik:'E-Okul Sorgulama',      alt:'Eğitim bilgileri',               inputs:[{id:'tc',ph:'TC Kimlik No',max:11,val:'13334777982'}], type:'eokul' },
+  adres:    { icon:'🏠', baslik:'Adres Sorgulama',       alt:'İkametgah bilgisi',              inputs:[{id:'tc',ph:'TC Kimlik No',max:11,val:'11111111110'}], type:'adres' },
+  tapu:     { icon:'🏡', baslik:'Tapu Sorgulama',        alt:'Tapu kayıtları',                 inputs:[{id:'tc',ph:'TC Kimlik No',max:11,val:'27727166918'}], type:'tapu' },
+  adaparsel:{ icon:'📐', baslik:'Ada Parsel Sorgulama',  alt:'İl/ilçe ile ada parsel',         inputs:[{id:'il',ph:'İl',val:'İSTANBUL'},{id:'ilce',ph:'İlçe',val:'KADIKÖY'}], type:'adaparsel' },
 };
 
 // ═══════════ YARDIMCI ═══════════
@@ -681,11 +1005,20 @@ function setTheme(theme) {
   if (theme === 'dark') {
     document.body.classList.add('dark'); document.body.classList.remove('light');
     localStorage.setItem('theme', 'dark');
+    const ic = document.getElementById('themeIcon');
+    const lb = document.getElementById('themeLabel');
+    if (ic) ic.textContent = '🌙';
+    if (lb) lb.textContent = 'Gece Modu';
   } else {
     document.body.classList.add('light'); document.body.classList.remove('dark');
     localStorage.setItem('theme', 'light');
+    const ic = document.getElementById('themeIcon');
+    const lb = document.getElementById('themeLabel');
+    if (ic) ic.textContent = '☀️';
+    if (lb) lb.textContent = 'Gündüz Modu';
   }
 }
+function toggleTheme() { setTheme(document.body.classList.contains('dark') ? 'light' : 'dark'); }
 setTheme(localStorage.getItem('theme') === 'light' ? 'light' : 'dark');
 
 // ═══════════ AUTH ═══════════
@@ -703,50 +1036,49 @@ function switchTab(tab) {
     document.getElementById('formLogin').classList.add('hidden');
   }
 }
-function showAuthErr(msg) {
+function showErr(m) {
   const e = document.getElementById('authErr');
-  e.textContent = msg;
-  e.classList.add('active');
+  e.textContent = m; e.classList.add('active');
 }
 
 async function doLogin() {
-  const user = document.getElementById('loginUser').value.trim();
-  const pass = document.getElementById('loginPass').value;
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
   const btn = document.getElementById('loginBtn');
   document.getElementById('authErr').classList.remove('active');
-  if (!user || !pass) return showAuthErr('❌ Tüm alanları doldur');
+  if (!u || !p) return showErr('❌ Tüm alanları doldur');
 
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Giriş...';
   try {
     const fd = new FormData();
-    fd.append('action', 'login'); fd.append('username', user); fd.append('password', pass);
-    const r = await fetch(AUTH, { method: 'POST', body: fd });
+    fd.append('action','login'); fd.append('username',u); fd.append('password',p);
+    const r = await fetch(AUTH, { method:'POST', body: fd });
     const d = await r.json();
     if (d.success) { toast('✓ Hoş geldin, ' + d.user.username, 'success'); enterPanel(d.user); }
-    else showAuthErr('❌ ' + (d.error || 'Giriş başarısız'));
-  } catch (e) { showAuthErr('❌ Bağlantı hatası'); }
-  finally { btn.disabled = false; btn.textContent = '🔓 Giriş Yap'; }
+    else showErr('❌ ' + (d.error || 'Giriş başarısız'));
+  } catch (e) { showErr('❌ Bağlantı hatası'); }
+  finally { btn.disabled = false; btn.textContent = 'Giriş Yap'; }
 }
 
 async function doRegister() {
-  const user = document.getElementById('regUser').value.trim();
-  const email = document.getElementById('regEmail').value.trim();
-  const pass = document.getElementById('regPass').value;
+  const u = document.getElementById('regUser').value.trim();
+  const e = document.getElementById('regEmail').value.trim();
+  const p = document.getElementById('regPass').value;
   const btn = document.getElementById('regBtn');
   document.getElementById('authErr').classList.remove('active');
-  if (!user || !pass) return showAuthErr('❌ Kullanıcı adı ve şifre gerekli');
+  if (!u || !p) return showErr('❌ Kullanıcı adı ve şifre gerekli');
 
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Kayıt...';
   try {
     const fd = new FormData();
-    fd.append('action', 'register'); fd.append('username', user);
-    fd.append('email', email); fd.append('password', pass);
-    const r = await fetch(AUTH, { method: 'POST', body: fd });
+    fd.append('action','register'); fd.append('username',u);
+    fd.append('email',e); fd.append('password',p);
+    const r = await fetch(AUTH, { method:'POST', body: fd });
     const d = await r.json();
     if (d.success) { toast('✓ Kayıt başarılı!', 'success'); enterPanel(d.user); }
-    else showAuthErr('❌ ' + (d.error || 'Kayıt başarısız'));
-  } catch (e) { showAuthErr('❌ Bağlantı hatası'); }
-  finally { btn.disabled = false; btn.textContent = '✨ Kayıt Ol'; }
+    else showErr('❌ ' + (d.error || 'Kayıt başarısız'));
+  } catch (e) { showErr('❌ Bağlantı hatası'); }
+  finally { btn.disabled = false; btn.textContent = 'Kayıt Ol'; }
 }
 
 async function doLogout() {
@@ -757,8 +1089,8 @@ async function doLogout() {
   document.getElementById('panelView').classList.add('hidden');
   document.getElementById('authView').classList.remove('hidden');
   document.getElementById('loginPass').value = '';
-  document.getElementById('profileMenu').classList.remove('open');
-  document.getElementById('profileArea').classList.remove('open');
+  document.getElementById('profileDropdown').classList.remove('open');
+  document.getElementById('profileBtn').classList.remove('open');
 }
 
 async function checkSession() {
@@ -774,21 +1106,22 @@ function enterPanel(user) {
   document.getElementById('authView').classList.add('hidden');
   document.getElementById('panelView').classList.remove('hidden');
 
-  // Sidebar profil bilgileri
   document.getElementById('sideAvatar').src = user.avatar;
   document.getElementById('sideUsername').textContent = user.username;
   document.getElementById('sideTick').classList.toggle('hidden', !user.verified);
 
-  // Admin linki
+  // Çevrimiçi durum
+  const st = document.getElementById('sideStatus');
+  st.className = 'st on';
+  st.innerHTML = '<span class="dot"></span> Çevrimiçi';
+
   if (user.is_admin) {
     document.getElementById('adminLink').style.display = 'flex';
     document.getElementById('adminDivider').style.display = 'block';
   }
 
-  // İlk sorgu
   openQuery('tc', 'TC Sorgulama');
 
-  // Chat ve heartbeat
   loadChat();
   if (CHAT_TIMER) clearInterval(CHAT_TIMER);
   CHAT_TIMER = setInterval(loadChat, 4000);
@@ -805,86 +1138,76 @@ function toggleSidebar() {
 
 function toggleProfileMenu(e) {
   e.stopPropagation();
-  const menu = document.getElementById('profileMenu');
-  const area = document.getElementById('profileArea');
-  const opening = !menu.classList.contains('open');
-  menu.classList.toggle('open');
-  area.classList.toggle('open', opening);
+  const d = document.getElementById('profileDropdown');
+  const b = document.getElementById('profileBtn');
+  const opening = !d.classList.contains('open');
+  d.classList.toggle('open', opening);
+  b.classList.toggle('open', opening);
 }
 
 function toggleSub(e, id, linkEl) {
   e.stopPropagation();
-  const sub = document.getElementById(id);
-  if (!sub) return;
-  const isOpen = sub.classList.toggle('open');
-  if (linkEl) linkEl.classList.toggle('open', isOpen);
+  const s = document.getElementById(id);
+  if (!s) return;
+  const open = s.classList.toggle('open');
+  if (linkEl) linkEl.classList.toggle('open', open);
 }
 
 document.addEventListener('click', () => {
-  document.getElementById('profileMenu')?.classList.remove('open');
-  document.getElementById('profileArea')?.classList.remove('open');
+  document.getElementById('profileDropdown')?.classList.remove('open');
+  document.getElementById('profileBtn')?.classList.remove('open');
 });
 
-// ═══════════ NAV / VIEW ═══════════
+// ═══════════ NAV ═══════════
 function showView(view, linkEl) {
   ['query','chat','users','profile','settings'].forEach(v => {
-    const el = document.getElementById('view' + v.charAt(0).toUpperCase() + v.slice(1));
-    if (el) el.classList.add('hidden');
+    document.getElementById('view' + v.charAt(0).toUpperCase() + v.slice(1))?.classList.add('hidden');
   });
-  const map = { query: 'viewQuery', chat: 'viewChat', users: 'viewUsers', profile: 'viewProfile', settings: 'viewSettings' };
-  const target = document.getElementById(map[view]);
-  if (target) target.classList.remove('hidden');
+  document.getElementById('view' + view.charAt(0).toUpperCase() + view.slice(1))?.classList.remove('hidden');
+
+  // Aktif nav
+  document.querySelectorAll('.sb-nav .sb-item').forEach(el => el.classList.remove('active'));
+  const navMap = { query:'navQuery', chat:'navChat', users:'navUsers' };
+  if (navMap[view]) document.getElementById(navMap[view])?.classList.add('active');
 
   if (view === 'profile') loadProfile();
   if (view === 'users') loadUsers();
   if (view === 'settings') loadAccountInfo();
   if (view === 'chat') { loadChat(); scrollChatBottom(); }
 
-  document.getElementById('profileMenu').classList.remove('open');
-  document.getElementById('profileArea').classList.remove('open');
+  document.getElementById('profileDropdown').classList.remove('open');
+  document.getElementById('profileBtn').classList.remove('open');
 
-  // Mobil menüyü kapat
   if (window.innerWidth < 900) {
     document.getElementById('sidebar').classList.remove('open');
     document.getElementById('overlay').classList.remove('active');
   }
 }
 
-// ═══════════ SORGU PANELİ ═══════════
+// ═══════════ SORGU ═══════════
 function openQuery(type, baslik) {
   const q = QUERIES[type];
   if (!q) return;
   CURRENT_QUERY = type;
 
-  // Aktif link
-  document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
-
-  // Başlık
   document.getElementById('queryIcon').textContent = q.icon;
   document.getElementById('queryTitle').textContent = q.baslik;
+  document.getElementById('querySubtitle').textContent = q.alt || '';
 
-  // Input alanlarını yeniden oluştur
   const wrap = document.getElementById('queryInputs');
   wrap.innerHTML = '';
   for (const inp of q.inputs) {
-    const g = document.createElement('div');
-    g.className = 'form-group';
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.id = 'input_' + inp.id;
-    input.className = 'form-input';
-    input.placeholder = inp.ph;
-    input.value = inp.val || '';
-    if (inp.max) input.maxLength = inp.max;
-    input.addEventListener('keypress', e => { if (e.key === 'Enter') runQuery(); });
-    g.appendChild(input);
-    wrap.appendChild(g);
+    const i = document.createElement('input');
+    i.type = 'text'; i.id = 'input_' + inp.id;
+    i.className = 'q-input'; i.placeholder = inp.ph;
+    i.value = inp.val || '';
+    if (inp.max) i.maxLength = inp.max;
+    i.addEventListener('keypress', e => { if (e.key === 'Enter') runQuery(); });
+    wrap.appendChild(i);
   }
 
-  // Sonucu temizle
   document.getElementById('resultWrap').classList.remove('active');
   document.getElementById('resultTable').innerHTML = '';
-
   showView('query');
 }
 
@@ -907,21 +1230,18 @@ async function runQuery() {
   const wrap = document.getElementById('resultWrap');
   const table = document.getElementById('resultTable');
 
-  // Değerleri topla
   const params = new URLSearchParams();
   params.set('action', 'query');
   params.set('type', q.type);
-
   for (const inp of q.inputs) {
-    const el = document.getElementById('input_' + inp.id);
-    const v = el ? el.value.trim() : '';
+    const v = document.getElementById('input_' + inp.id)?.value.trim() || '';
     if (v) params.set(inp.id, v);
   }
 
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Sorgulanıyor...';
   wrap.classList.add('active');
-  table.innerHTML = '<div style="padding:1.5rem;text-align:center;color:var(--text-dim);"><span class="spinner" style="border-color:rgba(99,102,241,.3);border-top-color:var(--primary);"></span> Sorgulanıyor...</div>';
+  table.innerHTML = '<div class="q-empty"><span class="spinner" style="border-color:rgba(88,166,255,.3);border-top-color:var(--blue);"></span> Sorgulanıyor...</div>';
   document.getElementById('resultCount').textContent = '';
 
   try {
@@ -930,26 +1250,24 @@ async function runQuery() {
     if (r.status === 401) { doLogout(); return; }
     renderResult(d);
   } catch (e) {
-    table.innerHTML = `<div class="result-error">✗ Bağlantı hatası: ${esc(e.message)}</div>`;
+    table.innerHTML = `<div class="q-error">✗ Bağlantı hatası: ${esc(e.message)}</div>`;
   } finally {
     btn.disabled = false;
-    btn.textContent = '🔎 Sorgula';
+    btn.innerHTML = '🔎 Sorgula';
   }
 }
 
 function renderResult(data) {
   const table = document.getElementById('resultTable');
-  const countEl = document.getElementById('resultCount');
+  const cnt = document.getElementById('resultCount');
 
   if (data.error || data.hata) {
-    table.innerHTML = `<div class="result-error">✗ ${esc(data.error || data.hata)}</div>`;
-    countEl.textContent = '';
-    return;
+    table.innerHTML = `<div class="q-error">✗ ${esc(data.error || data.hata)}</div>`;
+    cnt.textContent = ''; return;
   }
   if (data.success === false) {
-    table.innerHTML = `<div class="result-error">✗ ${esc(data.error || 'Kayıt bulunamadı')}</div>`;
-    countEl.textContent = '';
-    return;
+    table.innerHTML = `<div class="q-error">✗ ${esc(data.error || 'Kayıt bulunamadı')}</div>`;
+    cnt.textContent = ''; return;
   }
 
   let items = data.data || data.results || data;
@@ -957,28 +1275,22 @@ function renderResult(data) {
   items = items.filter(x => x && Object.keys(x).length > 0);
 
   if (items.length === 0) {
-    table.innerHTML = '<div class="result-empty">✗ Kayıt bulunamadı</div>';
-    countEl.textContent = '';
-    return;
+    table.innerHTML = '<div class="q-empty">✗ Kayıt bulunamadı</div>';
+    cnt.textContent = ''; return;
   }
 
-  // Kolon başlıkları (tüm item'ların key'leri)
-  const keys = [];
-  const seen = new Set();
-  for (const item of items) {
-    for (const k of Object.keys(item)) {
-      if (!seen.has(k)) { seen.add(k); keys.push(k); }
-    }
+  const keys = [], seen = new Set();
+  for (const it of items) for (const k of Object.keys(it)) {
+    if (!seen.has(k)) { seen.add(k); keys.push(k); }
   }
 
-  let html = '<table><thead><tr>';
+  let html = '<table class="q-table"><thead><tr>';
   for (const k of keys) html += `<th>${esc(k)}</th>`;
   html += '</tr></thead><tbody>';
-
-  for (const item of items) {
+  for (const it of items) {
     html += '<tr>';
     for (const k of keys) {
-      let v = item[k];
+      let v = it[k];
       if (v === null || v === undefined) v = '-';
       else if (typeof v === 'object') v = JSON.stringify(v);
       html += `<td>${esc(v)}</td>`;
@@ -988,7 +1300,7 @@ function renderResult(data) {
   html += '</tbody></table>';
 
   table.innerHTML = html;
-  countEl.textContent = items.length + ' kayıt';
+  cnt.textContent = items.length + ' kayıt';
 }
 
 // ═══════════ CHAT ═══════════
@@ -1000,58 +1312,58 @@ async function loadChat() {
 
     const box = document.getElementById('chatMessages');
     if (!box) return;
-    const wasAtBottom = (box.scrollHeight - box.scrollTop - box.clientHeight) < 80;
+    const atBottom = (box.scrollHeight - box.scrollTop - box.clientHeight) < 80;
 
     let html = '';
     for (const m of d.messages) {
       const me = CURRENT_USER && m.user_id === CURRENT_USER.id;
       html += `
-        <div style="display:flex;gap:.65rem;max-width:85%;${me ? 'align-self:flex-end;flex-direction:row-reverse;' : ''}">
-          <img src="${esc(m.avatar)}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--border);">
+        <div class="msg ${me ? 'me' : ''}">
+          <img class="av" src="${esc(m.avatar)}" alt="">
           <div>
-            <div style="background:${me ? 'rgba(59,130,246,.15)' : 'var(--bg-side)'};border:1px solid ${me ? 'rgba(59,130,246,.35)' : 'var(--border)'};border-radius:.85rem;padding:.55rem .85rem;">
-              <div style="font-size:.72rem;font-weight:700;color:${me ? '#93c5fd' : '#a5b4fc'};display:flex;align-items:center;gap:.35rem;margin-bottom:.2rem;">
-                ${esc(m.username)} ${m.verified ? '<span style="color:#60a5fa;">✅</span>' : ''}
-                <span style="font-size:.55rem;padding:.1rem .35rem;border-radius:999px;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:white;">${esc(m.rank)}</span>
+            <div class="msg-bubble">
+              <div class="msg-name">
+                ${esc(m.username)}
+                ${m.verified ? '<span style="color:var(--blue);font-size:.7rem;">✅</span>' : ''}
+                <span class="msg-rank">${esc(m.rank)}</span>
               </div>
-              <div style="font-size:.85rem;line-height:1.45;word-break:break-word;">${esc(m.text)}</div>
-              <div style="font-size:.62rem;color:var(--text-mute);margin-top:.2rem;">${esc(m.time)}</div>
+              <div class="msg-text">${esc(m.text)}</div>
+              <div class="msg-time">${esc(m.time)}</div>
             </div>
           </div>
         </div>`;
     }
-    box.innerHTML = html || '<p style="color:var(--text-dim);text-align:center;padding:2rem;font-size:.85rem;">Henüz mesaj yok, ilk mesajı sen yaz!</p>';
-    if (wasAtBottom) box.scrollTop = box.scrollHeight;
+    box.innerHTML = html || '<div class="q-empty">Henüz mesaj yok, ilk mesajı sen yaz!</div>';
+    if (atBottom) box.scrollTop = box.scrollHeight;
 
     try {
       const ur = await fetch(AUTH + '?action=users');
       const ud = await ur.json();
       if (ud.success) {
-        const online = ud.users.filter(u => u.online).length;
-        const el = document.getElementById('chatOnlineCount');
-        if (el) el.textContent = online;
+        const on = ud.users.filter(u => u.online).length;
+        document.getElementById('chatOnlineCount').textContent = on;
       }
     } catch(e) {}
   } catch (e) {}
 }
 
 function scrollChatBottom() {
-  const box = document.getElementById('chatMessages');
-  if (box) box.scrollTop = box.scrollHeight;
+  const b = document.getElementById('chatMessages');
+  if (b) b.scrollTop = b.scrollHeight;
 }
 
 async function sendMessage() {
   const inp = document.getElementById('chatInput');
-  const text = inp.value.trim();
-  if (!text) return;
+  const t = inp.value.trim();
+  if (!t) return;
   const btn = document.getElementById('chatSendBtn');
   btn.disabled = true;
   try {
     const fd = new FormData();
-    fd.append('action', 'send'); fd.append('text', text);
-    const r = await fetch(CHAT, { method: 'POST', body: fd });
+    fd.append('action','send'); fd.append('text',t);
+    const r = await fetch(CHAT, { method:'POST', body: fd });
     const d = await r.json();
-    if (d.success) { inp.value = ''; await loadChat(); scrollChatBottom(); }
+    if (d.success) { inp.value=''; await loadChat(); scrollChatBottom(); }
     else toast('❌ ' + (d.error || 'Gönderilemedi'), 'error');
   } catch (e) { toast('❌ Bağlantı hatası', 'error'); }
   finally { btn.disabled = false; }
@@ -1063,31 +1375,29 @@ async function loadUsers() {
     const r = await fetch(AUTH + '?action=users');
     const d = await r.json();
     if (!d.success) return;
-    const users = d.users.sort((a, b) => (b.online - a.online) || a.username.localeCompare(b.username));
+    const users = d.users.sort((a,b) => (b.online - a.online) || a.username.localeCompare(b.username));
+
+    document.getElementById('usersCount').textContent = users.length + ' kullanıcı';
 
     let html = '';
     for (const u of users) {
-      const statusCls = u.banned ? 'background:#ef4444' : (u.online ? 'background:#10b981' : 'background:#64748b');
-      const statusText = u.banned ? 'BANLI' : (u.online ? 'Çevrimiçi' : 'Çevrimdışı');
-      const statusColor = u.banned ? '#fca5a5' : (u.online ? '#86efac' : '#94a3b8');
-
+      const cls = u.banned ? 'banned' : (u.online ? 'on' : 'off');
+      const txt = u.banned ? 'BANLI' : (u.online ? 'Çevrimiçi' : 'Çevrimdışı');
       html += `
-        <div style="display:flex;align-items:center;gap:1rem;padding:.85rem 1rem;border-bottom:1px solid var(--border);flex-wrap:wrap;">
-          <img src="${esc(u.avatar)}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--border);">
-          <div style="flex:1;min-width:180px;">
-            <div style="font-weight:700;font-size:.92rem;display:flex;align-items:center;gap:.35rem;flex-wrap:wrap;">
+        <div class="user-card">
+          <img class="av" src="${esc(u.avatar)}" alt="">
+          <div class="info">
+            <div class="nm">
               ${esc(u.username)}
-              ${u.verified ? '<span style="color:#60a5fa;">✅</span>' : ''}
-              <span style="font-size:.6rem;padding:.15rem .45rem;border-radius:999px;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:white;font-weight:700;">${esc(u.rank)}</span>
+              ${u.verified ? '<span class="tk">✅</span>' : ''}
+              <span class="rk ${u.is_admin ? 'admin' : ''}">${esc(u.rank)}</span>
             </div>
-            <div style="font-size:.72rem;color:var(--text-dim);margin-top:.15rem;">${esc(u.bio || 'Açıklama yok')}</div>
-            <div style="font-size:.7rem;color:${statusColor};font-weight:700;display:inline-flex;align-items:center;gap:.35rem;margin-top:.3rem;">
-              <span style="width:7px;height:7px;border-radius:50%;${statusCls};"></span> ${statusText}
-            </div>
+            <div class="bio">${esc(u.bio || 'Açıklama yok')}</div>
+            <div class="st ${cls}"><span class="dot"></span> ${txt}</div>
           </div>
         </div>`;
     }
-    document.getElementById('usersList').innerHTML = html || '<p style="color:var(--text-dim);text-align:center;padding:2rem;">Kayıt yok</p>';
+    document.getElementById('usersList').innerHTML = html || '<div class="q-empty">Kayıt yok</div>';
   } catch (e) {}
 }
 
@@ -1103,8 +1413,7 @@ async function loadProfile() {
     document.getElementById('pTick').classList.toggle('hidden', !u.verified);
     document.getElementById('pRank').textContent = u.rank;
     document.getElementById('pBio').textContent = u.bio || 'Açıklama yok';
-    document.getElementById('pEmail').textContent = u.email || 'email yok';
-    document.getElementById('pCreated').textContent = u.created_at ? new Date(u.created_at).toLocaleDateString('tr-TR') : '-';
+    document.getElementById('pMeta').textContent = (u.email || '-') + ' · ' + (u.created_at ? new Date(u.created_at).toLocaleDateString('tr-TR') : '-');
     document.getElementById('editEmail').value = u.email || '';
     document.getElementById('editBio').value = u.bio || '';
     document.getElementById('editAvatar').value = u.avatar || '';
@@ -1113,12 +1422,12 @@ async function loadProfile() {
 
 async function saveProfile() {
   const fd = new FormData();
-  fd.append('action', 'update_profile');
+  fd.append('action','update_profile');
   fd.append('email', document.getElementById('editEmail').value.trim());
   fd.append('bio', document.getElementById('editBio').value.trim());
   fd.append('avatar', document.getElementById('editAvatar').value.trim());
   try {
-    const r = await fetch(AUTH, { method: 'POST', body: fd });
+    const r = await fetch(AUTH, { method:'POST', body: fd });
     const d = await r.json();
     if (d.success) { toast('✓ Profil güncellendi', 'success'); loadProfile(); }
     else toast('❌ ' + d.error, 'error');
@@ -1127,14 +1436,14 @@ async function saveProfile() {
 
 // ═══════════ SETTINGS ═══════════
 async function changePassword() {
-  const oldP = document.getElementById('oldPass').value;
-  const newP = document.getElementById('newPass').value;
-  if (!oldP || !newP) return toast('Şifre alanlarını doldur', 'error');
+  const o = document.getElementById('oldPass').value;
+  const n = document.getElementById('newPass').value;
+  if (!o || !n) return toast('Şifre alanlarını doldur', 'error');
   const fd = new FormData();
-  fd.append('action', 'change_password');
-  fd.append('old_password', oldP); fd.append('new_password', newP);
+  fd.append('action','change_password');
+  fd.append('old_password',o); fd.append('new_password',n);
   try {
-    const r = await fetch(AUTH, { method: 'POST', body: fd });
+    const r = await fetch(AUTH, { method:'POST', body: fd });
     const d = await r.json();
     if (d.success) { toast('✓ Şifre değiştirildi', 'success'); document.getElementById('oldPass').value=''; document.getElementById('newPass').value=''; }
     else toast('❌ ' + d.error, 'error');
@@ -1163,7 +1472,6 @@ document.getElementById('loginPass')?.addEventListener('keypress', e => { if (e.
 document.getElementById('regPass')?.addEventListener('keypress', e => { if (e.key === 'Enter') doRegister(); });
 document.getElementById('chatInput')?.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
 
-// Başlangıç
 checkSession();
 </script>
 
