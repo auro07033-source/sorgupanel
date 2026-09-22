@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Forex Sorgulama Hizmeti</title>
+<title> 𝐅𝐎𝐑𝐄𝐗 𝐏𝐀𝐍𝐄𝐋  </title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -179,13 +179,6 @@
     transition: transform .2s;
   }
   .sb-item.open .arrow { transform: rotate(90deg); }
-  .sb-item .badge {
-    margin-left: auto; font-size: .52rem; font-weight: 800;
-    padding: .15rem .4rem; border-radius: 4px;
-    text-transform: uppercase; letter-spacing: .04em;
-  }
-  .badge.premium { background: linear-gradient(135deg, var(--yellow), var(--orange)); color: #000; }
-  .badge.new { background: linear-gradient(135deg, var(--green), var(--blue)); color: #000; }
 
   .sb-sub {
     max-height: 0; overflow: hidden;
@@ -197,7 +190,7 @@
     padding: .4rem .7rem; font-size: .76rem;
   }
 
-  /* PROFİL BÖLÜMÜ (üstte) */
+  /* PROFİL BÖLÜMÜ */
   .sb-profile {
     position: relative;
     border-bottom: 1px solid var(--border);
@@ -237,7 +230,6 @@
   }
   .sb-profile-btn.open .chev { transform: rotate(180deg); }
 
-  /* Dropdown menü */
   .sb-dropdown {
     position: absolute; top: calc(100% - .4rem); left: .5rem; right: .5rem;
     background: var(--card); border: 1px solid var(--border);
@@ -245,10 +237,7 @@
     padding: .35rem; z-index: 100;
     display: none;
   }
-  .sb-dropdown.open {
-    display: block;
-    animation: dropIn .15s ease;
-  }
+  .sb-dropdown.open { display: block; animation: dropIn .15s ease; }
   @keyframes dropIn {
     from { opacity: 0; transform: translateY(-4px); }
     to { opacity: 1; transform: translateY(0); }
@@ -271,13 +260,9 @@
   }
   .dd-divider { height: 1px; background: var(--border); margin: .35rem .25rem; }
 
-  /* MAIN AREA */
-  .main {
-    flex: 1; display: flex; flex-direction: column;
-    overflow: hidden; min-width: 0;
-  }
+  /* MAIN */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
 
-  /* TOPBAR (mobil) */
   .topbar {
     height: var(--topbar-h);
     display: none;
@@ -295,7 +280,6 @@
   }
   .topbar-title { font-weight: 700; font-size: .9rem; }
 
-  /* Content */
   .content {
     flex: 1; overflow-y: auto; padding: 1.5rem;
     scroll-behavior: smooth;
@@ -317,7 +301,7 @@
   }
   .q-head {
     display: flex; align-items: center; gap: .85rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
   }
   .q-head-ico {
     width: 42px; height: 42px; border-radius: 10px;
@@ -334,19 +318,44 @@
     font-family: 'JetBrains Mono', monospace;
   }
 
-  .q-inputs { display: flex; flex-direction: column; gap: .75rem; margin-bottom: 1.25rem; }
+  /* Bilgi kutusu */
+  .q-info {
+    background: rgba(88,166,255,.08);
+    border: 1px solid rgba(88,166,255,.2);
+    border-radius: 10px;
+    padding: .7rem .9rem;
+    margin-bottom: 1.25rem;
+    font-size: .78rem;
+    color: var(--text-dim);
+    display: flex; align-items: flex-start; gap: .55rem;
+    line-height: 1.5;
+  }
+  .q-info .ico { font-size: .95rem; flex-shrink: 0; line-height: 1.5; }
+
+  .q-inputs { display: flex; flex-direction: column; gap: .85rem; margin-bottom: 1.25rem; }
+  .q-input-group { display: flex; flex-direction: column; gap: .35rem; }
+  .q-input-label {
+    font-size: .78rem; font-weight: 600;
+    color: var(--text-dim);
+    display: flex; align-items: center; gap: .4rem;
+  }
+  .q-input-hint {
+    font-size: .68rem; font-weight: 500;
+    color: var(--text-mute);
+    font-family: 'JetBrains Mono', monospace;
+  }
   .q-input {
     width: 100%; padding: .85rem 1rem;
     background: var(--bg);
     border: 1px solid var(--border); border-radius: 10px;
-    color: var(--text); font-family: inherit; font-size: .88rem;
+    color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: .88rem;
     outline: none; transition: all .15s;
   }
   .q-input:focus {
     border-color: var(--blue);
     box-shadow: 0 0 0 3px rgba(88,166,255,.15);
   }
-  .q-input::placeholder { color: var(--text-mute); }
+  .q-input::placeholder { color: var(--text-mute); font-family: 'Inter', sans-serif; }
 
   .q-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
   .q-btn {
@@ -628,14 +637,12 @@
   .toast.error { border-color: var(--red); }
   .toast.success { border-color: var(--green); }
 
-  /* ═══════════════ OVERLAY ═══════════════ */
   .overlay {
     display: none; position: fixed; inset: 0;
     background: rgba(0,0,0,.5); z-index: 40;
   }
   .overlay.active { display: block; }
 
-  /* SPINNER */
   .spinner {
     display: inline-block; width: 13px; height: 13px;
     border: 2px solid rgba(255,255,255,.25); border-top-color: currentColor;
@@ -644,7 +651,6 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ═══════════════ RESPONSIVE ═══════════════ */
   @media (max-width: 900px) {
     .sidebar {
       position: fixed; top: 0; left: 0; bottom: 0;
@@ -709,7 +715,6 @@
 
   <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
-    <!-- Brand -->
     <div class="sb-brand">
       <div class="sb-logo">🔎</div>
       <div class="sb-brand-txt">
@@ -718,7 +723,6 @@
       </div>
     </div>
 
-    <!-- Profil Bölümü -->
     <div class="sb-profile">
       <div class="sb-profile-btn" id="profileBtn" onclick="toggleProfileMenu(event)">
         <img class="av" id="sideAvatar" src="" alt="">
@@ -733,7 +737,6 @@
         </div>
         <div class="chev">▾</div>
 
-        <!-- Dropdown -->
         <div class="sb-dropdown" id="profileDropdown" onclick="event.stopPropagation()">
           <div class="dd-item" onclick="showView('profile')">
             <span class="ico">👤</span> Profilim
@@ -757,7 +760,6 @@
       </div>
     </div>
 
-    <!-- NAV -->
     <nav class="sb-nav">
       <div class="sb-item active" id="navQuery" onclick="showView('query', this)">
         <span class="ico">🔍</span> Sorgu Paneli
@@ -769,47 +771,25 @@
         <span class="ico">👥</span> Kullanıcılar
       </div>
 
-      <div class="sb-section">Sorgular</div>
+      <div class="sb-section">Kişisel</div>
+      <div class="sb-item" onclick="openQuery('tc','TC Sorgulama')"><span class="ico">🆔</span> TC Sorgulama</div>
+      <div class="sb-item" onclick="openQuery('tcpro','TC Pro Sorgulama')"><span class="ico">🆔</span> TC Pro</div>
+      <div class="sb-item" onclick="openQuery('adsoyad','Ad Soyad Sorgulama')"><span class="ico">👥</span> Ad Soyad</div>
+      <div class="sb-item" onclick="openQuery('aile','Aile Sorgulama')"><span class="ico">👪</span> Aile</div>
+      <div class="sb-item" onclick="openQuery('ailepro','Aile Pro Sorgulama')"><span class="ico">👪</span> Aile Pro</div>
+      <div class="sb-item" onclick="openQuery('sulale','Sülale Sorgulama')"><span class="ico">🌳</span> Sülale</div>
 
-      <!-- Kişisel -->
-      <div class="sb-item" onclick="toggleSub(event, 'subKisisel', this)">
-        <span class="ico">👤</span> Kişisel
-        <span class="arrow">▸</span>
-      </div>
-      <div class="sb-sub" id="subKisisel">
-        <div class="sb-item" onclick="openQuery('tc','TC Sorgulama')"><span class="ico">🆔</span> TC Sorgulama</div>
-        <div class="sb-item" onclick="openQuery('tcpro','TC Pro Sorgulama')"><span class="ico">🆔</span> TC Pro</div>
-        <div class="sb-item" onclick="openQuery('adsoyad','Ad Soyad Sorgulama')"><span class="ico">👥</span> Ad Soyad</div>
-        <div class="sb-item" onclick="openQuery('aile','Aile Sorgulama')"><span class="ico">👪</span> Aile</div>
-        <div class="sb-item" onclick="openQuery('ailepro','Aile Pro Sorgulama')"><span class="ico">👪</span> Aile Pro</div>
-        <div class="sb-item" onclick="openQuery('sulale','Sülale Sorgulama')"><span class="ico">🌳</span> Sülale</div>
-      </div>
+      <div class="sb-section">GSM</div>
+      <div class="sb-item" onclick="openQuery('tcgsm','TC → GSM Sorgulama')"><span class="ico">📱</span> TC → GSM</div>
+      <div class="sb-item" onclick="openQuery('gsmtc','GSM → TC Sorgulama')"><span class="ico">📞</span> GSM → TC</div>
 
-      <!-- GSM -->
-      <div class="sb-item" onclick="toggleSub(event, 'subGsm', this)">
-        <span class="ico">📱</span> GSM
-        <span class="arrow">▸</span>
-      </div>
-      <div class="sb-sub" id="subGsm">
-        <div class="sb-item" onclick="openQuery('tcgsm','TC → GSM')"><span class="ico">📱</span> TC → GSM</div>
-        <div class="sb-item" onclick="openQuery('gsmtc','GSM → TC')"><span class="ico">📞</span> GSM → TC</div>
-      </div>
+      <div class="sb-section">Eğitim</div>
+      <div class="sb-item" onclick="openQuery('eokul','E-Okul Sorgulama')"><span class="ico">🎓</span> E-Okul</div>
 
-      <!-- Eğitim -->
-      <div class="sb-item" onclick="openQuery('eokul','E-Okul Sorgulama')">
-        <span class="ico">🎓</span> E-Okul
-      </div>
-
-      <!-- Adres & Tapu -->
-      <div class="sb-item" onclick="toggleSub(event, 'subAdres', this)">
-        <span class="ico">🏠</span> Tapu & Adres
-        <span class="arrow">▸</span>
-      </div>
-      <div class="sb-sub" id="subAdres">
-        <div class="sb-item" onclick="openQuery('adres','Adres Sorgulama')"><span class="ico">🏠</span> Adres</div>
-        <div class="sb-item" onclick="openQuery('tapu','Tapu Sorgulama')"><span class="ico">🏡</span> Tapu</div>
-        <div class="sb-item" onclick="openQuery('adaparsel','Ada Parsel')"><span class="ico">📐</span> Ada Parsel</div>
-      </div>
+      <div class="sb-section">Tapu & Adres</div>
+      <div class="sb-item" onclick="openQuery('adres','Adres Sorgulama')"><span class="ico">🏠</span> Adres</div>
+      <div class="sb-item" onclick="openQuery('tapu','Tapu Sorgulama')"><span class="ico">🏡</span> Tapu</div>
+      <div class="sb-item" onclick="openQuery('adaparsel','Ada Parsel Sorgulama')"><span class="ico">📐</span> Ada Parsel</div>
     </nav>
   </aside>
 
@@ -817,15 +797,12 @@
 
   <!-- MAIN -->
   <div class="main">
-
-    <!-- TOPBAR (mobil) -->
     <div class="topbar">
       <button class="topbar-btn" onclick="toggleSidebar()">☰</button>
       <div class="topbar-title">Forex Sorgulama</div>
       <button class="topbar-btn" onclick="showView('profile')">👤</button>
     </div>
 
-    <!-- CONTENT -->
     <div class="content" id="content">
 
       <!-- SORGU VIEW -->
@@ -837,6 +814,11 @@
               <h2 id="queryTitle">TC Sorgulama</h2>
               <p id="querySubtitle">Kimlik bilgisi sorgulama</p>
             </div>
+          </div>
+
+          <div class="q-info">
+            <span class="ico">ℹ️</span>
+            <span id="queryInfoText">Sorgu yapmak için alanı doldurun ve "Sorgula" butonuna tıklayın.</span>
           </div>
 
           <div class="q-inputs" id="queryInputs"></div>
@@ -975,19 +957,97 @@ let CHAT_TIMER = null;
 let HEARTBEAT_TIMER = null;
 let CURRENT_QUERY = 'tc';
 
+// ═══════════════════════════════════════════════════
+// HER SORGU İÇİN AYRI TANIM
+// ═══════════════════════════════════════════════════
 const QUERIES = {
-  tc:       { icon:'🆔', baslik:'TC Sorgulama',          alt:'Kimlik bilgisi sorgulama',       inputs:[{id:'tc',ph:'TC Kimlik No (11 hane)',max:11,val:'17420629810'}], type:'tc' },
-  tcpro:    { icon:'🆔', baslik:'TC Pro Sorgulama',      alt:'Detaylı kişi bilgisi',           inputs:[{id:'tc',ph:'TC Kimlik No (11 hane)',max:11,val:'17420629810'}], type:'tcpro' },
-  adsoyad:  { icon:'👥', baslik:'Ad Soyad Sorgulama',    alt:'Ad ve soyad ile arama',          inputs:[{id:'ad',ph:'Ad',val:'ROKET'},{id:'soyad',ph:'Soyad',val:'ATAR'}], type:'adsoyad' },
-  aile:     { icon:'👪', baslik:'Aile Sorgulama',        alt:'Aile bilgileri',                 inputs:[{id:'tc',ph:'TC Kimlik No',max:11,val:'17420629810'}], type:'aile' },
-  ailepro:  { icon:'👪', baslik:'Aile Pro Sorgulama',    alt:'Detaylı aile bilgisi',           inputs:[{id:'tc',ph:'TC Kimlik No',max:11,val:'17420629810'}], type:'ailepro' },
-  sulale:   { icon:'🌳', baslik:'Sülale Sorgulama',      alt:'Sülale bilgileri',               inputs:[{id:'tc',ph:'TC Kimlik No',max:11,val:'17420629810'}], type:'sulale' },
-  tcgsm:    { icon:'📱', baslik:'TC → GSM',              alt:'TC ile telefon numarası',        inputs:[{id:'tc',ph:'TC Kimlik No',max:11,val:'11111111110'}], type:'tcgsm' },
-  gsmtc:    { icon:'📞', baslik:'GSM → TC',              alt:'GSM ile TC',                     inputs:[{id:'gsm',ph:'GSM No (5XX...)',max:10,val:'5550000000'}], type:'gsmtc' },
-  eokul:    { icon:'🎓', baslik:'E-Okul Sorgulama',      alt:'Eğitim bilgileri',               inputs:[{id:'tc',ph:'TC Kimlik No',max:11,val:'13334777982'}], type:'eokul' },
-  adres:    { icon:'🏠', baslik:'Adres Sorgulama',       alt:'İkametgah bilgisi',              inputs:[{id:'tc',ph:'TC Kimlik No',max:11,val:'11111111110'}], type:'adres' },
-  tapu:     { icon:'🏡', baslik:'Tapu Sorgulama',        alt:'Tapu kayıtları',                 inputs:[{id:'tc',ph:'TC Kimlik No',max:11,val:'27727166918'}], type:'tapu' },
-  adaparsel:{ icon:'📐', baslik:'Ada Parsel Sorgulama',  alt:'İl/ilçe ile ada parsel',         inputs:[{id:'il',ph:'İl',val:'İSTANBUL'},{id:'ilce',ph:'İlçe',val:'KADIKÖY'}], type:'adaparsel' },
+  tc: {
+    icon:'🆔', baslik:'TC Sorgulama', alt:'Kimlik numarası ile kişi bilgisi',
+    inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, val:'17420629810', label:'TC Kimlik Numarası'}],
+    type:'tc'
+  },
+  tcpro: {
+    icon:'🆔', baslik:'TC Pro Sorgulama', alt:'Detaylı kişi bilgisi (nüfus, doğum, aile)',
+    inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, val:'17420629810', label:'TC Kimlik Numarası'}],
+    type:'tcpro'
+  },
+  adsoyad: {
+    icon:'👥', baslik:'Ad Soyad Sorgulama', alt:'Ad ve soyad ile TC bulma',
+    inputs:[
+      {id:'ad',    ph:'Ad (örn: ROKET)',   val:'ROKET', label:'Ad'},
+      {id:'soyad', ph:'Soyad (örn: ATAR)', val:'ATAR',  label:'Soyad'}
+    ],
+    type:'adsoyad'
+  },
+  aile: {
+    icon:'👪', baslik:'Aile Sorgulama', alt:'TC ile aile bireyleri',
+    inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, val:'17420629810', label:'TC Kimlik Numarası'}],
+    type:'aile'
+  },
+  ailepro: {
+    icon:'👪', baslik:'Aile Pro Sorgulama', alt:'TC ile detaylı aile bilgisi',
+    inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, val:'17420629810', label:'TC Kimlik Numarası'}],
+    type:'ailepro'
+  },
+  sulale: {
+    icon:'🌳', baslik:'Sülale Sorgulama', alt:'TC ile sülale kayıtları',
+    inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, val:'17420629810', label:'TC Kimlik Numarası'}],
+    type:'sulale'
+  },
+  tcgsm: {
+    icon:'📱', baslik:'TC → GSM Sorgulama', alt:'TC numarasından kayıtlı telefon numarası',
+    inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, val:'11111111110', label:'TC Kimlik Numarası'}],
+    type:'tcgsm'
+  },
+  gsmtc: {
+    icon:'📞', baslik:'GSM → TC Sorgulama', alt:'Telefon numarasından TC kimlik numarası',
+    inputs:[{id:'gsm', ph:'GSM No (5XX XXX XX XX)', max:10, val:'5550000000', label:'GSM Numarası'}],
+    type:'gsmtc'
+  },
+  eokul: {
+    icon:'🎓', baslik:'E-Okul Sorgulama', alt:'TC ile öğrenci okul bilgileri',
+    inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, val:'13334777982', label:'TC Kimlik Numarası'}],
+    type:'eokul'
+  },
+  adres: {
+    icon:'🏠', baslik:'Adres Sorgulama', alt:'TC ile ikametgah adresi',
+    inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, val:'11111111110', label:'TC Kimlik Numarası'}],
+    type:'adres'
+  },
+  tapu: {
+    icon:'🏡', baslik:'Tapu Sorgulama', alt:'TC ile taşınmaz / tapu kayıtları',
+    inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, val:'27727166918', label:'TC Kimlik Numarası'}],
+    type:'tapu'
+  },
+  adaparsel: {
+    icon:'📐', baslik:'Ada Parsel Sorgulama', alt:'İl / ilçe / mahalle ile parsel bilgisi',
+    inputs:[
+      {id:'il',      ph:'İl (örn: İSTANBUL)',  val:'İSTANBUL', label:'İl'},
+      {id:'ilce',    ph:'İlçe (örn: KADIKÖY)', val:'KADIKÖY',  label:'İlçe'},
+      {id:'mahalle', ph:'Mahalle (opsiyonel)', val:'',         label:'Mahalle'},
+      {id:'ada',     ph:'Ada (opsiyonel)',     val:'',         label:'Ada'},
+      {id:'parsel',  ph:'Parsel (opsiyonel)',  val:'',         label:'Parsel'}
+    ],
+    type:'adaparsel'
+  },
+};
+
+// ═══════════════════════════════════════════════════
+// BİLGİ METİNLERİ
+// ═══════════════════════════════════════════════════
+const INFO_TEXT = {
+  tc:        'TC kimlik numarası ile kişinin ad, soyad, doğum tarihi, nüfus ve ebeveyn bilgilerini sorgular.',
+  tcpro:     'TC kimlik numarası ile kişinin detaylı bilgilerini (nüfus kayıtları, adres geçmişi, medeni durum) sorgular.',
+  adsoyad:   'Ad ve soyad girerek o kişiye ait TC kimlik numarasını ve kayıtlı bilgileri bulur.',
+  aile:      'TC kimlik numarası ile kişinin aile bireylerini (eş, çocuk, kardeş) listeler.',
+  ailepro:   'TC ile detaylı aile bilgilerini (eş, çocuklar, kardeşler, ebeveynler) gösterir.',
+  sulale:    'TC ile kişinin sülale kayıtlarını (soy ağacı, tüm akrabalar) çıkarır.',
+  tcgsm:     'TC kimlik numarası ile o kişiye kayıtlı GSM numarasını bulur.',
+  gsmtc:     'GSM numarası ile numaranın sahibi olan kişinin TC kimlik numarasını bulur.',
+  eokul:     'TC ile öğrencinin e-okul bilgilerini (okul, sınıf, dönem, öğrenci no) sorgular.',
+  adres:     'TC ile kişinin kayıtlı ikametgah adresini ve adres geçmişini gösterir.',
+  tapu:      'TC ile kişinin üzerine kayıtlı tapu ve taşınmaz (arsa, bina, tarla) kayıtlarını listeler.',
+  adaparsel: 'İl / ilçe / mahalle / ada / parsel bilgileri ile arsa kaydı sorgular. En az bir alan doldurulmalıdır.',
 };
 
 // ═══════════ YARDIMCI ═══════════
@@ -1110,7 +1170,6 @@ function enterPanel(user) {
   document.getElementById('sideUsername').textContent = user.username;
   document.getElementById('sideTick').classList.toggle('hidden', !user.verified);
 
-  // Çevrimiçi durum
   const st = document.getElementById('sideStatus');
   st.className = 'st on';
   st.innerHTML = '<span class="dot"></span> Çevrimiçi';
@@ -1145,14 +1204,6 @@ function toggleProfileMenu(e) {
   b.classList.toggle('open', opening);
 }
 
-function toggleSub(e, id, linkEl) {
-  e.stopPropagation();
-  const s = document.getElementById(id);
-  if (!s) return;
-  const open = s.classList.toggle('open');
-  if (linkEl) linkEl.classList.toggle('open', open);
-}
-
 document.addEventListener('click', () => {
   document.getElementById('profileDropdown')?.classList.remove('open');
   document.getElementById('profileBtn')?.classList.remove('open');
@@ -1165,7 +1216,6 @@ function showView(view, linkEl) {
   });
   document.getElementById('view' + view.charAt(0).toUpperCase() + view.slice(1))?.classList.remove('hidden');
 
-  // Aktif nav
   document.querySelectorAll('.sb-nav .sb-item').forEach(el => el.classList.remove('active'));
   const navMap = { query:'navQuery', chat:'navChat', users:'navUsers' };
   if (navMap[view]) document.getElementById(navMap[view])?.classList.add('active');
@@ -1193,17 +1243,30 @@ function openQuery(type, baslik) {
   document.getElementById('queryIcon').textContent = q.icon;
   document.getElementById('queryTitle').textContent = q.baslik;
   document.getElementById('querySubtitle').textContent = q.alt || '';
+  document.getElementById('queryInfoText').textContent = INFO_TEXT[type] || 'Sorgu yapmak için alanı doldurun.';
 
   const wrap = document.getElementById('queryInputs');
   wrap.innerHTML = '';
   for (const inp of q.inputs) {
+    const group = document.createElement('div');
+    group.className = 'q-input-group';
+
+    if (inp.label) {
+      const lb = document.createElement('label');
+      lb.className = 'q-input-label';
+      lb.innerHTML = inp.label + (inp.max ? ` <span class="q-input-hint">(${inp.max} hane)</span>` : '');
+      group.appendChild(lb);
+    }
+
     const i = document.createElement('input');
     i.type = 'text'; i.id = 'input_' + inp.id;
     i.className = 'q-input'; i.placeholder = inp.ph;
     i.value = inp.val || '';
     if (inp.max) i.maxLength = inp.max;
     i.addEventListener('keypress', e => { if (e.key === 'Enter') runQuery(); });
-    wrap.appendChild(i);
+    group.appendChild(i);
+
+    wrap.appendChild(group);
   }
 
   document.getElementById('resultWrap').classList.remove('active');
