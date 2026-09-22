@@ -1,7 +1,6 @@
 <?php
 /**
  * admin.php — Admin API
- * Telegram: @cmrbaskani
  */
 require_once __DIR__ . '/config.php';
 
@@ -9,19 +8,13 @@ $action = $_REQUEST['action'] ?? '';
 
 switch ($action) {
 
-    // ─── ADMİN GİRİŞ ───
     case 'admin_login':
         $user = trim($_POST['username'] ?? '');
         $pass = $_POST['password'] ?? '';
 
-        if ($user !== ADMIN_USER) {
-            json_out(["success"=>false,"error"=>"Kullanıcı adı yanlış"], 401);
-        }
-        if (!password_verify($pass, ADMIN_PASS_HASH)) {
-            json_out(["success"=>false,"error"=>"Şifre yanlış"], 401);
-        }
+        if ($user !== ADMIN_USER) json_out(["success"=>false,"error"=>"Kullanıcı adı yanlış"], 401);
+        if ($pass !== ADMIN_PASS) json_out(["success"=>false,"error"=>"Şifre yanlış"], 401);
 
-        // Admin hesabını bul veya oluştur
         $admin = find_user(ADMIN_USER);
         if (!$admin) {
             $users = load_users();
@@ -41,18 +34,26 @@ switch ($action) {
             ];
             $users[] = $admin;
             save_users($users);
+        } else {
+            // Şifre güncellendiyse hash'i yenile
+            $users = load_users();
+            foreach ($users as &$u) {
+                if ($u['id'] === $admin['id']) {
+                    $u['password'] = password_hash($pass, PASSWORD_DEFAULT);
+                    $u['is_admin'] = true;
+                }
+            }
+            save_users($users);
         }
 
         $_SESSION['user_id'] = $admin['id'];
         json_out(["success"=>true, "message"=>"Admin girişi başarılı", "user"=>public_user_admin($admin)]);
 
-    // ─── ADMİN OTURUM KONTROL ───
     case 'admin_check':
         $u = current_user();
-        if (!$u || !$u['is_admin']) json_out(["success"=>true, "logged"=>false]);
+        if (!$u || empty($u['is_admin'])) json_out(["success"=>true, "logged"=>false]);
         json_out(["success"=>true, "logged"=>true, "user"=>public_user_admin($u)]);
 
-    // ─── KULLANICI LİSTESİ ───
     case 'list_users':
         require_admin();
         $users = load_users();
@@ -60,7 +61,6 @@ switch ($action) {
         foreach ($users as $u) $out[] = public_user_admin($u);
         json_out(["success"=>true, "users"=>$out, "total"=>count($out)]);
 
-    // ─── BAN / UNBAN ───
     case 'ban':
         require_admin();
         $id = $_POST['id'] ?? '';
@@ -68,14 +68,13 @@ switch ($action) {
         $users = load_users();
         foreach ($users as &$u) {
             if ($u['id'] === $id) {
-                if ($u['is_admin']) json_out(["success"=>false,"error"=>"Admin banlanamaz"]);
+                if (!empty($u['is_admin'])) json_out(["success"=>false,"error"=>"Admin banlanamaz"]);
                 $u['banned'] = (bool)$ban;
             }
         }
         save_users($users);
         json_out(["success"=>true, "message"=>$ban ? "Banlandı" : "Ban kaldırıldı"]);
 
-    // ─── VERIFY (tik) ───
     case 'verify':
         require_admin();
         $id = $_POST['id'] ?? '';
@@ -87,7 +86,6 @@ switch ($action) {
         save_users($users);
         json_out(["success"=>true, "message"=>$v ? "✅ Tik verildi" : "Tik kaldırıldı"]);
 
-    // ─── HESAP SİL ───
     case 'delete_user':
         require_admin();
         $id = $_POST['id'] ?? '';
@@ -95,7 +93,7 @@ switch ($action) {
         $new = [];
         foreach ($users as $u) {
             if ($u['id'] === $id) {
-                if ($u['is_admin']) json_out(["success"=>false,"error"=>"Admin silinemez"]);
+                if (!empty($u['is_admin'])) json_out(["success"=>false,"error"=>"Admin silinemez"]);
                 continue;
             }
             $new[] = $u;
@@ -103,13 +101,11 @@ switch ($action) {
         save_users($new);
         json_out(["success"=>true, "message"=>"Hesap silindi"]);
 
-    // ─── RÜTBE AYARLA ───
     case 'set_rank':
         require_admin();
         $id = $_POST['id'] ?? '';
         $rank = trim($_POST['rank'] ?? '');
         if ($rank === '') json_out(["success"=>false,"error"=>"Rütbe gerekli"]);
-
         $users = load_users();
         foreach ($users as &$u) {
             if ($u['id'] === $id) $u['rank'] = mb_substr($rank, 0, 30);
@@ -117,7 +113,6 @@ switch ($action) {
         save_users($users);
         json_out(["success"=>true, "message"=>"Rütbe ayarlandı"]);
 
-    // ─── İSTATİSTİKLER ───
     case 'stats':
         require_admin();
         $users = load_users();

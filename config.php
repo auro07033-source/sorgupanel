@@ -1,7 +1,6 @@
 <?php
 /**
  * config.php — Forex Sorgulama Hizmeti
- * Ortak ayarlar + yardımcı fonksiyonlar
  * Telegram: @cmrbaskani
  */
 
@@ -21,19 +20,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 define('DATA_DIR', __DIR__ . '/data');
 define('USERS_FILE', DATA_DIR . '/users.json');
 define('CHAT_FILE', DATA_DIR . '/chat.json');
-define('SESSION_TTL', 86400 * 7); // 7 gün
+define('SESSION_TTL', 86400 * 7);
 
-// ADMİN BİLGİLERİ (hash'li — değiştirmek istersen aşağıdaki hash'i üret)
-// Varsayılan: kullanıcı: admin  şifre: Admin@2026!
+// ═══════════════════════════════════════════
+// ADMIN — düz metin şifre (basit ve çalışır)
+// ═══════════════════════════════════════════
 define('ADMIN_USER', 'admin');
-define('ADMIN_PASS_HASH', '$2y$10$eImiTXuWVxfM37uY4JANjQ=='); // AŞAĞIDAKİ NOT'A BAK
+define('ADMIN_PASS', 'forex:qw24');
 
 // ═══════════════════════════════════════════
 // YARDIMCI
 // ═══════════════════════════════════════════
-if (!is_dir(DATA_DIR)) {
-    @mkdir(DATA_DIR, 0777, true);
-}
+if (!is_dir(DATA_DIR)) { @mkdir(DATA_DIR, 0777, true); }
 
 function json_out($data, $code = 200) {
     http_response_code($code);
@@ -88,17 +86,11 @@ function require_login() {
 
 function require_admin() {
     require_login();
-    if (!is_admin()) {
-        json_out(["success" => false, "error" => "Yetkin yok"], 403);
-    }
+    if (!is_admin()) json_out(["success" => false, "error" => "Yetkin yok"], 403);
 }
 
 function gen_id() { return bin2hex(random_bytes(8)); }
-
-function sanitize_username($u) {
-    return preg_replace('/[^a-zA-Z0-9_]/', '', $u);
-}
-
+function sanitize_username($u) { return preg_replace('/[^a-zA-Z0-9_]/', '', $u); }
 function now_iso() { return date('c'); }
 
 function avatar_url($user) {
@@ -110,5 +102,5 @@ function avatar_url($user) {
 
 function is_online($user) {
     if (empty($user['last_seen'])) return false;
-    return (time() - strtotime($user['last_seen'])) < 300; // 5 dakika
+    return (time() - strtotime($user['last_seen'])) < 300;
 }
