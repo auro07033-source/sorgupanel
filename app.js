@@ -62,6 +62,7 @@ let CURRENT_QUERY = 'tc';
 
 // ═══════════ QUERIES ═══════════
 const QUERIES = {
+  // ═══ KİŞİSEL ═══
   tc:        { icon:'🆔', baslik:'TC Sorgulama',         alt:'Kimlik numarası ile kişi bilgisi', inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, val:'', label:'TC Kimlik Numarası'}], type:'tc' },
   tcpro:     { icon:'🆔', baslik:'TC Pro Sorgulama',     alt:'Detaylı kişi bilgisi',             inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, val:'', label:'TC Kimlik Numarası'}], type:'tcpro' },
   adsoyad:   { icon:'👥', baslik:'Ad Soyad Sorgulama',   alt:'Ad ve soyad ile TC bulma',         inputs:[{id:'ad', ph:'Ad', val:'', label:'Ad'},{id:'soyad', ph:'Soyad', val:'', label:'Soyad'}], type:'adsoyad' },
@@ -70,10 +71,57 @@ const QUERIES = {
   sulale:    { icon:'🌳', baslik:'Sülale Sorgulama',     alt:'Sülale kayıtları',                 inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'sulale' },
   tcgsm:     { icon:'📱', baslik:'TC → GSM Sorgulama',   alt:'TC ile telefon numarası',          inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'tcgsm' },
   gsmtc:     { icon:'📞', baslik:'GSM → TC Sorgulama',   alt:'Telefon ile TC kimlik',            inputs:[{id:'gsm', ph:'GSM No (5XX XXX XX XX)', max:10, val:'', label:'GSM Numarası'}], type:'gsmtc' },
+
+  // ═══ EĞİTİM ═══
   eokul:     { icon:'🎓', baslik:'E-Okul Sorgulama',     alt:'Öğrenci okul bilgileri',           inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'eokul' },
+
+  // ═══ TAPU & ADRES ═══
   adres:     { icon:'🏠', baslik:'Adres Sorgulama',      alt:'İkametgah adresi',                 inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'adres' },
   tapu:      { icon:'🏡', baslik:'Tapu Sorgulama',       alt:'Tapu kayıtları',                   inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'tapu' },
   adaparsel: { icon:'📐', baslik:'Ada Parsel Sorgulama', alt:'İl/ilçe ile parsel',               inputs:[{id:'il', ph:'İl', val:'', label:'İl'},{id:'ilce', ph:'İlçe', val:'', label:'İlçe'},{id:'mahalle', ph:'Mahalle (opsiyonel)', val:'', label:'Mahalle'},{id:'ada', ph:'Ada (opsiyonel)', val:'', label:'Ada'},{id:'parsel', ph:'Parsel (opsiyonel)', val:'', label:'Parsel'}], type:'adaparsel' },
+
+  // ═══════════════════════════════════════════════════
+  // ═══ DİĞER SORGULAR (YENİ API) ═══
+  // ═══════════════════════════════════════════════════
+  new_adsoyad: {
+    icon:'🔎', baslik:'Detaylı Ad Soyad Sorgu', alt:'Ad + soyad + il ile toplu sorgu',
+    inputs:[
+      {id:'ad',    ph:'Ad (örn: ahmet)',     val:'', label:'Ad'},
+      {id:'soyad', ph:'Soyad (örn: demir)',  val:'', label:'Soyad'},
+      {id:'il',    ph:'İl (örn: istanbul)',  val:'', label:'İl (opsiyonel)'}
+    ],
+    type:'new_adsoyad'
+  },
+  new_tc: {
+    icon:'🆔', baslik:'Detaylı TC Sorgu', alt:'TC + GSM + medeni hal + adres + aile',
+    inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, val:'', label:'TC Kimlik Numarası'}],
+    type:'new_tc'
+  },
+  new_adres2009: {
+    icon:'📍', baslik:'2009-2024 Adres Geçmişi', alt:'Eski ve yeni adres kayıtları',
+    inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, val:'', label:'TC Kimlik Numarası'}],
+    type:'new_adres2009'
+  },
+  new_hane: {
+    icon:'🏘️', baslik:'Hane Sorgulama', alt:'Aynı hanede yaşayan kişiler',
+    inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, val:'', label:'TC Kimlik Numarası'}],
+    type:'new_hane'
+  },
+  new_sokak: {
+    icon:'🛣️', baslik:'Sokak Sorgulama', alt:'Aynı sokakta yaşayan kişiler',
+    inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, val:'', label:'TC Kimlik Numarası'}],
+    type:'new_sokak'
+  },
+  new_aile: {
+    icon:'👪', baslik:'Detaylı Aile Sorgu', alt:'Kişi + baba + anne + çocuklar + kardeşler',
+    inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, val:'', label:'TC Kimlik Numarası'}],
+    type:'new_aile'
+  },
+  new_sulale: {
+    icon:'🌳', baslik:'Detaylı Sülale Sorgu', alt:'Büyükbaba + büyükanne + tüm sülale',
+    inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, val:'', label:'TC Kimlik Numarası'}],
+    type:'new_sulale'
+  }
 };
 
 const INFO_TEXT = {
@@ -88,7 +136,15 @@ const INFO_TEXT = {
   eokul:'TC ile öğrencinin e-okul bilgilerini sorgular.',
   adres:'TC ile kişinin kayıtlı ikametgah adresini gösterir.',
   tapu:'TC ile kişinin üzerine kayıtlı tapu kayıtlarını listeler.',
-  adaparsel:'İl / ilçe / mahalle / ada / parsel ile arsa kaydı sorgular.'
+  adaparsel:'İl / ilçe / mahalle / ada / parsel ile arsa kaydı sorgular.',
+
+  new_adsoyad:'Ad, soyad ve isteğe bağlı il bilgisi ile toplu kişi sorgusu yapar. 50+ sonuç dönebilir.',
+  new_tc:'TC ile detaylı kişi bilgisi: GSM, medeni hal, cinsiyet, doğum yeri, adres ve aile bağlantıları.',
+  new_adres2009:'2009-2024 yılları arasındaki eski ve yeni adres kayıtlarını gösterir.',
+  new_hane:'Aynı hanede yaşayan tüm kişileri listeler. Ortalama 4 kişi.',
+  new_sokak:'Aynı sokakta yaşayan tüm kişileri listeler. 100+ kayıt dönebilir.',
+  new_aile:'Kişi, baba, anne, büyükbaba, büyükanne, kardeşler ve çocuklar dahil tam aile ağacı.',
+  new_sulale:'Büyükbaba, büyükanne ve tüm sülale üyeleri (50+ kişi) dahil geniş soy ağacı.'
 };
 
 // ═══════════ YARDIMCI ═══════════
@@ -208,7 +264,7 @@ async function checkSession() {
   } catch (e) {}
 }
 
-// ═══════════ NAV ═══════════
+// ═══════════ NAV İNŞASI ═══════════
 function navInsa() {
   const nav = document.getElementById('sbNav');
   if (!nav) return;
@@ -235,6 +291,15 @@ function navInsa() {
     <div class="sb-item" onclick="openQuery('adres')"><span class="ico">🏠</span> Adres</div>
     <div class="sb-item" onclick="openQuery('tapu')"><span class="ico">🏡</span> Tapu</div>
     <div class="sb-item" onclick="openQuery('adaparsel')"><span class="ico">📐</span> Ada Parsel</div>
+
+    <div class="sb-section">🔥 Diğer Sorgular</div>
+    <div class="sb-item" onclick="openQuery('new_adsoyad')"><span class="ico">🔎</span> Detaylı Ad Soyad</div>
+    <div class="sb-item" onclick="openQuery('new_tc')"><span class="ico">🆔</span> Detaylı TC</div>
+    <div class="sb-item" onclick="openQuery('new_aile')"><span class="ico">👪</span> Detaylı Aile</div>
+    <div class="sb-item" onclick="openQuery('new_sulale')"><span class="ico">🌳</span> Detaylı Sülale</div>
+    <div class="sb-item" onclick="openQuery('new_hane')"><span class="ico">🏘️</span> Hane Sorgu</div>
+    <div class="sb-item" onclick="openQuery('new_sokak')"><span class="ico">🛣️</span> Sokak Sorgu</div>
+    <div class="sb-item" onclick="openQuery('new_adres2009')"><span class="ico">📍</span> Eski Adres Geçmişi</div>
   `;
 }
 
@@ -422,7 +487,77 @@ function renderResult(data) {
     cnt.textContent = ''; return;
   }
 
-  let items = data.data || data.results || data;
+  // ═══ İÇ İÇE KATEGORİ (aile/sülale) ═══
+  if (data.data && typeof data.data === 'object' && !Array.isArray(data.data) && data.data.kisi) {
+    const d = data.data;
+    const kategoriIsimleri = {
+      kisi: '👤 Kişi',
+      baba: '👨 Baba',
+      anne: '👩 Anne',
+      buyukbaba: '👴 Büyükbaba',
+      buyukanne: '👵 Büyükanne',
+      kardesler: '👫 Kardeşler',
+      cocuklar: '👶 Çocuklar',
+      torunlar: '👦 Torunlar',
+      ailesirano_uyeleri: '📋 Aile Sıra Üyeleri'
+    };
+
+    let html = '';
+    let toplam = 0;
+
+    // Özet
+    if (d.ozet) {
+      let ozetStr = [];
+      if (d.ozet.kisi)               ozetStr.push(`Kişi: ${d.ozet.kisi}`);
+      if (d.ozet.baba)               ozetStr.push(`Baba: ${d.ozet.baba}`);
+      if (d.ozet.anne)               ozetStr.push(`Anne: ${d.ozet.anne}`);
+      if (d.ozet.kardesler)          ozetStr.push(`Kardeş: ${d.ozet.kardesler}`);
+      if (d.ozet.cocuklar)           ozetStr.push(`Çocuk: ${d.ozet.cocuklar}`);
+      if (d.ozet.buyukbaba)          ozetStr.push(`Büyükbaba: ${d.ozet.buyukbaba}`);
+      if (d.ozet.buyukanne)          ozetStr.push(`Büyükanne: ${d.ozet.buyukanne}`);
+      if (d.ozet.ailesirano_uyeleri) ozetStr.push(`Sülale: ${d.ozet.ailesirano_uyeleri}`);
+      if (ozetStr.length > 0) html += `<div class="result-ozet">📊 ${ozetStr.join(' · ')}</div>`;
+    }
+
+    for (const [key, list] of Object.entries(d)) {
+      if (Array.isArray(list) && list.length > 0) {
+        toplam += list.length;
+        const baslik = kategoriIsimleri[key] || key;
+        html += `<div class="result-category">
+          <div class="result-category-title">${baslik} <span class="cat-count">${list.length} kişi</span></div>
+          <table class="q-table"><thead><tr>`;
+        const keys = [], seen = new Set();
+        for (const it of list) for (const k of Object.keys(it)) {
+          if (!seen.has(k)) { seen.add(k); keys.push(k); }
+        }
+        for (const k of keys) html += `<th>${esc(k)}</th>`;
+        html += '</tr></thead><tbody>';
+        for (const it of list) {
+          html += '<tr>';
+          for (const k of keys) {
+            let v = it[k];
+            if (v === null || v === undefined) v = '-';
+            else if (typeof v === 'object') v = JSON.stringify(v);
+            html += `<td>${esc(v)}</td>`;
+          }
+          html += '</tr>';
+        }
+        html += '</tbody></table></div>';
+      }
+    }
+
+    if (toplam === 0) {
+      table.innerHTML = '<div class="q-empty">✗ Kayıt bulunamadı</div>';
+      cnt.textContent = ''; return;
+    }
+
+    table.innerHTML = html;
+    cnt.textContent = toplam + ' kayıt';
+    return;
+  }
+
+  // ═══ NORMAL DÜZ VERİ ═══
+  let items = data.rows || data.data?.results || data.data?.rows || data.data || data.results || data;
   if (!Array.isArray(items)) items = [items];
   items = items.filter(x => x && Object.keys(x).length > 0);
 

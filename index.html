@@ -230,6 +230,58 @@
   .q-empty { padding: 2.5rem 1rem; text-align: center; color: var(--text-mute); font-size: .85rem; }
   .q-error { padding: 1.5rem 1rem; text-align: center; background: rgba(248,81,73,.08); color: #ffa198; font-size: .85rem; border-radius: 10px; }
 
+  /* Kategori başlıkları (aile/sülale için) */
+  .result-category {
+    margin-bottom: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(22,27,34,.6);
+  }
+  body.light .result-category { background: rgba(255,255,255,.8); }
+  .result-category:last-child { margin-bottom: 0; }
+  .result-category-title {
+    background: linear-gradient(135deg, rgba(88,166,255,.12), rgba(163,113,247,.08));
+    padding: .7rem 1rem;
+    font-weight: 800;
+    font-size: .8rem;
+    letter-spacing: .01em;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--text);
+  }
+  .result-category-title .cat-count {
+    font-size: .68rem;
+    font-weight: 700;
+    color: var(--blue);
+    background: var(--bg);
+    padding: .2rem .6rem;
+    border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace;
+    border: 1px solid rgba(88,166,255,.3);
+  }
+
+  /* Özet kutusu */
+  .result-ozet {
+    background: rgba(63,185,80,.08);
+    border: 1px solid rgba(63,185,80,.3);
+    color: #86efac;
+    padding: .7rem 1rem;
+    border-radius: 10px;
+    font-size: .76rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1.6;
+  }
+
+  /* Diğer Sorgular vurgusu */
+  .sb-section:last-of-type {
+    color: #f85149;
+  }
+
   /* CHAT */
   .chat-card { background: rgba(22,27,34,.92); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; height: calc(100vh - 3rem - var(--topbar-h)); min-height: 400px; }
   body.light .chat-card { background: rgba(255,255,255,.92); }
@@ -309,7 +361,6 @@
   .ban-text-2 { font-size: .85rem; color: #8b949e; line-height: 1.6; }
   .ban-text strong { color: var(--red); font-weight: 800; }
 
-  /* MOBİL MENÜ BUTONU - HER ZAMAN GÖRÜNÜR */
   @media (max-width: 900px) {
     .sidebar { position: fixed; top: 0; left: 0; bottom: 0; transform: translateX(-100%); visibility: hidden; }
     .sidebar.open { transform: translateX(0); visibility: visible; box-shadow: 4px 0 24px rgba(0,0,0,.5); }
