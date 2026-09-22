@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forex Sorgulama Hizmeti — @cmrbaskani</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a0e1a; --card: rgba(30, 41, 59, 0.6); --card-solid: #1e293b;
+    --border: rgba(148, 163, 184, 0.12); --border-hover: rgba(148, 163, 184, 0.3);
+    --text: #f1f5f9; --text-dim: #94a3b8; --text-mute: #64748b;
+    --primary: #6366f1; --primary-2: #8b5cf6; --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
+    --shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5); --glow: 0 0 40px rgba(99, 102, 241, 0.3);
+  }
+  body.light {
+    --bg: #f8fafc; --card: rgba(255, 255, 255, 0.7); --card-solid: #ffffff;
+    --border: rgba(15, 23, 42, 0.08); --border-hover: rgba(15, 23, 42, 0.2);
+    --text: #0f172a; --text-dim: #475569; --text-mute: #94a3b8;
+    --shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.15);
+  }
+  html, body { min-height: 100vh; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text);
+    padding: 2rem 1rem 3rem; transition: background .3s, color .3s; position: relative; overflow-x: hidden;
+  }
+  body::before {
+    content: ""; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.18), transparent 45%),
+      radial-gradient(circle at 80% 60%, rgba(139, 92, 246, 0.14), transparent 45%),
+      radial-gradient(circle at 50% 90%, rgba(16, 185, 129, 0.08), transparent 40%);
+    z-index: -1; animation: float 20s ease-in-out infinite;
+  }
+  @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-3%, -3%) scale(1.05); } }
+  .container { max-width: 1200px; margin: 0 auto; }
+  .hidden { display: none !important; }
+
+  /* ─── LOGIN ─── */
+  .login-wrap {
+    min-height: 80vh; display: flex; align-items: center; justify-content: center;
+  }
+  .login-box {
+    width: 100%; max-width: 420px;
+    background: var(--card); backdrop-filter: blur(20px);
+    border: 1px solid var(--border); border-radius: 1.25rem;
+    padding: 2.5rem 2rem; box-shadow: var(--shadow);
+    animation: fadeIn .4s ease;
+  }
+  .login-box .logo-icon {
+    width: 64px; height: 64px; border-radius: 16px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; margin: 0 auto 1.25rem;
+    box-shadow: var(--glow);
+  }
+  .login-box h1 {
+    font-size: 1.4rem; font-weight: 800; text-align: center;
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    margin-bottom: .35rem;
+  }
+  .login-box .sub {
+    text-align: center; font-size: .8rem; color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace; margin-bottom: 1.75rem;
+  }
+  .login-box label {
+    display: block; font-size: .78rem; font-weight: 600;
+    color: var(--text-dim); margin-bottom: .4rem;
+  }
+  .login-box input {
+    width: 100%; padding: .85rem 1rem; border-radius: .7rem;
+    border: 1px solid var(--border); background: var(--bg); color: var(--text);
+    font-family: 'JetBrains Mono', monospace; font-size: .9rem;
+    outline: none; transition: all .2s; margin-bottom: 1rem;
+  }
+  .login-box input:focus {
+    border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,.15);
+  }
+  .login-box button {
+    width: 100%; border: none; color: white; padding: .9rem;
+    border-radius: .7rem; font-weight: 700; font-size: .9rem;
+    cursor: pointer; font-family: inherit;
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    box-shadow: 0 4px 14px rgba(99,102,241,.4);
+    transition: all .2s;
+  }
+  .login-box button:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(99,102,241,.55); }
+  .login-box button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+  .login-error {
+    background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.35);
+    color: #fca5a5; padding: .65rem .85rem; border-radius: .6rem;
+    font-size: .8rem; margin-bottom: 1rem; display: none;
+  }
+  .login-error.active { display: block; animation: shake .35s ease; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+  /* ─── HEADER ─── */
+  .header {
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.2rem;
+    margin-bottom: 2.5rem; padding: 1.5rem 1.75rem; background: var(--card);
+    backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 1.25rem; box-shadow: var(--shadow);
+  }
+  .logo { display: flex; align-items: center; gap: 1rem; }
+  .logo-icon-h {
+    width: 52px; height: 52px; border-radius: 14px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    display: flex; align-items: center; justify-content: center; font-size: 26px;
+    box-shadow: var(--glow); flex-shrink: 0;
+  }
+  .logo-text h1 {
+    font-size: 1.5rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    letter-spacing: -0.02em; line-height: 1.1;
+  }
+  .logo-text p { font-size: .8rem; color: var(--text-dim); margin-top: .25rem; font-family: 'JetBrains Mono', monospace; }
+  .header-actions { display: flex; gap: .6rem; align-items: center; }
+  .btn-small {
+    background: var(--card-solid); border: 1px solid var(--border); border-radius: 999px;
+    padding: .55rem 1.1rem; cursor: pointer; display: flex; align-items: center; gap: .5rem;
+    font-weight: 600; font-size: .82rem; color: var(--text); transition: all .2s; font-family: inherit;
+  }
+  .btn-small:hover { border-color: var(--border-hover); transform: translateY(-1px); }
+  .status-pill {
+    background: var(--card-solid); border: 1px solid var(--border); border-radius: 999px;
+    padding: .55rem 1.1rem; display: flex; align-items: center; gap: .5rem;
+    font-weight: 600; font-size: .82rem; color: var(--text); cursor: default;
+  }
+  .status-pill .dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--success);
+    box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  /* ─── CARDS ─── */
+  .category { margin-bottom: 2rem; }
+  .category-title {
+    font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;
+    display: flex; align-items: center; gap: .6rem;
+  }
+  .category-title::before {
+    content: ""; width: 4px; height: 20px;
+    background: linear-gradient(180deg, var(--primary), var(--primary-2));
+    border-radius: 4px; box-shadow: 0 0 10px rgba(99,102,241,.6);
+  }
+  .category-title .count {
+    margin-left: auto; font-size: .7rem; font-weight: 600; color: var(--text-dim);
+    background: var(--card-solid); border: 1px solid var(--border);
+    padding: .2rem .7rem; border-radius: 999px;
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 1.25rem; }
+  .api-card {
+    background: var(--card); backdrop-filter: blur(20px);
+    border-radius: 1.25rem; border: 1px solid var(--border); padding: 1.5rem;
+    box-shadow: var(--shadow); transition: all .25s ease; position: relative; overflow: hidden;
+  }
+  .api-card::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-2));
+    opacity: 0; transition: opacity .25s;
+  }
+  .api-card:hover { transform: translateY(-3px); border-color: var(--border-hover); }
+  .api-card:hover::before { opacity: 1; }
+  .api-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .9rem; gap: .5rem; }
+  .api-name { font-weight: 700; font-size: 1.05rem; }
+  .api-method {
+    font-size: .68rem; font-weight: 700; padding: .3rem .7rem; border-radius: 6px;
+    background: rgba(16, 185, 129, 0.15); color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .api-desc { font-size: .85rem; color: var(--text-dim); margin-bottom: 1.1rem; line-height: 1.5; }
+  .input-group { display: flex; gap: .5rem; margin-bottom: .85rem; flex-wrap: wrap; }
+  .input-group input {
+    flex: 1; min-width: 0; padding: .7rem .9rem; border-radius: .65rem;
+    border: 1px solid var(--border); background: var(--bg); color: var(--text);
+    font-family: 'JetBrains Mono', monospace; font-size: .85rem; outline: none;
+    transition: all .2s;
+  }
+  .input-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,.15); }
+  .api-url {
+    background: var(--bg); padding: .7rem .9rem; border-radius: .65rem;
+    font-family: 'JetBrains Mono', monospace; font-size: .72rem; word-break: break-all;
+    margin-bottom: .9rem; border: 1px solid var(--border); color: var(--primary);
+    display: flex; align-items: center; gap: .6rem;
+  }
+  .api-url .url-text { flex: 1; }
+  .api-url .copy-btn {
+    background: transparent; border: 1px solid var(--border); color: var(--text-dim);
+    padding: .25rem .5rem; border-radius: .4rem; cursor: pointer; font-size: .65rem;
+    transition: all .2s; font-family: inherit;
+  }
+  .api-url .copy-btn:hover { color: var(--primary); border-color: var(--primary); }
+  .button-group { display: flex; gap: .6rem; }
+  .try-btn, .go-btn {
+    border: none; color: white; padding: .75rem 1.1rem; border-radius: .65rem;
+    font-weight: 600; font-size: .85rem; cursor: pointer; flex: 1; text-align: center;
+    transition: all .2s; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: .4rem;
+  }
+  .try-btn { background: linear-gradient(135deg, var(--primary), var(--primary-2)); box-shadow: 0 4px 14px rgba(99,102,241,.4); }
+  .try-btn:hover { transform: translateY(-1px); }
+  .try-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+  .go-btn { background: var(--card-solid); border: 1px solid var(--border); color: var(--text); }
+  .go-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .result-area {
+    margin-top: 1rem; background: var(--bg); border-radius: .75rem; padding: 1rem;
+    font-size: .75rem; font-family: 'JetBrains Mono', monospace; word-break: break-word;
+    display: none; border: 1px solid var(--border); max-height: 500px; overflow: auto;
+    line-height: 1.6; white-space: pre-wrap;
+  }
+  .result-area.active { display: block; animation: fadeIn .3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .result-area::-webkit-scrollbar { width: 6px; }
+  .result-area::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+  .result-badge {
+    display: inline-flex; align-items: center; gap: .4rem; padding: .3rem .7rem;
+    border-radius: 6px; font-size: .7rem; font-weight: 700; margin-bottom: .7rem;
+  }
+  .result-badge.ok { background: rgba(16,185,129,.15); color: var(--success); border: 1px solid rgba(16,185,129,.3); }
+  .result-badge.err { background: rgba(239,68,68,.15); color: var(--danger); border: 1px solid rgba(239,68,68,.3); }
+  .spinner {
+    display: inline-block; width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
+    border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .kv-list { display: flex; flex-direction: column; gap: .35rem; font-family: 'Inter', sans-serif; font-size: .82rem; }
+  .kv-row { display: flex; gap: .6rem; padding: .35rem 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .kv-row:last-child { border-bottom: none; }
+  .kv-key { color: var(--text-dim); font-weight: 600; min-width: 140px; font-size: .76rem; }
+  .kv-val { color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: .78rem; word-break: break-word; flex: 1; }
+  .kv-val.hl { color: var(--success); font-weight: 700; }
+  .footer {
+    text-align: center; margin-top: 3rem; padding-top: 1.5rem;
+    border-top: 1px solid var(--border); color: var(--text-mute); font-size: .82rem;
+  }
+  .footer a { color: var(--primary); text-decoration: none; }
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; padding: .85rem 1.2rem;
+    background: var(--card-solid); border: 1px solid var(--primary); border-radius: .75rem;
+    color: var(--text); font-size: .85rem; font-weight: 600;
+    box-shadow: 0 10px 30px rgba(99,102,241,.4);
+    opacity: 0; transform: translateY(12px); transition: all .3s; pointer-events: none; z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  @media (max-width: 640px) {
+    body { padding: 1rem; }
+    .grid { grid-template-columns: 1fr; }
+    .header { padding: 1.1rem 1.2rem; }
+    .logo-text h1 { font-size: 1.2rem; }
+    .logo-icon-h { width: 44px; height: 44px; font-size: 22px; }
+  }
+</style>
+</head>
+<body class="dark">
+
+<!-- ══════════ LOGIN ══════════ -->
+<div id="loginView" class="container login-wrap">
+  <div class="login-box">
+    <div class="logo-icon">🔎</div>
+    <h1>Forex Sorgulama Hizmeti</h1>
+    <p class="sub">@cmrbaskani</p>
+
+    <div class="login-error" id="loginError"></div>
+
+    <label>Kullanıcı Adı</label>
+    <input type="text" id="loginUser" placeholder="kullanıcı adı" autocomplete="username">
+
+    <label>Şifre</label>
+    <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+
+    <button id="loginBtn" onclick="doLogin()">🔓 Giriş Yap</button>
+  </div>
+</div>
+
+<!-- ══════════ PANEL ══════════ -->
+<div id="panelView" class="container hidden">
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon-h">🔎</div>
+      <div class="logo-text">
+        <h1>Forex Sorgulama Hizmeti</h1>
+        <p>@cmrbaskani</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="status-pill"><span class="dot"></span> <span id="userLabel">ONLINE</span></div>
+      <button class="btn-small" id="themeToggle">☀️ Gündüz</button>
+      <button class="btn-small" onclick="doLogout()">🚪 Çıkış</button>
+    </div>
+  </div>
+
+  <!-- KİŞİSEL -->
+  <div class="category">
+    <div class="category-title">👤 Kişisel Sorgular <span class="count">6 endpoint</span></div>
+    <div class="grid">
+
+      <div class="api-card">
+        <div class="api-header">
+          <span class="api-name">👤 TC Sorgulama</span>
+          <span class="api-method">GET</span>
+        </div>
+        <div class="api-desc">TC ile kişi bilgilerini sorgular (ad, soyad, doğum, nüfus, anne/baba).</div>
+        <div class="input-group">
+          <input type="text" id="tcQuery" placeholder="17420629810" value="17420629810" maxlength="11">
+        </div>
+        <div class="button-group">
+          <button class="try-btn" onclick="query('tc','tcQuery','result-tc')">🔎 Sorgula</button>
+        </div>
+        <div id="result-tc" class="result-area"></div>
+      </div>
+
+      <div class="api-card">
+        <div class="api-header">
+          <span class="api-name">👤 TC Pro Sorgulama</span>
+          <span class="api-method">GET</span>
+        </div>
+        <div class="api-desc">TC ile detaylı kişi bilgisi sorgular.</div>
+        <div class="input-group">
+          <input type="text" id="tcproQuery" placeholder="17420629810" value="17420629810" maxlength="11">
+        </div>
+        <div class="button-group">
+          <button class="try-btn" onclick="query('tcpro','tcproQuery','result-tcpro')">🔎 Sorgula</button>
+        </div>
+        <div id="result-tcpro" class="result-area"></div>
+      </div>
+
+      <div class="api-card">
+        <div class="api-header">
+          <span class="api-name">👤 Ad Soyad Sorgulama</span>
+          <span class="api-method">GET</span>
+        </div>
+        <div class="api-desc">Ad ve soyad ile kişi sorgular.</div>
+        <div class="input-group">
+          <input type="text" id="adQuery" placeholder="ROKET" value="ROKET">
+          <input type="text" id="soyadQuery" placeholder="ATAR" value="ATAR">
+        </div>
+        <div class="button-group">
+          <button class="try-btn" onclick="queryAdSoyad()">🔎 Sorgula</button>
+        </div>
+        <div id="result-adsoyad" class="result-area"></div>
+      </div>
+
+      <div class="api-card">
+        <div class="api-header">
+          <span class="api-name">👥 Aile Sorgulama</span>
+          <span class="api-method">GET</span>
+        </div>
+        <div class="api-desc">TC ile aile bilgilerini sorgular.</div>
+        <div class="input-group">
+          <input type="text" id="aileQuery" placeholder="17420629810" value="17420629810" maxlength="11">
+        </div>
+        <div class="button-group">
+          <button class="try-btn" onclick="query('aile','aileQuery','result-aile')">🔎 Sorgula</button>
+        </div>
+        <div id="result-aile" class="result-area"></div>
+      </div>
+
+      <div class="api-card">
+        <div class="api-header">
+          <span class="api-name">👥 Aile Pro Sorgulama</span>
+          <span class="api-method">GET</span>
+        </div>
+        <div class="api-desc">TC ile detaylı aile bilgisi sorgular.</div>
+        <div class="input-group">
+          <input type="text" id="aileproQuery" placeholder="17420629810" value="17420629810" maxlength="11">
+        </div>
+        <div class="button-group">
+          <button class="try-btn" onclick="query('ailepro','aileproQuery','result-ailepro')">🔎 Sorgula</button>
+        </div>
+        <div id="result-ailepro" class="result-area"></div>
+      </div>
+
+      <div class="api-card">
+        <div class="api-header">
+          <span class="api-name">👨‍👩‍👧 Sülale Sorgulama</span>
+          <span class="api-method">GET</span>
+        </div>
+        <div class="api-desc">TC ile sülale bilgilerini sorgular.</div>
+        <div class="input-group">
+          <input type="text" id="sulaleQuery" placeholder="17420629810" value="17420629810" maxlength="11">
+        </div>
+        <div class="button-group">
+          <button class="try-btn" onclick="query('sulale','sulaleQuery','result-sulale')">🔎 Sorgula</button>
+        </div>
+        <div id="result-sulale" class="result-area"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- GSM -->
+  <div class="category">
+    <div class="category-title">📱 GSM Sorguları <span class="count">2 endpoint</span></div>
+    <div class="grid">
+      <div class="api-card">
+        <div class="api-header"><span class="api-name">📱 TC → GSM</span><span class="api-method">GET</span></div>
+        <div class="api-desc">TC ile kayıtlı telefon numarasına ulaşır.</div>
+        <div class="input-group"><input type="text" id="tcgsmQuery" placeholder="11111111110" value="11111111110" maxlength="11"></div>
+        <div class="button-group"><button class="try-btn" onclick="query('tcgsm','tcgsmQuery','result-tcgsm')">🔎 Sorgula</button></div>
+        <div id="result-tcgsm" class="result-area"></div>
+      </div>
+      <div class="api-card">
+        <div class="api-header"><span class="api-name">📱 GSM → TC</span><span class="api-method">GET</span></div>
+        <div class="api-desc">GSM ile TC'ye ulaşır.</div>
+        <div class="input-group"><input type="text" id="gsmtcQuery" placeholder="5550000000" value="5550000000" maxlength="10"></div>
+        <div class="button-group"><button class="try-btn" onclick="query('gsmtc','gsmtcQuery','result-gsmtc')">🔎 Sorgula</button></div>
+        <div id="result-gsmtc" class="result-area"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EĞİTİM -->
+  <div class="category">
+    <div class="category-title">🎓 Eğitim <span class="count">1 endpoint</span></div>
+    <div class="grid">
+      <div class="api-card">
+        <div class="api-header"><span class="api-name">🎓 E-Okul Sorgulama</span><span class="api-method">GET</span></div>
+        <div class="api-desc">TC ile e-okul bilgilerini sorgular.</div>
+        <div class="input-group"><input type="text" id="eokulQuery" placeholder="13334777982" value="13334777982" maxlength="11"></div>
+        <div class="button-group"><button class="try-btn" onclick="query('eokul','eokulQuery','result-eokul')">🔎 Sorgula</button></div>
+        <div id="result-eokul" class="result-area"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAPU -->
+  <div class="category">
+    <div class="category-title">🏠 Tapu & Adres <span class="count">3 endpoint</span></div>
+    <div class="grid">
+      <div class="api-card">
+        <div class="api-header"><span class="api-name">🏠 Adres Sorgulama</span><span class="api-method">GET</span></div>
+        <div class="api-desc">TC ile ikametgah bilgilerini sorgular.</div>
+        <div class="input-group"><input type="text" id="adresQuery" placeholder="11111111110" value="11111111110" maxlength="11"></div>
+        <div class="button-group"><button class="try-btn" onclick="query('adres','adresQuery','result-adres')">🔎 Sorgula</button></div>
+        <div id="result-adres" class="result-area"></div>
+      </div>
+      <div class="api-card">
+        <div class="api-header"><span class="api-name">🏡 Tapu Sorgulama</span><span class="api-method">GET</span></div>
+        <div class="api-desc">TC ile tapu kayıtlarını sorgular.</div>
+        <div class="input-group"><input type="text" id="tapuQuery" placeholder="27727166918" value="27727166918" maxlength="11"></div>
+        <div class="button-group"><button class="try-btn" onclick="query('tapu','tapuQuery','result-tapu')">🔎 Sorgula</button></div>
+        <div id="result-tapu" class="result-area"></div>
+      </div>
+      <div class="api-card">
+        <div class="api-header"><span class="api-name">📐 Ada Parsel Sorgulama</span><span class="api-method">GET</span></div>
+        <div class="api-desc">İl / ilçe ile ada parsel sorgular.</div>
+        <div class="input-group">
+          <input type="text" id="ilQuery" placeholder="İSTANBUL" value="İSTANBUL">
+          <input type="text" id="ilceQuery" placeholder="KADIKÖY" value="KADIKÖY">
+        </div>
+        <div class="button-group"><button class="try-btn" onclick="queryAdaparsel()">🔎 Sorgula</button></div>
+        <div id="result-adaparsel" class="result-area"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>Forex Sorgulama Hizmeti · <a href="https://t.me/cmrbaskani" target="_blank">@cmrbaskani</a></p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ═══════════ AYARLAR ═══════════
+  const API = "forexsystem.php";
+
+  // ═══════════ UI YARDIMCI ═══════════
+  const toast = document.getElementById('toast');
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => toast.classList.remove('show'), 1600);
+  }
+  function escHtml(s) {
+    return String(s||"").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+
+  // ═══════════ TEMA ═══════════
+  function setTheme(theme) {
+    const btn = document.getElementById('themeToggle');
+    if (!btn) return;
+    if (theme === 'dark') {
+      document.body.classList.add('dark'); document.body.classList.remove('light');
+      localStorage.setItem('theme', 'dark');
+      btn.innerHTML = '☀️ Gündüz';
+    } else {
+      document.body.classList.add('light'); document.body.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+      btn.innerHTML = '🌙 Gece';
+    }
+  }
+  function toggleTheme() { setTheme(document.body.classList.contains('dark') ? 'light' : 'dark'); }
+  setTheme(localStorage.getItem('theme') === 'light' ? 'light' : 'dark');
+
+  // ═══════════ LOGIN ═══════════
+  async function checkSession() {
+    try {
+      const r = await fetch(`${API}?action=check`);
+      const d = await r.json();
+      if (d.success && d.logged) {
+        showPanel(d.user);
+      } else {
+        showLogin();
+      }
+    } catch (e) {
+      showLogin();
+    }
+  }
+
+  function showPanel(user) {
+    document.getElementById('loginView').classList.add('hidden');
+    document.getElementById('panelView').classList.remove('hidden');
+    if (user) document.getElementById('userLabel').textContent = user.toUpperCase();
+    document.getElementById('themeToggle')?.addEventListener('click', toggleTheme);
+  }
+
+  function showLogin() {
+    document.getElementById('panelView').classList.add('hidden');
+    document.getElementById('loginView').classList.remove('hidden');
+    setTimeout(() => document.getElementById('loginUser')?.focus(), 100);
+  }
+
+  async function doLogin() {
+    const user = document.getElementById('loginUser').value.trim();
+    const pass = document.getElementById('loginPass').value;
+    const errEl = document.getElementById('loginError');
+    const btn = document.getElementById('loginBtn');
+
+    errEl.classList.remove('active');
+
+    if (!user || !pass) {
+      errEl.textContent = '❌ Kullanıcı adı ve şifre gerekli';
+      errEl.classList.add('active');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Giriş yapılıyor...';
+
+    try {
+      const fd = new FormData();
+      fd.append('action', 'login');
+      fd.append('user', user);
+      fd.append('pass', pass);
+
+      const r = await fetch(API, { method: 'POST', body: fd });
+      const d = await r.json();
+
+      if (d.success) {
+        showToast('✓ Giriş başarılı');
+        showPanel(d.user);
+      } else {
+        errEl.textContent = '❌ ' + (d.error || 'Giriş başarısız');
+        errEl.classList.add('active');
+      }
+    } catch (e) {
+      errEl.textContent = '❌ Bağlantı hatası: ' + e.message;
+      errEl.classList.add('active');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '🔓 Giriş Yap';
+    }
+  }
+
+  async function doLogout() {
+    if (!confirm('Çıkış yapmak istediğine emin misin?')) return;
+    try {
+      await fetch(`${API}?action=logout`);
+    } catch (e) {}
+    showLogin();
+    showToast('Çıkış yapıldı');
+  }
+
+  // Enter tuşu ile login
+  document.getElementById('loginUser').addEventListener('keypress', e => {
+    if (e.key === 'Enter') document.getElementById('loginPass').focus();
+  });
+  document.getElementById('loginPass').addEventListener('keypress', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  // ═══════════ VERİ GÖRSELLEŞTİRİCİ ═══════════
+  function renderData(container, data) {
+    // Hata varsa
+    if (data.error || data.hata) {
+      container.innerHTML = `<div class="result-badge err">✗ ${escHtml(data.error || data.hata)}</div>`;
+      return;
+    }
+
+    // Başarısız
+    if (data.success === false) {
+      container.innerHTML = `<div class="result-badge err">✗ ${escHtml(data.error || 'Hata')}</div>`;
+      return;
+    }
+
+    // data veya results veya direkt array
+    let items = data.data || data.results || data;
+    if (!Array.isArray(items)) items = [items];
+
+    if (items.length === 0 || (items.length === 1 && Object.keys(items[0]).length === 0)) {
+      container.innerHTML = `<div class="result-badge err">✗ Kayıt bulunamadı</div>`;
+      return;
+    }
+
+    let html = `<div class="result-badge ok">✓ ${items.length} kayıt</div>`;
+    html += `<div class="kv-list">`;
+
+    items.forEach((item, idx) => {
+      if (items.length > 1) {
+        html += `<div style="color:var(--primary);font-weight:700;font-size:.8rem;margin-top:${idx>0?'.75rem':'0'}">#${idx+1}</div>`;
+      }
+      for (const [k, v] of Object.entries(item)) {
+        if (v === null || v === undefined || v === '') continue;
+        const val = typeof v === 'object' ? JSON.stringify(v) : String(v);
+        const hl = ['TC', 'KimlikNo', 'AdSoyad', 'ADI', 'SOYADI'].includes(k);
+        html += `<div class="kv-row"><span class="kv-key">${escHtml(k)}</span><span class="kv-val${hl?' hl':''}">${escHtml(val)}</span></div>`;
+      }
+    });
+
+    html += `</div>`;
+    container.innerHTML = html;
+  }
+
+  // ═══════════ SORGULAMA ═══════════
+  async function query(type, inputId, resultId) {
+    const value = document.getElementById(inputId).value.trim();
+    if (!value) { showToast('Değer gir'); return; }
+
+    const res = document.getElementById(resultId);
+    res.classList.add('active');
+    res.innerHTML = '<span class="spinner"></span> Sorgulanıyor...';
+
+    try {
+      const r = await fetch(`${API}?action=query&type=${encodeURIComponent(type)}&${encodeURIComponent(getParamName(type))}=${encodeURIComponent(value)}`);
+      const d = await r.json();
+      if (r.status === 401) {
+        showLogin();
+        showToast('Oturum süresi doldu');
+        return;
+      }
+      renderData(res, d);
+    } catch (e) {
+      res.innerHTML = `<div class="result-badge err">✗ Hata: ${escHtml(e.message)}</div>`;
+    }
+  }
+
+  function getParamName(type) {
+    const map = {
+      'tc': 'tc', 'tcpro': 'tc', 'aile': 'tc', 'ailepro': 'tc', 'sulale': 'tc',
+      'tcgsm': 'tc', 'eokul': 'tc', 'adres': 'tc', 'tapu': 'tc',
+      'gsmtc': 'gsm'
+    };
+    return map[type] || 'tc';
+  }
+
+  async function queryAdSoyad() {
+    const ad = document.getElementById('adQuery').value.trim();
+    const soyad = document.getElementById('soyadQuery').value.trim();
+    if (!ad || !soyad) { showToast('Ad ve soyad gir'); return; }
+
+    const res = document.getElementById('result-adsoyad');
+    res.classList.add('active');
+    res.innerHTML = '<span class="spinner"></span> Sorgulanıyor...';
+
+    try {
+      const r = await fetch(`${API}?action=query&type=adsoyad&ad=${encodeURIComponent(ad)}&soyad=${encodeURIComponent(soyad)}`);
+      const d = await r.json();
+      if (r.status === 401) { showLogin(); return; }
+      renderData(res, d);
+    } catch (e) {
+      res.innerHTML = `<div class="result-badge err">✗ Hata: ${escHtml(e.message)}</div>`;
+    }
+  }
+
+  async function queryAdaparsel() {
+    const il = document.getElementById('ilQuery').value.trim();
+    const ilce = document.getElementById('ilceQuery').value.trim();
+    if (!il && !ilce) { showToast('En az il veya ilçe gir'); return; }
+
+    const res = document.getElementById('result-adaparsel');
+    res.classList.add('active');
+    res.innerHTML = '<span class="spinner"></span> Sorgulanıyor...';
+
+    const params = new URLSearchParams({ action: 'query', type: 'adaparsel' });
+    if (il) params.set('il', il);
+    if (ilce) params.set('ilce', ilce);
+
+    try {
+      const r = await fetch(`${API}?${params}`);
+      const d = await r.json();
+      if (r.status === 401) { showLogin(); return; }
+      renderData(res, d);
+    } catch (e) {
+      res.innerHTML = `<div class="result-badge err">✗ Hata: ${escHtml(e.message)}</div>`;
+    }
+  }
+
+  // Enter tuşu
+  document.querySelectorAll('.api-card input').forEach(inp => {
+    inp.addEventListener('keypress', e => {
+      if (e.key === 'Enter') {
+        const card = inp.closest('.api-card');
+        const btn = card?.querySelector('.try-btn');
+        if (btn) btn.click();
+      }
+    });
+  });
+
+  // Başlangıç
+  checkSession();
+</script>
+
+</body>
+</html>
