@@ -302,7 +302,35 @@
         </div>
       </div>
     </div>
-    <nav class="sb-nav" id="sbNav"></nav>
+
+    <!-- SABİT MENÜ (AI + Chat + Kullanıcılar) -->
+    <nav class="sb-nav" id="sbNav">
+      <div class="sb-item" id="navChat" onclick="showView('chat')"><span class="ico">💬</span> Genel Sohbet</div>
+      <div class="sb-item" id="navAI" onclick="showView('ai')"><span class="ico">🤖</span> AI Asistan</div>
+      <div class="sb-item" id="navUsers" onclick="showView('users')"><span class="ico">👥</span> Kullanıcılar</div>
+      <div class="sb-section">Sorgular</div>
+      <div class="sb-item" onclick="openQuery('tc')"><span class="ico">🆔</span> TC Sorgulama</div>
+      <div class="sb-item" onclick="openQuery('tcpro')"><span class="ico">🆔</span> TC Pro</div>
+      <div class="sb-item" onclick="openQuery('adsoyad')"><span class="ico">👥</span> Ad Soyad</div>
+      <div class="sb-item" onclick="openQuery('aile')"><span class="ico">👪</span> Aile</div>
+      <div class="sb-item" onclick="openQuery('ailepro')"><span class="ico">👪</span> Aile Pro</div>
+      <div class="sb-item" onclick="openQuery('tcgsm')"><span class="ico">📱</span> TC → GSM</div>
+      <div class="sb-item" onclick="openQuery('gsmtc')"><span class="ico">📞</span> GSM → TC</div>
+      <div class="sb-item" onclick="openQuery('eokul')"><span class="ico">🎓</span> E-Okul</div>
+      <div class="sb-section" style="color:#f59e0b;">💎 VIP</div>
+      <div class="sb-item" onclick="openQuery('sulale')"><span class="ico">🌳</span> Sülale <span class="vip-badge">VIP</span></div>
+      <div class="sb-item" onclick="openQuery('adres')"><span class="ico">🏠</span> Adres <span class="vip-badge">VIP</span></div>
+      <div class="sb-item" onclick="openQuery('tapu')"><span class="ico">🏡</span> Tapu <span class="vip-badge">VIP</span></div>
+      <div class="sb-item" onclick="openQuery('adaparsel')"><span class="ico">📐</span> Ada Parsel <span class="vip-badge">VIP</span></div>
+      <div class="sb-section">🔥 Diğer</div>
+      <div class="sb-item" onclick="openQuery('new_adsoyad')"><span class="ico">🔎</span> Detaylı Ad Soyad</div>
+      <div class="sb-item" onclick="openQuery('new_tc')"><span class="ico">🆔</span> Detaylı TC</div>
+      <div class="sb-item" onclick="openQuery('new_aile')"><span class="ico">👪</span> Detaylı Aile</div>
+      <div class="sb-item" onclick="openQuery('new_hane')"><span class="ico">🏘️</span> Hane Sorgu</div>
+      <div class="sb-item" onclick="openQuery('new_sulale')"><span class="ico">🌳</span> Detaylı Sülale <span class="vip-badge">VIP</span></div>
+      <div class="sb-item" onclick="openQuery('new_sokak')"><span class="ico">🛣️</span> Sokak Sorgu <span class="vip-badge">VIP</span></div>
+      <div class="sb-item" onclick="openQuery('new_adres2009')"><span class="ico">📍</span> Eski Adres <span class="vip-badge">VIP</span></div>
+    </nav>
   </aside>
 
   <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
