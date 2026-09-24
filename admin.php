@@ -1,7 +1,4 @@
 <?php
-/**
- * admin.php — Admin API
- */
 require_once __DIR__ . '/config.php';
 
 $action = $_REQUEST['action'] ?? '';
@@ -25,7 +22,14 @@ switch ($action) {
                 'password'   => password_hash($pass, PASSWORD_DEFAULT),
                 'avatar'     => DEFAULT_AVATAR,
                 'bio'        => 'Yönetici',
+                'birthday'   => '',
+                'horoscope'  => '',
+                'city'       => '',
+                'job'        => '',
+                'instagram'  => '',
+                'telegram'   => '',
                 'rank'       => 'Baş Admin',
+                'is_vip'     => true,
                 'verified'   => true,
                 'banned'     => false,
                 'is_admin'   => true,
@@ -79,11 +83,24 @@ switch ($action) {
         $id = $_POST['id'] ?? '';
         $v = (int)($_POST['verified'] ?? 1);
         $users = load_users();
-        foreach ($users as &$u) {
-            if ($u['id'] === $id) $u['verified'] = (bool)$v;
-        }
+        foreach ($users as &$u) if ($u['id'] === $id) $u['verified'] = (bool)$v;
         save_users($users);
         json_out(["success"=>true, "message"=>$v ? "✅ Tik verildi" : "Tik kaldırıldı"]);
+
+    case 'vip':
+        require_admin();
+        $id = $_POST['id'] ?? '';
+        $vip = (int)($_POST['vip'] ?? 1);
+        $users = load_users();
+        foreach ($users as &$u) {
+            if ($u['id'] === $id) {
+                $u['is_vip'] = (bool)$vip;
+                if ($vip) $u['rank'] = 'VIP';
+                elseif ($u['rank'] === 'VIP') $u['rank'] = 'Üye';
+            }
+        }
+        save_users($users);
+        json_out(["success"=>true, "message"=>$vip ? "💎 VIP verildi" : "VIP kaldırıldı"]);
 
     case 'delete_user':
         require_admin();
@@ -107,7 +124,10 @@ switch ($action) {
         if ($rank === '') json_out(["success"=>false,"error"=>"Rütbe gerekli"]);
         $users = load_users();
         foreach ($users as &$u) {
-            if ($u['id'] === $id) $u['rank'] = mb_substr($rank, 0, 30);
+            if ($u['id'] === $id) {
+                $u['rank'] = mb_substr($rank, 0, 30);
+                $u['is_vip'] = ($rank === 'VIP');
+            }
         }
         save_users($users);
         json_out(["success"=>true, "message"=>"Rütbe ayarlandı"]);
@@ -116,20 +136,47 @@ switch ($action) {
         require_admin();
         $users = load_users();
         $messages = read_json(CHAT_FILE, []);
-        $online = 0; $verified = 0; $banned = 0;
+        $aiMsgs   = read_json(AI_CHAT_FILE, []);
+        $online = 0; $verified = 0; $banned = 0; $vip = 0;
         foreach ($users as $u) {
             if (is_online($u)) $online++;
             if (!empty($u['verified'])) $verified++;
             if (!empty($u['banned'])) $banned++;
+            if (!empty($u['is_vip']) || ($u['rank'] ?? '') === 'VIP') $vip++;
         }
         json_out([
-            "success"   => true,
-            "total"     => count($users),
-            "online"    => $online,
-            "verified"  => $verified,
-            "banned"    => $banned,
-            "messages"  => count($messages),
+            "success"     => true,
+            "total"       => count($users),
+            "online"      => $online,
+            "verified"    => $verified,
+            "banned"      => $banned,
+            "vip"         => $vip,
+            "messages"    => count($messages),
+            "ai_messages" => count($aiMsgs),
         ]);
+
+    case 'settings':
+        require_admin();
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $s = load_settings();
+            if (isset($_POST['theme']))        $s['theme'] = $_POST['theme'];
+            if (isset($_POST['announcement'])) $s['announcement'] = $_POST['announcement'];
+            if (isset($_POST['maintenance']))  $s['maintenance'] = (bool)$_POST['maintenance'];
+            if (isset($_POST['ai_enabled']))   $s['ai_enabled'] = (bool)$_POST['ai_enabled'];
+            save_settings($s);
+            json_out(["success"=>true, "message"=>"Ayarlar güncellendi", "settings"=>$s]);
+        }
+        json_out(["success"=>true, "settings"=>load_settings()]);
+
+    case 'clear_chat':
+        require_admin();
+        write_json(CHAT_FILE, []);
+        json_out(["success"=>true, "message"=>"Sohbet temizlendi"]);
+
+    case 'clear_ai':
+        require_admin();
+        write_json(AI_CHAT_FILE, []);
+        json_out(["success"=>true, "message"=>"AI geçmişi temizlendi"]);
 
     default:
         json_out(["success"=>false,"error"=>"Bilinmeyen action"], 404);
@@ -143,7 +190,14 @@ function public_user_admin($u) {
         'email'      => $u['email'] ?? '',
         'avatar'     => avatar_url($u),
         'bio'        => $u['bio'] ?? '',
+        'birthday'   => $u['birthday'] ?? '',
+        'horoscope'  => $u['horoscope'] ?? '',
+        'city'       => $u['city'] ?? '',
+        'job'        => $u['job'] ?? '',
+        'instagram'  => $u['instagram'] ?? '',
+        'telegram'   => $u['telegram'] ?? '',
         'rank'       => $u['rank'] ?? 'Üye',
+        'is_vip'     => !empty($u['is_vip']) || ($u['rank'] ?? '') === 'VIP',
         'verified'   => !empty($u['verified']),
         'banned'     => !empty($u['banned']),
         'is_admin'   => !empty($u['is_admin']),

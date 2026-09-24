@@ -22,9 +22,7 @@
     background-image:
       linear-gradient(rgba(10,14,26,.88), rgba(10,14,26,.92)),
       url('https://i.hizliresim.com/loreuqk4.jpg');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
+    background-size: cover; background-position: center; background-attachment: fixed;
   }
   .container { max-width: 1200px; margin: 0 auto; }
   .hidden { display: none !important; }
@@ -34,10 +32,7 @@
     backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 1.25rem;
   }
   .logo { display: flex; align-items: center; gap: .85rem; }
-  .logo-icon {
-    width: 44px; height: 44px; border-radius: 12px; object-fit: cover;
-    border: 2px solid #ef4444;
-  }
+  .logo-icon { width: 44px; height: 44px; border-radius: 12px; object-fit: cover; border: 2px solid #ef4444; }
   .logo-text h1 { font-size: 1.2rem; font-weight: 800; letter-spacing: -.02em; }
   .logo-text p { font-size: .72rem; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
   .btn {
@@ -50,63 +45,28 @@
   .btn.danger:hover { background: rgba(239,68,68,.1); }
   .btn.success { color: #86efac; border-color: rgba(16,185,129,.35); }
   .btn.success:hover { background: rgba(16,185,129,.1); }
-  .stats {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: .85rem; margin-bottom: 1.5rem;
-  }
-  .stat {
-    background: var(--card); backdrop-filter: blur(20px);
-    border: 1px solid var(--border); border-radius: 1rem; padding: 1rem 1.1rem;
-  }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: .85rem; margin-bottom: 1.5rem; }
+  .stat { background: var(--card); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 1rem; padding: 1rem 1.1rem; }
   .stat .label { font-size: .68rem; color: var(--text-dim); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; margin-bottom: .4rem; }
   .stat .value { font-size: 1.6rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
   .stat .value.purple { background: linear-gradient(135deg, var(--primary), var(--primary-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .stat .value.green { color: #86efac; }
   .stat .value.red { color: #fca5a5; }
   .stat .value.yellow { color: #fcd34d; }
-
-  .panel {
-    background: var(--card); backdrop-filter: blur(20px);
-    border: 1px solid var(--border); border-radius: 1.25rem;
-    padding: 1.5rem; margin-bottom: 1.5rem;
-  }
-  .panel-title {
-    font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem;
-    display: flex; align-items: center; gap: .5rem;
-  }
-  .panel-title::before {
-    content: ""; width: 4px; height: 18px;
-    background: linear-gradient(180deg, #ef4444, #f97316);
-    border-radius: 4px;
-  }
-
-  .user-row {
-    display: flex; align-items: center; gap: 1rem;
-    padding: .85rem 1rem; border-bottom: 1px solid var(--border);
-    flex-wrap: wrap;
-  }
+  .panel { background: var(--card); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.5rem; margin-bottom: 1.5rem; }
+  .panel-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; }
+  .panel-title::before { content: ""; width: 4px; height: 18px; background: linear-gradient(180deg, #ef4444, #f97316); border-radius: 4px; }
+  .user-row { display: flex; align-items: center; gap: 1rem; padding: .85rem 1rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
   .user-row:last-child { border-bottom: none; }
-  .user-avatar {
-    width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
-    object-fit: cover; border: 2px solid var(--border);
-  }
+  .user-avatar { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; object-fit: cover; border: 2px solid var(--border); }
   .user-info { flex: 1; min-width: 180px; }
-  .user-name {
-    font-weight: 700; font-size: .92rem;
-    display: flex; align-items: center; gap: .35rem; flex-wrap: wrap;
-  }
+  .user-name { font-weight: 700; font-size: .92rem; display: flex; align-items: center; gap: .35rem; flex-wrap: wrap; }
   .tick { color: #60a5fa; font-size: .85rem; }
-  .rank-badge {
-    font-size: .65rem; font-weight: 700; padding: .18rem .5rem;
-    border-radius: 999px; background: linear-gradient(135deg, var(--primary), var(--primary-2));
-    color: white; text-transform: uppercase; letter-spacing: .04em;
-  }
+  .rank-badge { font-size: .65rem; font-weight: 700; padding: .18rem .5rem; border-radius: 999px; background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; text-transform: uppercase; }
   .rank-badge.admin { background: linear-gradient(135deg, #ef4444, #f97316); }
+  .rank-badge.vip { background: linear-gradient(135deg, #f59e0b, #ef4444); }
   .user-meta { font-size: .72rem; color: var(--text-dim); margin-top: .15rem; }
-  .status {
-    font-size: .72rem; font-weight: 700;
-    display: inline-flex; align-items: center; gap: .35rem;
-  }
+  .status { font-size: .72rem; font-weight: 700; display: inline-flex; align-items: center; gap: .35rem; }
   .status .dot { width: 7px; height: 7px; border-radius: 50%; }
   .status.online { color: #86efac; }
   .status.online .dot { background: #10b981; box-shadow: 0 0 8px #10b981; animation: pulse 2s infinite; }
@@ -115,25 +75,16 @@
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
   .status.banned { color: #fca5a5; }
   .user-actions { display: flex; gap: .4rem; flex-wrap: wrap; }
-  .btn-sm {
-    padding: .4rem .7rem; border-radius: .5rem; font-size: .72rem; font-weight: 600;
-    cursor: pointer; border: 1px solid var(--border); background: var(--card-solid);
-    color: var(--text); font-family: inherit; transition: all .2s;
-  }
+  .btn-sm { padding: .4rem .7rem; border-radius: .5rem; font-size: .72rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--card-solid); color: var(--text); font-family: inherit; transition: all .2s; }
   .btn-sm:hover { border-color: var(--border-hover); }
   .btn-sm.danger { color: #fca5a5; border-color: rgba(239,68,68,.3); }
   .btn-sm.danger:hover { background: rgba(239,68,68,.1); }
   .btn-sm.success { color: #86efac; border-color: rgba(16,185,129,.3); }
   .btn-sm.success:hover { background: rgba(16,185,129,.1); }
   .btn-sm.warn { color: #fcd34d; border-color: rgba(245,158,11,.3); }
-
-  .toast {
-    position: fixed; bottom: 24px; right: 24px; padding: .85rem 1.2rem;
-    background: var(--card-solid); border: 1px solid var(--primary); border-radius: .75rem;
-    color: var(--text); font-size: .85rem; font-weight: 600;
-    box-shadow: 0 10px 30px rgba(99,102,241,.4);
-    opacity: 0; transform: translateY(12px); transition: all .3s; pointer-events: none; z-index: 999;
-  }
+  .btn-sm.vip { color: #fbbf24; border-color: rgba(245,158,11,.5); background: rgba(245,158,11,.08); }
+  .btn-sm.vip.active { background: linear-gradient(135deg, #f59e0b, #ef4444); color: white; border-color: transparent; }
+  .toast { position: fixed; bottom: 24px; right: 24px; padding: .85rem 1.2rem; background: var(--card-solid); border: 1px solid var(--primary); border-radius: .75rem; color: var(--text); font-size: .85rem; font-weight: 600; box-shadow: 0 10px 30px rgba(99,102,241,.4); opacity: 0; transform: translateY(12px); transition: all .3s; pointer-events: none; z-index: 999; }
   .toast.show { opacity: 1; transform: translateY(0); }
   .toast.error { border-color: var(--danger); }
   .toast.success { border-color: var(--success); }
@@ -159,8 +110,8 @@
         <p>Forex Sorgulama Hizmeti</p>
       </div>
     </div>
-    <div style="display:flex;gap:.5rem;">
-      <button class="btn" onclick="loadStats()">🔄 Yenile</button>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+      <button class="btn" onclick="loadStats();loadUsers();">🔄 Yenile</button>
       <button class="btn" onclick="location.href='index.html'">🏠 Ana Sayfa</button>
       <button class="btn danger" onclick="logout()">🚪 Çıkış</button>
     </div>
@@ -187,7 +138,6 @@ function toast(msg, type='') {
   clearTimeout(t._t);
   t._t = setTimeout(() => t.className = 'toast', 2200);
 }
-
 function esc(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function avatarOf(u) { return (u.avatar && !u.avatar.includes('ui-avatars.com')) ? u.avatar : DEFAULT_AVATAR; }
 
@@ -219,9 +169,11 @@ async function loadStats() {
   document.getElementById('stats').innerHTML = `
     <div class="stat"><div class="label">Toplam</div><div class="value purple">${d.total}</div></div>
     <div class="stat"><div class="label">Çevrimiçi</div><div class="value green">${d.online}</div></div>
+    <div class="stat"><div class="label">VIP</div><div class="value yellow">${d.vip}</div></div>
     <div class="stat"><div class="label">Doğrulanmış</div><div class="value yellow">${d.verified}</div></div>
     <div class="stat"><div class="label">Banlı</div><div class="value red">${d.banned}</div></div>
     <div class="stat"><div class="label">Mesaj</div><div class="value purple">${d.messages}</div></div>
+    <div class="stat"><div class="label">AI Mesaj</div><div class="value purple">${d.ai_messages}</div></div>
   `;
 }
 
@@ -237,8 +189,8 @@ async function loadUsers() {
       : u.online
         ? '<span class="status online"><span class="dot"></span> Çevrimiçi</span>'
         : '<span class="status offline"><span class="dot"></span> Çevrimdışı</span>';
-
     const tick = u.verified ? '<span class="tick" title="Doğrulanmış">✅</span>' : '';
+    const vipBadge = u.is_vip ? '<span class="rank-badge vip">💎 VIP</span>' : '';
     const rankCls = u.is_admin ? 'admin' : '';
     const lastSeen = u.last_seen ? new Date(u.last_seen).toLocaleString('tr-TR') : 'Bilinmiyor';
     const av = avatarOf(u);
@@ -251,13 +203,17 @@ async function loadUsers() {
             ${esc(u.username)}
             ${tick}
             <span class="rank-badge ${rankCls}">${esc(u.rank)}</span>
+            ${vipBadge}
             ${u.is_admin ? '<span class="rank-badge admin">ADMIN</span>' : ''}
           </div>
-          <div class="user-meta">${esc(u.email || '-')} · Son görülme: ${lastSeen}</div>
+          <div class="user-meta">${esc(u.email || '-')} ${u.horoscope ? '· ' + esc(u.horoscope) : ''} · Son görülme: ${lastSeen}</div>
           <div style="margin-top:.3rem;">${status}</div>
         </div>
         <div class="user-actions">
           ${!u.is_admin ? `
+            <button class="btn-sm vip ${u.is_vip ? 'active' : ''}" onclick="toggleVIP('${u.id}', ${u.is_vip ? 0 : 1})">
+              ${u.is_vip ? '💎 VIP Kaldır' : '💎 VIP Ver'}
+            </button>
             <button class="btn-sm ${u.verified ? 'warn' : 'success'}" onclick="toggleVerify('${u.id}', ${u.verified ? 0 : 1})">
               ${u.verified ? '❌ Tik Kaldır' : '✅ Tik Ver'}
             </button>
@@ -272,6 +228,12 @@ async function loadUsers() {
     `;
   }
   document.getElementById('userList').innerHTML = html || '<p style="color:var(--text-dim);text-align:center;padding:2rem;">Kayıtlı kullanıcı yok</p>';
+}
+
+async function toggleVIP(id, v) {
+  const d = await api('vip', { id, vip: v });
+  toast(d.message || 'İşlem tamam', d.success ? 'success' : 'error');
+  loadUsers(); loadStats();
 }
 
 async function toggleVerify(id, v) {

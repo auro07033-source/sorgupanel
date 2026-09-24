@@ -14,29 +14,23 @@ header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 
-// ═══════════════════════════════════════════
-// SABİTLER
-// ═══════════════════════════════════════════
-define('DATA_DIR', __DIR__ . '/data');
-define('USERS_FILE', DATA_DIR . '/users.json');
-define('CHAT_FILE', DATA_DIR . '/chat.json');
-define('SESSION_TTL', 86400 * 7);
+define('DATA_DIR',       __DIR__ . '/data');
+define('USERS_FILE',     DATA_DIR . '/users.json');
+define('CHAT_FILE',      DATA_DIR . '/chat.json');
+define('AI_CHAT_FILE',   DATA_DIR . '/ai_chat.json');
+define('SETTINGS_FILE',  DATA_DIR . '/settings.json');
+define('SESSION_TTL',    86400 * 7);
 
-// ═══════════════════════════════════════════
-// GÖRSEL YOLLARI
-// ═══════════════════════════════════════════
-define('BG_IMAGE',    'https://i.hizliresim.com/loreuqk4.jpg');
+define('BG_IMAGE',       'https://i.hizliresim.com/loreuqk4.jpg');
 define('DEFAULT_AVATAR', 'https://i.hizliresim.com/midnihxu.jpg');
 
-// ═══════════════════════════════════════════
-// ADMIN
-// ═══════════════════════════════════════════
 define('ADMIN_USER', 'admin');
 define('ADMIN_PASS', 'forex:qw24');
 
-// ═══════════════════════════════════════════
-// YARDIMCI
-// ═══════════════════════════════════════════
+define('AI_API',    'https://ucretsizservicetr.onrender.com/gptpro.php');
+define('AI_KEY',    'cmrbaskani_2026_secret_key_xyz');
+define('AI_DEVICE', 'dev_qyodisa8wzo_1789992264510');
+
 if (!is_dir(DATA_DIR)) { @mkdir(DATA_DIR, 0777, true); }
 
 function json_out($data, $code = 200) {
@@ -55,6 +49,7 @@ function read_json($file, $default = []) {
 }
 
 function write_json($file, $data) {
+    if (file_exists($file)) @copy($file, $file . '.bak');
     @file_put_contents($file, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT), LOCK_EX);
 }
 
@@ -64,14 +59,14 @@ function save_users($u) { write_json(USERS_FILE, $u); }
 function find_user($username) {
     $u = strtolower(trim($username));
     foreach (load_users() as $user) {
-        if (strtolower($user['username']) === $u) return $user;
+        if (strtolower($user['username'] ?? '') === $u) return $user;
     }
     return null;
 }
 
 function find_user_by_id($id) {
     foreach (load_users() as $user) {
-        if ($user['id'] === $id) return $user;
+        if (($user['id'] ?? '') === $id) return $user;
     }
     return null;
 }
@@ -83,16 +78,27 @@ function current_user() {
 
 function is_logged_in() { return current_user() !== null; }
 function is_admin() { $u = current_user(); return $u && !empty($u['is_admin']); }
+function is_vip() {
+    $u = current_user();
+    if (!$u) return false;
+    if (!empty($u['is_admin'])) return true;
+    if (!empty($u['is_vip'])) return true;
+    if (($u['rank'] ?? '') === 'VIP') return true;
+    return false;
+}
 
 function require_login() {
-    if (!is_logged_in()) {
-        json_out(["success" => false, "error" => "Oturum gerekli", "login" => true], 401);
-    }
+    if (!is_logged_in()) json_out(["success"=>false, "error"=>"Oturum gerekli", "login"=>true], 401);
 }
 
 function require_admin() {
     require_login();
-    if (!is_admin()) json_out(["success" => false, "error" => "Yetkin yok"], 403);
+    if (!is_admin()) json_out(["success"=>false, "error"=>"Yetkin yok"], 403);
+}
+
+function require_vip() {
+    require_login();
+    if (!is_vip()) json_out(["success"=>false, "error"=>"Bu sorgu sadece VIP üyeler içindir","vip_required"=>true], 403);
 }
 
 function gen_id() { return bin2hex(random_bytes(8)); }
@@ -110,3 +116,13 @@ function is_online($user) {
     if (empty($user['last_seen'])) return false;
     return (time() - strtotime($user['last_seen'])) < 300;
 }
+
+function load_settings() {
+    return read_json(SETTINGS_FILE, [
+        'theme'        => 'dark',
+        'announcement' => '',
+        'maintenance'  => false,
+        'ai_enabled'   => true,
+    ]);
+}
+function save_settings($s) { write_json(SETTINGS_FILE, $s); }

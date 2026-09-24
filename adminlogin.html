@@ -9,37 +9,32 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   :root {
     --bg: #0a0e1a; --card-solid: #1e293b;
-    --border: rgba(148,163,184,.12); --border-hover: rgba(148,163,184,.3);
-    --text: #f1f5f9; --text-dim: #94a3b8;
-    --primary: #6366f1; --primary-2: #8b5cf6; --danger: #ef4444;
-    --success: #10b981; --warning: #f59e0b;
+    --border: rgba(148,163,184,.12); --text: #f1f5f9; --text-dim: #94a3b8;
+    --primary: #6366f1; --danger: #ef4444;
   }
   body {
     font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text);
     min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem;
     position: relative; overflow: hidden;
   }
-  body::before {
-    content: ""; position: fixed; inset: -50%; z-index: -1;
-    background:
-      radial-gradient(circle at 20% 20%, rgba(239, 68, 68, 0.15), transparent 45%),
-      radial-gradient(circle at 80% 60%, rgba(139, 92, 246, 0.14), transparent 45%);
-    animation: float 20s ease-in-out infinite;
+  body.custom-bg {
+    background-image:
+      linear-gradient(rgba(10,14,26,.88), rgba(10,14,26,.92)),
+      url('https://i.hizliresim.com/loreuqk4.jpg');
+    background-size: cover; background-position: center; background-attachment: fixed;
   }
-  @keyframes float { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-3%,-3%) scale(1.05)} }
   .box {
-    width: 100%; max-width: 420px; background: rgba(30,41,59,.6);
+    width: 100%; max-width: 420px; background: rgba(30,41,59,.85);
     backdrop-filter: blur(20px); border: 1px solid var(--border);
     border-radius: 1.25rem; padding: 2.5rem 2rem;
     box-shadow: 0 20px 40px -10px rgba(0,0,0,.5);
   }
   .icon {
     width: 64px; height: 64px; border-radius: 16px; margin: 0 auto 1.25rem;
-    background: linear-gradient(135deg, #ef4444, #f97316);
-    display: flex; align-items: center; justify-content: center; font-size: 32px;
+    object-fit: cover; display: block; border: 2px solid #ef4444;
     box-shadow: 0 0 40px rgba(239,68,68,.4);
   }
-  h1 { text-align: center; font-size: 1.4rem; font-weight: 800; letter-spacing: -.02em; margin-bottom: .35rem; }
+  h1 { text-align: center; font-size: 1.4rem; font-weight: 800; margin-bottom: .35rem; }
   .sub { text-align: center; font-size: .8rem; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; margin-bottom: 1.75rem; }
   label { display: block; font-size: .78rem; font-weight: 600; color: var(--text-dim); margin-bottom: .4rem; }
   input {
@@ -57,26 +52,22 @@
   }
   button:hover { transform: translateY(-1px); }
   button:disabled { opacity: .5; cursor: not-allowed; }
-  .error {
-    background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.35);
+  .error { background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.35);
     color: #fca5a5; padding: .65rem .85rem; border-radius: .6rem;
-    font-size: .8rem; margin-bottom: 1rem; display: none;
-  }
+    font-size: .8rem; margin-bottom: 1rem; display: none; }
   .error.active { display: block; }
-  .spinner {
-    display: inline-block; width: 14px; height: 14px;
+  .spinner { display: inline-block; width: 14px; height: 14px;
     border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
-    border-radius: 50%; animation: spin .7s linear infinite;
-  }
+    border-radius: 50%; animation: spin .7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .link { text-align: center; margin-top: 1.25rem; font-size: .82rem; }
   .link a { color: var(--primary); text-decoration: none; }
 </style>
 </head>
-<body>
+<body class="custom-bg">
 
 <div class="box">
-  <div class="icon">🛡️</div>
+  <img class="icon" src="https://i.hizliresim.com/midnihxu.jpg" alt="">
   <h1>Admin Girişi</h1>
   <p class="sub">Yetkili erişim</p>
 
@@ -99,37 +90,26 @@ async function login() {
   const pass = document.getElementById('pass').value;
   const err  = document.getElementById('err');
   const btn  = document.getElementById('btn');
-
   err.classList.remove('active');
   if (!user || !pass) { err.textContent = '❌ Tüm alanları doldur'; err.classList.add('active'); return; }
-
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Giriş yapılıyor...';
-
   try {
     const fd = new FormData();
     fd.append('action', 'admin_login');
     fd.append('username', user);
     fd.append('password', pass);
-
     const r = await fetch('admin.php', { method: 'POST', body: fd });
     const d = await r.json();
-
-    if (d.success) {
-      window.location.href = 'admin.html';
-    } else {
-      err.textContent = '❌ ' + (d.error || 'Giriş başarısız');
-      err.classList.add('active');
-    }
+    if (d.success) window.location.href = 'admin.html';
+    else { err.textContent = '❌ ' + (d.error || 'Giriş başarısız'); err.classList.add('active'); }
   } catch (e) {
-    err.textContent = '❌ Bağlantı hatası';
-    err.classList.add('active');
+    err.textContent = '❌ Bağlantı hatası'; err.classList.add('active');
   } finally {
     btn.disabled = false;
     btn.textContent = '🛡️ Giriş Yap';
   }
 }
-
 document.getElementById('user').addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('pass').focus(); });
 document.getElementById('pass').addEventListener('keypress', e => { if (e.key === 'Enter') login(); });
 </script>
