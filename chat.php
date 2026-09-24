@@ -4,18 +4,14 @@ require_once __DIR__ . '/config.php';
 $action = $_REQUEST['action'] ?? '';
 
 switch ($action) {
+
     case 'messages':
         require_login();
-        $since = (int)($_GET['since'] ?? 0);
         $messages = read_json(CHAT_FILE, []);
         $messages = array_slice($messages, -200);
-        if ($since > 0) {
-            $messages = array_filter($messages, fn($m) => ($m['ts'] ?? 0) > $since);
-            $messages = array_values($messages);
-        }
         $out = [];
         foreach ($messages as $m) {
-            $sender = find_user_by_id($m['user_id']);
+            $sender = find_user_by_id($m['user_id'] ?? '');
             $out[] = [
                 'id'       => $m['id'],
                 'user_id'  => $m['user_id'],
@@ -26,7 +22,6 @@ switch ($action) {
                 'text'     => $m['text'],
                 'ts'       => $m['ts'],
                 'time'     => date('H:i', $m['ts']),
-                'date'     => date('d.m.Y', $m['ts']),
             ];
         }
         json_out(["success"=>true, "messages"=>$out]);
@@ -36,7 +31,7 @@ switch ($action) {
         $me = current_user();
         $text = trim($_POST['text'] ?? '');
         if ($text === '') json_out(["success"=>false,"error"=>"Boş mesaj"]);
-        if (mb_strlen($text) > 500) json_out(["success"=>false,"error"=>"Mesaj çok uzun (max 500)"]);
+        if (mb_strlen($text) > 500) json_out(["success"=>false,"error"=>"Mesaj çok uzun"]);
 
         $messages = read_json(CHAT_FILE, []);
         $messages[] = [
@@ -45,7 +40,7 @@ switch ($action) {
             'text'    => $text,
             'ts'      => time(),
         ];
-        if (count($messages) > 500) $messages = array_slice($messages, -500);
+        if (count($messages) > 1000) $messages = array_slice($messages, -1000);
         write_json(CHAT_FILE, $messages);
         json_out(["success"=>true, "message"=>"Gönderildi"]);
 

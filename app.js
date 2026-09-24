@@ -1,31 +1,27 @@
+/* ═══════════════════════════════════════════════════════════
+   Forex Sorgulama - Uygulama Mantığı
+   ═══════════════════════════════════════════════════════════ */
+
 const API   = 'forexsystem.php';
 const AUTH  = 'auth.php';
 const CHAT  = 'chat.php';
 const AIAPI = 'ai.php';
 const DEFAULT_AVATAR = 'https://i.hizliresim.com/midnihxu.jpg';
 
+// DevTools koruması
 (function(){
   let ihlal = 0;
   function ban(){
     document.getElementById('banShield')?.classList.add('active');
     document.getElementById('authView')?.classList.add('hidden');
     document.getElementById('panelView')?.classList.add('hidden');
-    try { sessionStorage.clear(); } catch(e){}
   }
-  function ihlalEkle(){ ihlal++; if (ihlal >= 3) ban(); }
   document.addEventListener('keydown', function(e){
-    if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); ihlalEkle(); return false; }
-    if (e.ctrlKey && e.shiftKey && ['I','i','J','j','C','c'].includes(e.key)) { e.preventDefault(); ihlalEkle(); return false; }
-    if (e.ctrlKey && ['U','u'].includes(e.key)) { e.preventDefault(); ihlalEkle(); return false; }
-    if (e.ctrlKey && ['S','s','P','p'].includes(e.key)) { e.preventDefault(); return false; }
+    if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); ihlal++; if (ihlal >= 3) ban(); return false; }
+    if (e.ctrlKey && e.shiftKey && ['I','i','J','j','C','c'].includes(e.key)) { e.preventDefault(); ihlal++; if (ihlal >= 3) ban(); return false; }
+    if (e.ctrlKey && ['U','u'].includes(e.key)) { e.preventDefault(); ihlal++; if (ihlal >= 3) ban(); return false; }
   }, true);
-  document.addEventListener('contextmenu', function(e){ e.preventDefault(); return false; }, true);
-  document.addEventListener('selectstart', function(e){
-    const t = e.target;
-    if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA') return true;
-    e.preventDefault(); return false;
-  }, true);
-  document.addEventListener('dragstart', function(e){ e.preventDefault(); return false; }, true);
+  document.addEventListener('contextmenu', e => e.preventDefault(), true);
 })();
 
 let CURRENT_USER = null;
@@ -34,25 +30,27 @@ let HEARTBEAT_TIMER = null;
 let CURRENT_QUERY = 'tc';
 
 const QUERIES = {
-  tc:        { icon:'🆔', baslik:'TC Sorgulama',         alt:'Kimlik numarası ile kişi bilgisi', inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, val:'', label:'TC Kimlik Numarası'}], type:'tc', vip:false },
-  tcpro:     { icon:'🆔', baslik:'TC Pro Sorgulama',     alt:'Detaylı kişi bilgisi',             inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, val:'', label:'TC Kimlik Numarası'}], type:'tcpro', vip:false },
-  adsoyad:   { icon:'👥', baslik:'Ad Soyad Sorgulama',   alt:'Ad ve soyad ile TC bulma',         inputs:[{id:'ad', ph:'Ad', val:'', label:'Ad'},{id:'soyad', ph:'Soyad', val:'', label:'Soyad'}], type:'adsoyad', vip:false },
-  aile:      { icon:'👪', baslik:'Aile Sorgulama',       alt:'TC ile aile bireyleri',            inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'aile', vip:false },
-  ailepro:   { icon:'👪', baslik:'Aile Pro Sorgulama',   alt:'Detaylı aile bilgisi',             inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'ailepro', vip:false },
-  tcgsm:     { icon:'📱', baslik:'TC → GSM Sorgulama',   alt:'TC ile telefon numarası',          inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'tcgsm', vip:false },
-  gsmtc:     { icon:'📞', baslik:'GSM → TC Sorgulama',   alt:'Telefon ile TC kimlik',            inputs:[{id:'gsm', ph:'GSM No', max:10, val:'', label:'GSM Numarası'}], type:'gsmtc', vip:false },
-  eokul:     { icon:'🎓', baslik:'E-Okul Sorgulama',     alt:'Öğrenci okul bilgileri',           inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'eokul', vip:false },
-  sulale:    { icon:'🌳', baslik:'Sülale Sorgulama',     alt:'Sülale kayıtları',                 inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'sulale', vip:true },
-  adres:     { icon:'🏠', baslik:'Adres Sorgulama',      alt:'İkametgah adresi',                 inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'adres', vip:true },
-  tapu:      { icon:'🏡', baslik:'Tapu Sorgulama',       alt:'Tapu kayıtları',                   inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'tapu', vip:true },
-  adaparsel: { icon:'📐', baslik:'Ada Parsel Sorgulama', alt:'İl/ilçe ile parsel',               inputs:[{id:'il', ph:'İl', val:'', label:'İl'},{id:'ilce', ph:'İlçe', val:'', label:'İlçe'}], type:'adaparsel', vip:true },
-  new_adsoyad:   { icon:'🔎', baslik:'Detaylı Ad Soyad',  alt:'Ad + soyad + il',     inputs:[{id:'ad', ph:'Ad', val:'', label:'Ad'},{id:'soyad', ph:'Soyad', val:'', label:'Soyad'},{id:'il', ph:'İl (opsiyonel)', val:'', label:'İl'}], type:'new_adsoyad', vip:false },
-  new_tc:        { icon:'🆔', baslik:'Detaylı TC',        alt:'TC + GSM + aile',     inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'new_tc', vip:false },
-  new_aile:      { icon:'👪', baslik:'Detaylı Aile',      alt:'Tam aile ağacı',      inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'new_aile', vip:false },
-  new_sulale:    { icon:'🌳', baslik:'Detaylı Sülale',    alt:'Büyükbaba+anne',      inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'new_sulale', vip:true },
-  new_hane:      { icon:'🏘️', baslik:'Hane Sorgu',        alt:'Aynı hane',           inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'new_hane', vip:false },
-  new_sokak:     { icon:'🛣️', baslik:'Sokak Sorgu',       alt:'Aynı sokak',          inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'new_sokak', vip:true },
-  new_adres2009: { icon:'📍', baslik:'Eski Adres Geçmişi', alt:'2009-2024',          inputs:[{id:'tc', ph:'TC Kimlik No', max:11, val:'', label:'TC Kimlik Numarası'}], type:'new_adres2009', vip:true },
+  tc:        { icon:'🆔', baslik:'TC Sorgulama',         alt:'Kimlik numarası ile kişi bilgisi', inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, label:'TC Kimlik Numarası'}], type:'tc', vip:false },
+  tcpro:     { icon:'🆔', baslik:'TC Pro Sorgulama',     alt:'Detaylı kişi bilgisi',             inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'tcpro', vip:false },
+  adsoyad:   { icon:'👥', baslik:'Ad Soyad Sorgulama',   alt:'Ad ve soyad ile TC bulma',         inputs:[{id:'ad', ph:'Ad', label:'Ad'},{id:'soyad', ph:'Soyad', label:'Soyad'}], type:'adsoyad', vip:false },
+  aile:      { icon:'👪', baslik:'Aile Sorgulama',       alt:'TC ile aile bireyleri',            inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'aile', vip:false },
+  ailepro:   { icon:'👪', baslik:'Aile Pro Sorgulama',   alt:'Detaylı aile bilgisi',             inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'ailepro', vip:false },
+  tcgsm:     { icon:'📱', baslik:'TC → GSM Sorgulama',   alt:'TC ile telefon numarası',          inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'tcgsm', vip:false },
+  gsmtc:     { icon:'📞', baslik:'GSM → TC Sorgulama',   alt:'Telefon ile TC',                   inputs:[{id:'gsm', ph:'GSM No (5XXXXXXXXX)', max:10, label:'GSM Numarası'}], type:'gsmtc', vip:false },
+  eokul:     { icon:'🎓', baslik:'E-Okul Sorgulama',     alt:'Öğrenci bilgileri',                inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'eokul', vip:false },
+
+  sulale:    { icon:'🌳', baslik:'Sülale Sorgulama',     alt:'Sülale kayıtları',                 inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'sulale', vip:true },
+  adres:     { icon:'🏠', baslik:'Adres Sorgulama',      alt:'İkametgah adresi',                 inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'adres', vip:true },
+  tapu:      { icon:'🏡', baslik:'Tapu Sorgulama',       alt:'Tapu kayıtları',                   inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'tapu', vip:true },
+  adaparsel: { icon:'📐', baslik:'Ada Parsel Sorgulama', alt:'İl/ilçe ile parsel',               inputs:[{id:'il', ph:'İl', label:'İl'},{id:'ilce', ph:'İlçe', label:'İlçe'}], type:'adaparsel', vip:true },
+
+  new_adsoyad:   { icon:'🔎', baslik:'Detaylı Ad Soyad',  alt:'Ad + soyad + il',   inputs:[{id:'ad', ph:'Ad', label:'Ad'},{id:'soyad', ph:'Soyad', label:'Soyad'},{id:'il', ph:'İl (opsiyonel)', label:'İl'}], type:'new_adsoyad', vip:false },
+  new_tc:        { icon:'🆔', baslik:'Detaylı TC',        alt:'TC + GSM + aile',   inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_tc', vip:false },
+  new_aile:      { icon:'👪', baslik:'Detaylı Aile',      alt:'Tam aile ağacı',    inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_aile', vip:false },
+  new_hane:      { icon:'🏘️', baslik:'Hane Sorgu',        alt:'Aynı hane',         inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_hane', vip:false },
+  new_sulale:    { icon:'🌳', baslik:'Detaylı Sülale',    alt:'Büyükbaba+anne',    inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_sulale', vip:true },
+  new_sokak:     { icon:'🛣️', baslik:'Sokak Sorgu',       alt:'Aynı sokak',        inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_sokak', vip:true },
+  new_adres2009: { icon:'📍', baslik:'Eski Adres Geçmişi', alt:'2009-2024',        inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_adres2009', vip:true },
 };
 
 const INFO_TEXT = {
@@ -71,9 +69,9 @@ const INFO_TEXT = {
   new_adsoyad:'Ad+soyad+il ile toplu sorgu.',
   new_tc:'Detaylı TC bilgisi.',
   new_aile:'Tam aile ağacı.',
-  new_sulale:'💎 VIP — Detaylı sülale.',
   new_hane:'Aynı hanedeki kişiler.',
-  new_sokak:'💎 VIP — Aynı sokaktaki kişiler.',
+  new_sulale:'💎 VIP — Detaylı sülale.',
+  new_sokak:'💎 VIP — Sokaktaki kişiler.',
   new_adres2009:'💎 VIP — Eski adresler.',
 };
 
@@ -86,15 +84,8 @@ function toast(msg, type='') {
   toastEl._t = setTimeout(() => toastEl.className = 'toast', 2200);
 }
 function esc(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function avatarOf(user) {
-  const a = user && user.avatar;
-  if (a && a !== '' && !a.includes('ui-avatars.com')) return a;
-  return DEFAULT_AVATAR;
-}
-function isVIP(user) {
-  if (!user) return false;
-  return user.is_vip || user.rank === 'VIP' || user.is_admin;
-}
+function avatarOf(u) { const a = u && u.avatar; return (a && !a.includes('ui-avatars.com')) ? a : DEFAULT_AVATAR; }
+function isVIP(u) { if (!u) return false; return u.is_vip || u.rank === 'VIP' || u.is_admin; }
 
 function setTheme(theme) {
   const ic = document.getElementById('themeIcon');
@@ -175,7 +166,6 @@ async function doLogout() {
   CURRENT_USER = null;
   document.getElementById('panelView').classList.add('hidden');
   document.getElementById('authView').classList.remove('hidden');
-  document.getElementById('loginPass').value = '';
 }
 
 async function checkSession() {
@@ -190,12 +180,12 @@ function navInsa() {
   const nav = document.getElementById('sbNav');
   if (!nav) return;
   const vip = isVIP(CURRENT_USER);
-  const vipBadge = '<span style="margin-left:auto;font-size:.55rem;padding:.15rem .4rem;border-radius:4px;background:linear-gradient(135deg,#f59e0b,#ef4444);color:white;font-weight:800;">VIP</span>';
+  const vipBadge = '<span class="vip-badge">VIP</span>';
 
   nav.innerHTML = `
-    <div class="sb-item" id="navChat" onclick="showView('chat', this)"><span class="ico">💬</span> Genel Sohbet</div>
-    <div class="sb-item" id="navAI" onclick="showView('ai', this)"><span class="ico">🤖</span> AI Asistan</div>
-    <div class="sb-item" id="navUsers" onclick="showView('users', this)"><span class="ico">👥</span> Kullanıcılar</div>
+    <div class="sb-item" id="navChat" onclick="showView('chat')"><span class="ico">💬</span> Genel Sohbet</div>
+    <div class="sb-item" id="navAI" onclick="showView('ai')"><span class="ico">🤖</span> AI Asistan</div>
+    <div class="sb-item" id="navUsers" onclick="showView('users')"><span class="ico">👥</span> Kullanıcılar</div>
 
     <div class="sb-section">Ücretsiz Sorgular</div>
     <div class="sb-item" onclick="openQuery('tc')"><span class="ico">🆔</span> TC Sorgulama</div>
@@ -228,16 +218,18 @@ function enterPanel(user) {
   CURRENT_USER = user;
   document.getElementById('authView').classList.add('hidden');
   document.getElementById('panelView').classList.remove('hidden');
-
-  const av = document.getElementById('sideAvatar');
-  if (av) av.src = avatarOf(user);
-
+  document.getElementById('sideAvatar').src = avatarOf(user);
   document.getElementById('sideUsername').textContent = user.username;
   document.getElementById('sideTick').classList.toggle('hidden', !user.verified);
 
   const st = document.getElementById('sideStatus');
-  st.className = 'st on';
-  st.innerHTML = '<span class="dot"></span> ' + (user.is_vip ? 'VIP 💎' : 'Çevrimiçi');
+  if (user.is_vip || user.rank === 'VIP') {
+    st.className = 'st vip';
+    st.innerHTML = '<span class="dot"></span> 💎 VIP';
+  } else {
+    st.className = 'st on';
+    st.innerHTML = '<span class="dot"></span> Çevrimiçi';
+  }
 
   if (user.is_admin) {
     document.getElementById('adminLink').style.display = 'flex';
@@ -249,7 +241,6 @@ function enterPanel(user) {
   loadChat();
   if (CHAT_TIMER) clearInterval(CHAT_TIMER);
   CHAT_TIMER = setInterval(loadChat, 4000);
-
   if (HEARTBEAT_TIMER) clearInterval(HEARTBEAT_TIMER);
   HEARTBEAT_TIMER = setInterval(() => fetch(AUTH + '?action=heartbeat').catch(() => {}), 120000);
 }
@@ -258,7 +249,6 @@ function toggleSidebar() {
   document.getElementById('sidebar')?.classList.toggle('open');
   document.getElementById('overlay')?.classList.toggle('active');
 }
-
 function toggleProfileMenu(e) {
   e.stopPropagation();
   const d = document.getElementById('profileDropdown');
@@ -267,7 +257,6 @@ function toggleProfileMenu(e) {
   d.classList.toggle('open', opening);
   b.classList.toggle('open', opening);
 }
-
 document.addEventListener('click', () => {
   document.getElementById('profileDropdown')?.classList.remove('open');
   document.getElementById('profileBtn')?.classList.remove('open');
@@ -278,17 +267,14 @@ function showView(view) {
     document.getElementById('view' + v.charAt(0).toUpperCase() + v.slice(1))?.classList.add('hidden');
   });
   document.getElementById('view' + view.charAt(0).toUpperCase() + view.slice(1))?.classList.remove('hidden');
-
   document.querySelectorAll('.sb-nav .sb-item').forEach(el => el.classList.remove('active'));
   const navMap = { chat:'navChat', users:'navUsers', ai:'navAI' };
   if (navMap[view]) document.getElementById(navMap[view])?.classList.add('active');
-
   if (view === 'profile') loadProfile();
   if (view === 'users') loadUsers();
   if (view === 'settings') loadAccountInfo();
   if (view === 'chat') { loadChat(); scrollChatBottom(); }
   if (view === 'ai') { loadAIHistory(); scrollAIBottom(); }
-
   if (window.innerWidth < 900) {
     document.getElementById('sidebar')?.classList.remove('open');
     document.getElementById('overlay')?.classList.remove('active');
@@ -298,38 +284,32 @@ function showView(view) {
 function openQuery(type) {
   const q = QUERIES[type];
   if (!q) return;
-
-  if (q.vip && !isVIP(CURRENT_USER)) {
-    toast('💎 Bu sorgu VIP üyeler içindir', 'error');
-    return;
-  }
+  if (q.vip && !isVIP(CURRENT_USER)) { toast('💎 Bu sorgu VIP üyeler içindir', 'error'); return; }
 
   CURRENT_QUERY = type;
   document.getElementById('queryIcon').textContent = q.icon;
   document.getElementById('queryTitle').textContent = q.baslik;
   document.getElementById('querySubtitle').textContent = q.alt || '';
-  document.getElementById('queryInfoText').textContent = INFO_TEXT[type] || 'Sorgu yapmak için alanı doldurun.';
+  document.getElementById('queryInfoText').textContent = INFO_TEXT[type] || '';
 
   const wrap = document.getElementById('queryInputs');
   wrap.innerHTML = '';
   for (const inp of q.inputs) {
-    const group = document.createElement('div');
-    group.className = 'q-input-group';
+    const g = document.createElement('div');
+    g.className = 'q-input-group';
     if (inp.label) {
       const lb = document.createElement('label');
       lb.className = 'q-input-label';
       lb.innerHTML = inp.label + (inp.max ? ` <span class="q-input-hint">(${inp.max} hane)</span>` : '');
-      group.appendChild(lb);
+      g.appendChild(lb);
     }
     const i = document.createElement('input');
     i.type = 'text'; i.id = 'input_' + inp.id;
     i.className = 'q-input'; i.placeholder = inp.ph;
-    i.value = inp.val || '';
     if (inp.max) i.maxLength = inp.max;
-    i.setAttribute('autocomplete', 'off');
     i.addEventListener('keypress', e => { if (e.key === 'Enter') runQuery(); });
-    group.appendChild(i);
-    wrap.appendChild(group);
+    g.appendChild(i);
+    wrap.appendChild(g);
   }
 
   document.getElementById('resultWrap').classList.remove('active');
@@ -342,7 +322,7 @@ function resetQuery() {
   if (!q) return;
   for (const inp of q.inputs) {
     const el = document.getElementById('input_' + inp.id);
-    if (el) el.value = inp.val || '';
+    if (el) el.value = '';
   }
   document.getElementById('resultWrap').classList.remove('active');
   document.getElementById('resultTable').innerHTML = '';
@@ -368,7 +348,7 @@ async function runQuery() {
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Sorgulanıyor...';
   wrap.classList.add('active');
-  table.innerHTML = '<div class="q-empty"><span class="spinner" style="border-color:rgba(88,166,255,.3);border-top-color:var(--blue);"></span> Sorgulanıyor...</div>';
+  table.innerHTML = '<div class="q-empty"><span class="spinner"></span> Sorgulanıyor...</div>';
   document.getElementById('resultCount').textContent = '';
 
   try {
@@ -377,7 +357,7 @@ async function runQuery() {
     if (r.status === 401) { doLogout(); return; }
     renderResult(d);
   } catch (e) {
-    table.innerHTML = `<div class="q-error">✗ Bağlantı hatası: ${esc(e.message)}</div>`;
+    table.innerHTML = `<div class="q-error">✗ Bağlantı hatası</div>`;
   } finally {
     btn.disabled = false;
     btn.innerHTML = '🔎 Sorgula';
@@ -388,18 +368,12 @@ function renderResult(data) {
   const table = document.getElementById('resultTable');
   const cnt = document.getElementById('resultCount');
 
-  if (data.error || data.hata) {
-    table.innerHTML = `<div class="q-error">✗ ${esc(data.error || data.hata)}</div>`;
-    cnt.textContent = ''; return;
-  }
-  if (data.success === false) {
-    table.innerHTML = `<div class="q-error">✗ ${esc(data.error || 'Kayıt bulunamadı')}</div>`;
-    cnt.textContent = ''; return;
-  }
+  if (data.error || data.hata) { table.innerHTML = `<div class="q-error">✗ ${esc(data.error || data.hata)}</div>`; cnt.textContent = ''; return; }
+  if (data.success === false) { table.innerHTML = `<div class="q-error">✗ ${esc(data.error || 'Kayıt yok')}</div>`; cnt.textContent = ''; return; }
 
   if (data.data && typeof data.data === 'object' && !Array.isArray(data.data) && data.data.kisi) {
     const d = data.data;
-    const kategoriIsimleri = {
+    const kategoriler = {
       kisi: '👤 Kişi', baba: '👨 Baba', anne: '👩 Anne',
       buyukbaba: '👴 Büyükbaba', buyukanne: '👵 Büyükanne',
       kardesler: '👫 Kardeşler', cocuklar: '👶 Çocuklar',
@@ -408,18 +382,16 @@ function renderResult(data) {
     let html = '', toplam = 0;
 
     if (d.ozet) {
-      let ozetStr = [];
-      for (const [k, v] of Object.entries(d.ozet)) if (v) ozetStr.push(`${k}: ${v}`);
-      if (ozetStr.length) html += `<div class="result-ozet">📊 ${ozetStr.join(' · ')}</div>`;
+      let s = [];
+      for (const [k, v] of Object.entries(d.ozet)) if (v) s.push(`${k}: ${v}`);
+      if (s.length) html += `<div class="result-ozet">📊 ${s.join(' · ')}</div>`;
     }
 
     for (const [key, list] of Object.entries(d)) {
       if (Array.isArray(list) && list.length > 0) {
         toplam += list.length;
-        const baslik = kategoriIsimleri[key] || key;
-        html += `<div class="result-category">
-          <div class="result-category-title">${baslik} <span class="cat-count">${list.length} kişi</span></div>
-          <table class="q-table"><thead><tr>`;
+        const b = kategoriler[key] || key;
+        html += `<div class="result-category"><div class="result-category-title">${b} <span class="cat-count">${list.length} kişi</span></div><table class="q-table"><thead><tr>`;
         const keys = [], seen = new Set();
         for (const it of list) for (const k of Object.keys(it)) if (!seen.has(k)) { seen.add(k); keys.push(k); }
         for (const k of keys) html += `<th>${esc(k)}</th>`;
@@ -437,11 +409,7 @@ function renderResult(data) {
         html += '</tbody></table></div>';
       }
     }
-
-    if (toplam === 0) {
-      table.innerHTML = '<div class="q-empty">✗ Kayıt bulunamadı</div>';
-      cnt.textContent = ''; return;
-    }
+    if (toplam === 0) { table.innerHTML = '<div class="q-empty">✗ Kayıt yok</div>'; return; }
     table.innerHTML = html;
     cnt.textContent = toplam + ' kayıt';
     return;
@@ -450,11 +418,7 @@ function renderResult(data) {
   let items = data.rows || data.data?.results || data.data?.rows || data.data || data.results || data;
   if (!Array.isArray(items)) items = [items];
   items = items.filter(x => x && Object.keys(x).length > 0);
-
-  if (items.length === 0) {
-    table.innerHTML = '<div class="q-empty">✗ Kayıt bulunamadı</div>';
-    cnt.textContent = ''; return;
-  }
+  if (items.length === 0) { table.innerHTML = '<div class="q-empty">✗ Kayıt yok</div>'; return; }
 
   const keys = [], seen = new Set();
   for (const it of items) for (const k of Object.keys(it)) if (!seen.has(k)) { seen.add(k); keys.push(k); }
@@ -479,43 +443,31 @@ function renderResult(data) {
 
 async function loadChat() {
   try {
-    const r = await fetch(CHAT + '?action=messages&since=0');
+    const r = await fetch(CHAT + '?action=messages');
     const d = await r.json();
     if (!d.success) return;
     const box = document.getElementById('chatMessages');
     if (!box) return;
     const atBottom = (box.scrollHeight - box.scrollTop - box.clientHeight) < 80;
-
     let html = '';
     for (const m of d.messages) {
       const me = CURRENT_USER && m.user_id === CURRENT_USER.id;
-      const av = (m.avatar && !m.avatar.includes('ui-avatars.com')) ? m.avatar : DEFAULT_AVATAR;
       html += `
         <div class="msg ${me ? 'me' : ''}">
-          <img class="av" src="${esc(av)}" alt="">
-          <div>
-            <div class="msg-bubble">
-              <div class="msg-name">
-                ${esc(m.username)}
-                ${m.verified ? '<span style="color:var(--blue);font-size:.7rem;">✅</span>' : ''}
-                <span class="msg-rank">${esc(m.rank)}</span>
-              </div>
-              <div class="msg-text">${esc(m.text)}</div>
-              <div class="msg-time">${esc(m.time)}</div>
-            </div>
-          </div>
+          <img class="av" src="${esc(m.avatar)}" alt="">
+          <div><div class="msg-bubble">
+            <div class="msg-name">${esc(m.username)} ${m.verified ? '✅' : ''}<span class="msg-rank">${esc(m.rank)}</span></div>
+            <div class="msg-text">${esc(m.text)}</div>
+            <div class="msg-time">${esc(m.time)}</div>
+          </div></div>
         </div>`;
     }
-    box.innerHTML = html || '<div class="q-empty">Henüz mesaj yok, ilk mesajı sen yaz!</div>';
+    box.innerHTML = html || '<div class="q-empty">Henüz mesaj yok.</div>';
     if (atBottom) box.scrollTop = box.scrollHeight;
-
     try {
       const ur = await fetch(AUTH + '?action=users');
       const ud = await ur.json();
-      if (ud.success) {
-        const on = ud.users.filter(u => u.online).length;
-        document.getElementById('chatOnlineCount').textContent = on;
-      }
+      if (ud.success) document.getElementById('chatOnlineCount').textContent = ud.users.filter(u => u.online).length;
     } catch (e) {}
   } catch (e) {}
 }
@@ -534,7 +486,7 @@ async function sendMessage() {
     const r = await fetch(CHAT, { method:'POST', body: fd });
     const d = await r.json();
     if (d.success) { inp.value=''; await loadChat(); scrollChatBottom(); }
-    else toast('❌ ' + (d.error || 'Gönderilemedi'), 'error');
+    else toast('❌ ' + (d.error || 'Hata'), 'error');
   } catch (e) { toast('❌ Bağlantı hatası', 'error'); }
   finally { btn.disabled = false; }
 }
@@ -550,9 +502,9 @@ async function loadAIHistory() {
     for (const m of d.messages) {
       html += `
         <div class="msg me"><div><div class="msg-bubble"><div class="msg-text">${esc(m.soru)}</div></div></div></div>
-        <div class="msg"><img class="av" src="${DEFAULT_AVATAR}" alt=""><div><div class="msg-bubble"><div class="msg-text">${esc(m.cevap)}</div>${m.komut ? '<div class="msg-time" style="color:#f59e0b;">⚡ Panel Komutu</div>' : ''}</div></div></div>`;
+        <div class="msg"><img class="av" src="${DEFAULT_AVATAR}" alt=""><div><div class="msg-bubble"><div class="msg-text">${esc(m.cevap)}</div>${m.komut ? '<div class="msg-time" style="color:#f59e0b;">⚡ Komut</div>' : ''}</div></div></div>`;
     }
-    box.innerHTML = html || '<div class="q-empty">AI ile sohbete başla!</div>';
+    box.innerHTML = html || '<div class="q-empty">AI ile sohbete başla! 👋</div>';
   } catch (e) {}
 }
 
@@ -562,16 +514,12 @@ async function sendAI() {
   const inp = document.getElementById('aiInput');
   const q = inp.value.trim();
   if (!q) return;
-
   const box = document.getElementById('aiMessages');
   box.innerHTML += `<div class="msg me"><div><div class="msg-bubble"><div class="msg-text">${esc(q)}</div></div></div></div>`;
-  inp.value = '';
-  scrollAIBottom();
+  inp.value = ''; scrollAIBottom();
 
   const btn = document.getElementById('aiSendBtn');
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>';
-
   const waitId = 'wait_' + Date.now();
   box.innerHTML += `<div class="msg" id="${waitId}"><img class="av" src="${DEFAULT_AVATAR}" alt=""><div><div class="msg-bubble"><div class="msg-text"><span class="spinner"></span> düşünüyor...</div></div></div></div>`;
   scrollAIBottom();
@@ -584,7 +532,7 @@ async function sendAI() {
     document.getElementById(waitId)?.remove();
 
     if (d.success) {
-      box.innerHTML += `<div class="msg"><img class="av" src="${DEFAULT_AVATAR}" alt=""><div><div class="msg-bubble"><div class="msg-text">${esc(d.response)}</div>${d.command ? '<div class="msg-time" style="color:#f59e0b;">⚡ Panel Komutu Uygulandı</div>' : ''}</div></div></div>`;
+      box.innerHTML += `<div class="msg"><img class="av" src="${DEFAULT_AVATAR}" alt=""><div><div class="msg-bubble"><div class="msg-text">${esc(d.response)}</div>${d.command ? '<div class="msg-time" style="color:#f59e0b;">⚡ Komut Uygulandı</div>' : ''}</div></div></div>`;
     } else {
       box.innerHTML += `<div class="msg"><div><div class="msg-bubble"><div class="msg-text" style="color:#f85149">❌ ${esc(d.error || 'Hata')}</div></div></div></div>`;
     }
@@ -592,14 +540,11 @@ async function sendAI() {
   } catch (e) {
     document.getElementById(waitId)?.remove();
     box.innerHTML += `<div class="msg"><div><div class="msg-bubble"><div class="msg-text" style="color:#f85149">❌ Bağlantı hatası</div></div></div></div>`;
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Gönder';
-  }
+  } finally { btn.disabled = false; btn.textContent = 'Gönder'; }
 }
 
 async function clearAI() {
-  if (!confirm('AI geçmişini temizlemek istediğine emin misin?')) return;
+  if (!confirm('AI geçmişini temizle?')) return;
   await fetch(AIAPI + '?action=clear');
   document.getElementById('aiMessages').innerHTML = '<div class="q-empty">Geçmiş temizlendi!</div>';
 }
@@ -611,24 +556,22 @@ async function loadUsers() {
     if (!d.success) return;
     const users = d.users.sort((a,b) => (b.online - a.online) || a.username.localeCompare(b.username));
     document.getElementById('usersCount').textContent = users.length + ' kullanıcı';
-
     let html = '';
     for (const u of users) {
       const cls = u.banned ? 'banned' : (u.online ? 'on' : 'off');
       const txt = u.banned ? 'BANLI' : (u.online ? 'Çevrimiçi' : 'Çevrimdışı');
-      const av = avatarOf(u);
-      const vip = u.is_vip ? '<span style="font-size:.55rem;padding:.15rem .4rem;border-radius:4px;background:linear-gradient(135deg,#f59e0b,#ef4444);color:white;font-weight:800;">VIP</span>' : '';
+      let rankCls = '';
+      if (u.is_admin) rankCls = 'admin';
+      else if (u.is_vip || u.rank === 'VIP') rankCls = 'vip';
       html += `
         <div class="user-card">
-          <img class="av" src="${esc(av)}" alt="">
+          <img class="av" src="${esc(avatarOf(u))}" alt="">
           <div class="info">
             <div class="nm">
-              ${esc(u.username)}
-              ${u.verified ? '<span class="tk">✅</span>' : ''}
-              <span class="rk ${u.is_admin ? 'admin' : ''}">${esc(u.rank)}</span>
-              ${vip}
+              ${esc(u.username)} ${u.verified ? '<span class="tk">✅</span>' : ''}
+              <span class="rk ${rankCls}">${esc(u.rank)}</span>
             </div>
-            <div class="bio">${esc(u.bio || 'Açıklama yok')}${u.horoscope ? ' · ' + esc(u.horoscope) : ''}</div>
+            <div class="bio">${esc(u.bio || '')} ${u.horoscope ? '· ' + esc(u.horoscope) : ''}</div>
             <div class="st ${cls}"><span class="dot"></span> ${txt}</div>
           </div>
         </div>`;
@@ -646,17 +589,19 @@ async function loadProfile() {
     document.getElementById('pAvatar').src = avatarOf(u);
     document.getElementById('pUsername').textContent = u.username;
     document.getElementById('pTick').classList.toggle('hidden', !u.verified);
-    document.getElementById('pRank').textContent = u.rank;
-    document.getElementById('pBio').textContent = u.bio || 'Açıklama yok';
-    document.getElementById('pMeta').textContent = (u.email || '-') + ' · ' + (u.horoscope || '-') + ' · ' + (u.city || '-');
+    const rk = document.getElementById('pRank');
+    rk.textContent = u.rank;
+    rk.className = 'profile-rank-badge' + ((u.is_vip || u.rank === 'VIP') ? ' vip' : '');
+    document.getElementById('pBio').textContent = u.bio || '';
+    document.getElementById('pMeta').textContent = `${u.email || '-'} · ${u.horoscope || '-'} · ${u.city || '-'} · ${u.job || '-'}`;
     document.getElementById('editEmail').value = u.email || '';
     document.getElementById('editBio').value = u.bio || '';
-    document.getElementById('editAvatar').value = u.avatar || '';
     document.getElementById('editBirthday').value = u.birthday || '';
     document.getElementById('editCity').value = u.city || '';
     document.getElementById('editJob').value = u.job || '';
     document.getElementById('editInstagram').value = u.instagram || '';
     document.getElementById('editTelegram').value = u.telegram || '';
+    document.getElementById('editAvatar').value = u.avatar || '';
   } catch (e) {}
 }
 
@@ -665,16 +610,16 @@ async function saveProfile() {
   fd.append('action','update_profile');
   fd.append('email', document.getElementById('editEmail').value.trim());
   fd.append('bio', document.getElementById('editBio').value.trim());
-  fd.append('avatar', document.getElementById('editAvatar').value.trim());
-  fd.append('birthday', document.getElementById('editBirthday').value);
+  fd.append('birthday', document.getElementById('editBirthday').value.trim());
   fd.append('city', document.getElementById('editCity').value.trim());
   fd.append('job', document.getElementById('editJob').value.trim());
   fd.append('instagram', document.getElementById('editInstagram').value.trim());
   fd.append('telegram', document.getElementById('editTelegram').value.trim());
+  fd.append('avatar', document.getElementById('editAvatar').value.trim());
   try {
     const r = await fetch(AUTH, { method:'POST', body: fd });
     const d = await r.json();
-    if (d.success) { toast('✓ Profil güncellendi', 'success'); loadProfile(); if (CURRENT_USER) CURRENT_USER = d.user; }
+    if (d.success) { toast('✓ Profil güncellendi', 'success'); loadProfile(); }
     else toast('❌ ' + d.error, 'error');
   } catch (e) { toast('❌ Bağlantı hatası', 'error'); }
 }
@@ -707,6 +652,8 @@ async function loadAccountInfo() {
       <div>♈ <b>Burç:</b> ${esc(u.horoscope || '-')}</div>
       <div>🏙️ <b>Şehir:</b> ${esc(u.city || '-')}</div>
       <div>💼 <b>Meslek:</b> ${esc(u.job || '-')}</div>
+      <div>📷 <b>Instagram:</b> ${esc(u.instagram || '-')}</div>
+      <div>✈️ <b>Telegram:</b> ${esc(u.telegram || '-')}</div>
       <div>🏅 <b>Rütbe:</b> ${esc(u.rank)} ${u.is_vip ? '💎' : ''}</div>
       <div>✅ <b>Doğrulanmış:</b> ${u.verified ? 'Evet' : 'Hayır'}</div>
       <div>📅 <b>Kayıt:</b> ${u.created_at ? new Date(u.created_at).toLocaleString('tr-TR') : '-'}</div>

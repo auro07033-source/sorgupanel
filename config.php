@@ -1,38 +1,39 @@
 <?php
 /**
  * config.php — Forex Sorgulama Hizmeti
- * Telegram: @cmrbaskani
  */
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+if (session_status() === PHP_SESSION_NONE) session_start();
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
-
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 
-define('DATA_DIR',       __DIR__ . '/data');
-define('USERS_FILE',     DATA_DIR . '/users.json');
-define('CHAT_FILE',      DATA_DIR . '/chat.json');
-define('AI_CHAT_FILE',   DATA_DIR . '/ai_chat.json');
-define('SETTINGS_FILE',  DATA_DIR . '/settings.json');
-define('SESSION_TTL',    86400 * 7);
+// ═══════════ SABİTLER ═══════════
+define('DATA_DIR',      __DIR__ . '/data');
+define('USERS_FILE',    DATA_DIR . '/users.json');
+define('CHAT_FILE',     DATA_DIR . '/chat.json');
+define('AI_CHAT_FILE',  DATA_DIR . '/ai_chat.json');
+define('SETTINGS_FILE', DATA_DIR . '/settings.json');
 
+// ═══════════ GÖRSEL ═══════════
 define('BG_IMAGE',       'https://i.hizliresim.com/loreuqk4.jpg');
 define('DEFAULT_AVATAR', 'https://i.hizliresim.com/midnihxu.jpg');
 
+// ═══════════ ADMIN ═══════════
 define('ADMIN_USER', 'admin');
 define('ADMIN_PASS', 'forex:qw24');
 
+// ═══════════ AI ═══════════
 define('AI_API',    'https://ucretsizservicetr.onrender.com/gptpro.php');
 define('AI_KEY',    'cmrbaskani_2026_secret_key_xyz');
 define('AI_DEVICE', 'dev_qyodisa8wzo_1789992264510');
 
-if (!is_dir(DATA_DIR)) { @mkdir(DATA_DIR, 0777, true); }
+// ═══════════ KURULUM ═══════════
+if (!is_dir(DATA_DIR)) @mkdir(DATA_DIR, 0777, true);
 
+// ═══════════ YARDIMCI ═══════════
 function json_out($data, $code = 200) {
     http_response_code($code);
     header('Content-Type: application/json; charset=utf-8');
@@ -53,6 +54,7 @@ function write_json($file, $data) {
     @file_put_contents($file, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT), LOCK_EX);
 }
 
+// ═══════════ KULLANICI ═══════════
 function load_users() { return read_json(USERS_FILE, []); }
 function save_users($u) { write_json(USERS_FILE, $u); }
 
@@ -78,6 +80,7 @@ function current_user() {
 
 function is_logged_in() { return current_user() !== null; }
 function is_admin() { $u = current_user(); return $u && !empty($u['is_admin']); }
+
 function is_vip() {
     $u = current_user();
     if (!$u) return false;
@@ -96,11 +99,7 @@ function require_admin() {
     if (!is_admin()) json_out(["success"=>false, "error"=>"Yetkin yok"], 403);
 }
 
-function require_vip() {
-    require_login();
-    if (!is_vip()) json_out(["success"=>false, "error"=>"Bu sorgu sadece VIP üyeler içindir","vip_required"=>true], 403);
-}
-
+// ═══════════ YARDIMCI ═══════════
 function gen_id() { return bin2hex(random_bytes(8)); }
 function sanitize_username($u) { return preg_replace('/[^a-zA-Z0-9_]/', '', $u); }
 function now_iso() { return date('c'); }
@@ -117,6 +116,7 @@ function is_online($user) {
     return (time() - strtotime($user['last_seen'])) < 300;
 }
 
+// ═══════════ AYARLAR ═══════════
 function load_settings() {
     return read_json(SETTINGS_FILE, [
         'theme'        => 'dark',
@@ -126,3 +126,63 @@ function load_settings() {
     ]);
 }
 function save_settings($s) { write_json(SETTINGS_FILE, $s); }
+
+// ═══════════ BURÇ ═══════════
+function burcHesapla($tarih) {
+    if (!$tarih) return '';
+    $tarih = str_replace(['/', '.'], '-', $tarih);
+    $parts = explode('-', $tarih);
+    if (count($parts) !== 3) return '';
+    if ((int)$parts[0] > 1900) { $y = (int)$parts[0]; $m = (int)$parts[1]; $d = (int)$parts[2]; }
+    else { $d = (int)$parts[0]; $m = (int)$parts[1]; $y = (int)$parts[2]; }
+
+    $burclar = [
+        ['01','20','02','18','Kova ♒'],
+        ['02','19','03','20','Balık ♓'],
+        ['03','21','04','19','Koç ♈'],
+        ['04','20','05','20','Boğa ♉'],
+        ['05','21','06','20','İkizler ♊'],
+        ['06','21','07','22','Yengeç ♋'],
+        ['07','23','08','22','Aslan ♌'],
+        ['08','23','09','22','Başak ♍'],
+        ['09','23','10','22','Terazi ♎'],
+        ['10','23','11','21','Akrep ♏'],
+        ['11','22','12','21','Yay ♐'],
+        ['12','22','01','19','Oğlak ♑'],
+    ];
+    foreach ($burclar as [$sm, $sd, $em, $ed, $isim]) {
+        $sm = (int)$sm; $sd = (int)$sd; $em = (int)$em; $ed = (int)$ed;
+        if ($sm <= $em) {
+            if (($m > $sm || ($m == $sm && $d >= $sd)) && ($m < $em || ($m == $em && $d <= $ed))) return $isim;
+        } else {
+            if ($m >= $sm || $m <= $em) return $isim;
+        }
+    }
+    return '';
+}
+
+// ═══════════ PUBLIC USER ═══════════
+function public_user($u) {
+    if (!$u) return null;
+    return [
+        'id'         => $u['id'],
+        'username'   => $u['username'],
+        'email'      => $u['email'] ?? '',
+        'avatar'     => avatar_url($u),
+        'bio'        => $u['bio'] ?? '',
+        'birthday'   => $u['birthday'] ?? '',
+        'horoscope'  => $u['horoscope'] ?? '',
+        'city'       => $u['city'] ?? '',
+        'job'        => $u['job'] ?? '',
+        'instagram'  => $u['instagram'] ?? '',
+        'telegram'   => $u['telegram'] ?? '',
+        'rank'       => $u['rank'] ?? 'Üye',
+        'is_vip'     => !empty($u['is_vip']) || ($u['rank'] ?? '') === 'VIP',
+        'verified'   => !empty($u['verified']),
+        'banned'     => !empty($u['banned']),
+        'is_admin'   => !empty($u['is_admin']),
+        'online'     => is_online($u),
+        'last_seen'  => $u['last_seen'] ?? null,
+        'created_at' => $u['created_at'] ?? null,
+    ];
+}
