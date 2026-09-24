@@ -1,7 +1,4 @@
-/* ═══════════════════════════════════════════════════════════
-   Forex Sorgulama - Uygulama Mantığı
-   @cmrbaskani
-   ═══════════════════════════════════════════════════════════ */
+/* Forex Sorgulama - Uygulama Mantığı */
 
 const API   = 'forexsystem.php';
 const AUTH  = 'auth.php';
@@ -9,28 +6,11 @@ const CHAT  = 'chat.php';
 const AIAPI = 'ai.php';
 const DEFAULT_AVATAR = 'https://i.hizliresim.com/midnihxu.jpg';
 
-// ═══════════ DEVTOOLS KORUMASI ═══════════
-(function(){
-  let ihlal = 0;
-  function ban(){
-    document.getElementById('banShield')?.classList.add('active');
-    document.getElementById('authView')?.classList.add('hidden');
-    document.getElementById('panelView')?.classList.add('hidden');
-  }
-  document.addEventListener('keydown', function(e){
-    if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); ihlal++; if (ihlal >= 3) ban(); return false; }
-    if (e.ctrlKey && e.shiftKey && ['I','i','J','j','C','c'].includes(e.key)) { e.preventDefault(); ihlal++; if (ihlal >= 3) ban(); return false; }
-    if (e.ctrlKey && ['U','u'].includes(e.key)) { e.preventDefault(); ihlal++; if (ihlal >= 3) ban(); return false; }
-  }, true);
-  document.addEventListener('contextmenu', e => e.preventDefault(), true);
-})();
-
 let CURRENT_USER = null;
 let CHAT_TIMER = null;
 let HEARTBEAT_TIMER = null;
 let CURRENT_QUERY = 'tc';
 
-// ═══════════ QUERIES ═══════════
 const QUERIES = {
   tc:        { icon:'🆔', baslik:'TC Sorgulama',       alt:'Kimlik numarası ile kişi bilgisi', inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, label:'TC Kimlik Numarası'}], type:'tc', vip:false },
   tcpro:     { icon:'🆔', baslik:'TC Pro Sorgulama',   alt:'Detaylı kişi bilgisi',             inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'tcpro', vip:false },
@@ -40,12 +20,10 @@ const QUERIES = {
   tcgsm:     { icon:'📱', baslik:'TC → GSM Sorgulama', alt:'TC ile telefon numarası',          inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'tcgsm', vip:false },
   gsmtc:     { icon:'📞', baslik:'GSM → TC Sorgulama', alt:'Telefon ile TC',                   inputs:[{id:'gsm', ph:'GSM No (5XXXXXXXXX)', max:10, label:'GSM Numarası'}], type:'gsmtc', vip:false },
   eokul:     { icon:'🎓', baslik:'E-Okul Sorgulama',   alt:'Öğrenci bilgileri',                inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'eokul', vip:false },
-
   sulale:    { icon:'🌳', baslik:'Sülale Sorgulama',   alt:'Sülale kayıtları',                 inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'sulale', vip:true },
   adres:     { icon:'🏠', baslik:'Adres Sorgulama',    alt:'İkametgah adresi',                 inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'adres', vip:true },
   tapu:      { icon:'🏡', baslik:'Tapu Sorgulama',     alt:'Tapu kayıtları',                   inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'tapu', vip:true },
   adaparsel: { icon:'📐', baslik:'Ada Parsel',         alt:'İl/ilçe ile parsel',               inputs:[{id:'il', ph:'İl', label:'İl'},{id:'ilce', ph:'İlçe', label:'İlçe'}], type:'adaparsel', vip:true },
-
   new_adsoyad:   { icon:'🔎', baslik:'Detaylı Ad Soyad',   alt:'Ad + soyad + il',   inputs:[{id:'ad', ph:'Ad', label:'Ad'},{id:'soyad', ph:'Soyad', label:'Soyad'},{id:'il', ph:'İl (opsiyonel)', label:'İl'}], type:'new_adsoyad', vip:false },
   new_tc:        { icon:'🆔', baslik:'Detaylı TC',         alt:'TC + GSM + aile',   inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_tc', vip:false },
   new_aile:      { icon:'👪', baslik:'Detaylı Aile',       alt:'Tam aile ağacı',    inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_aile', vip:false },
@@ -77,7 +55,6 @@ const INFO_TEXT = {
   new_adres2009:'💎 VIP — Eski adresler.',
 };
 
-// ═══════════ YARDIMCI ═══════════
 const toastEl = document.getElementById('toast');
 function toast(msg, type='') {
   if (!toastEl) return;
@@ -90,7 +67,6 @@ function esc(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<
 function avatarOf(u) { const a = u && u.avatar; return (a && !a.includes('ui-avatars.com')) ? a : DEFAULT_AVATAR; }
 function isVIP(u) { if (!u) return false; return u.is_vip || u.rank === 'VIP' || u.is_admin; }
 
-// ═══════════ TEMA ═══════════
 function setTheme(theme) {
   const ic = document.getElementById('themeIcon');
   const lb = document.getElementById('themeLabel');
@@ -110,7 +86,6 @@ function setTheme(theme) {
 function toggleTheme() { setTheme(document.body.classList.contains('dark') ? 'light' : 'dark'); }
 setTheme(localStorage.getItem('theme') === 'light' ? 'light' : 'dark');
 
-// ═══════════ AUTH ═══════════
 function switchTab(tab) {
   document.getElementById('authErr').classList.remove('active');
   if (tab === 'login') {
@@ -181,46 +156,6 @@ async function checkSession() {
   } catch (e) {}
 }
 
-// ═══════════ NAV ═══════════
-function navInsa() {
-  const nav = document.getElementById('sbNav');
-  if (!nav) return;
-  const vip = isVIP(CURRENT_USER);
-  const vipBadge = '<span class="vip-badge">VIP</span>';
-
-  nav.innerHTML = `
-    <div class="sb-item" id="navChat" onclick="showView('chat')"><span class="ico">💬</span> Genel Sohbet</div>
-    <div class="sb-item" id="navAI" onclick="showView('ai')"><span class="ico">🤖</span> AI Asistan</div>
-    <div class="sb-item" id="navUsers" onclick="showView('users')"><span class="ico">👥</span> Kullanıcılar</div>
-
-    <div class="sb-section">Ücretsiz Sorgular</div>
-    <div class="sb-item" onclick="openQuery('tc')"><span class="ico">🆔</span> TC Sorgulama</div>
-    <div class="sb-item" onclick="openQuery('tcpro')"><span class="ico">🆔</span> TC Pro</div>
-    <div class="sb-item" onclick="openQuery('adsoyad')"><span class="ico">👥</span> Ad Soyad</div>
-    <div class="sb-item" onclick="openQuery('aile')"><span class="ico">👪</span> Aile</div>
-    <div class="sb-item" onclick="openQuery('ailepro')"><span class="ico">👪</span> Aile Pro</div>
-    <div class="sb-item" onclick="openQuery('tcgsm')"><span class="ico">📱</span> TC → GSM</div>
-    <div class="sb-item" onclick="openQuery('gsmtc')"><span class="ico">📞</span> GSM → TC</div>
-    <div class="sb-item" onclick="openQuery('eokul')"><span class="ico">🎓</span> E-Okul</div>
-
-    <div class="sb-section" style="color:#f59e0b;">💎 VIP Sorgular</div>
-    <div class="sb-item" onclick="openQuery('sulale')"><span class="ico">🌳</span> Sülale ${!vip ? vipBadge : ''}</div>
-    <div class="sb-item" onclick="openQuery('adres')"><span class="ico">🏠</span> Adres ${!vip ? vipBadge : ''}</div>
-    <div class="sb-item" onclick="openQuery('tapu')"><span class="ico">🏡</span> Tapu ${!vip ? vipBadge : ''}</div>
-    <div class="sb-item" onclick="openQuery('adaparsel')"><span class="ico">📐</span> Ada Parsel ${!vip ? vipBadge : ''}</div>
-
-    <div class="sb-section">🔥 Diğer</div>
-    <div class="sb-item" onclick="openQuery('new_adsoyad')"><span class="ico">🔎</span> Detaylı Ad Soyad</div>
-    <div class="sb-item" onclick="openQuery('new_tc')"><span class="ico">🆔</span> Detaylı TC</div>
-    <div class="sb-item" onclick="openQuery('new_aile')"><span class="ico">👪</span> Detaylı Aile</div>
-    <div class="sb-item" onclick="openQuery('new_hane')"><span class="ico">🏘️</span> Hane Sorgu</div>
-    <div class="sb-item" onclick="openQuery('new_sulale')"><span class="ico">🌳</span> Detaylı Sülale ${!vip ? vipBadge : ''}</div>
-    <div class="sb-item" onclick="openQuery('new_sokak')"><span class="ico">🛣️</span> Sokak Sorgu ${!vip ? vipBadge : ''}</div>
-    <div class="sb-item" onclick="openQuery('new_adres2009')"><span class="ico">📍</span> Eski Adres ${!vip ? vipBadge : ''}</div>
-  `;
-}
-
-// ═══════════ PANEL ═══════════
 function enterPanel(user) {
   CURRENT_USER = user;
   document.getElementById('authView').classList.add('hidden');
@@ -243,7 +178,6 @@ function enterPanel(user) {
     document.getElementById('adminDivider').style.display = 'block';
   }
 
-  navInsa();
   showView('chat');
   loadChat();
   if (CHAT_TIMER) clearInterval(CHAT_TIMER);
@@ -252,7 +186,6 @@ function enterPanel(user) {
   HEARTBEAT_TIMER = setInterval(() => fetch(AUTH + '?action=heartbeat').catch(() => {}), 120000);
 }
 
-// ═══════════ SIDEBAR ═══════════
 function toggleSidebar() {
   document.getElementById('sidebar')?.classList.toggle('open');
   document.getElementById('overlay')?.classList.toggle('active');
@@ -270,46 +203,28 @@ document.addEventListener('click', () => {
   document.getElementById('profileBtn')?.classList.remove('open');
 });
 
-// ═══════════ SHOW VIEW (DÜZELTİLDİ) ═══════════
 function showView(view) {
-  const viewMap = {
-    query:    'viewQuery',
-    chat:     'viewChat',
-    users:    'viewUsers',
-    profile:  'viewProfile',
-    settings: 'viewSettings',
-    ai:       'viewAI'
-  };
-
-  // Hepsini gizle
-  Object.values(viewMap).forEach(id => {
-    document.getElementById(id)?.classList.add('hidden');
-  });
-
-  // İstenileni göster
+  const viewMap = { query:'viewQuery', chat:'viewChat', users:'viewUsers', profile:'viewProfile', settings:'viewSettings', ai:'viewAI' };
+  Object.values(viewMap).forEach(id => document.getElementById(id)?.classList.add('hidden'));
   const targetId = viewMap[view];
   if (targetId) document.getElementById(targetId)?.classList.remove('hidden');
 
-  // Sidebar aktif durumu
   document.querySelectorAll('.sb-nav .sb-item').forEach(el => el.classList.remove('active'));
   const navMap = { chat:'navChat', users:'navUsers', ai:'navAI' };
   if (navMap[view]) document.getElementById(navMap[view])?.classList.add('active');
 
-  // View'a özel yükleyiciler
   if (view === 'profile') loadProfile();
   if (view === 'users') loadUsers();
   if (view === 'settings') loadAccountInfo();
   if (view === 'chat') { loadChat(); scrollChatBottom(); }
   if (view === 'ai') { loadAIHistory(); scrollAIBottom(); }
 
-  // Mobil menü kapat
   if (window.innerWidth < 900) {
     document.getElementById('sidebar')?.classList.remove('open');
     document.getElementById('overlay')?.classList.remove('active');
   }
 }
 
-// ═══════════ SORGU ═══════════
 function openQuery(type) {
   const q = QUERIES[type];
   if (!q) return;
@@ -458,7 +373,6 @@ function renderResult(data) {
   cnt.textContent = items.length + ' kayıt';
 }
 
-// ═══════════ CHAT ═══════════
 async function loadChat() {
   try {
     const r = await fetch(CHAT + '?action=messages');
@@ -507,7 +421,6 @@ async function sendMessage() {
   finally { btn.disabled = false; }
 }
 
-// ═══════════ AI ═══════════
 async function loadAIHistory() {
   try {
     const r = await fetch(AIAPI + '?action=history');
@@ -562,7 +475,6 @@ async function clearAI() {
   document.getElementById('aiMessages').innerHTML = '<div class="q-empty">Geçmiş temizlendi!</div>';
 }
 
-// ═══════════ USERS ═══════════
 async function loadUsers() {
   try {
     const r = await fetch(AUTH + '?action=users');
@@ -594,7 +506,6 @@ async function loadUsers() {
   } catch (e) {}
 }
 
-// ═══════════ PROFILE ═══════════
 async function loadProfile() {
   try {
     const r = await fetch(AUTH + '?action=profile&user=' + encodeURIComponent(CURRENT_USER.username));
@@ -638,7 +549,6 @@ async function saveProfile() {
   } catch (e) { toast('❌ Bağlantı hatası', 'error'); }
 }
 
-// ═══════════ SETTINGS ═══════════
 async function changePassword() {
   const o = document.getElementById('oldPass').value;
   const n = document.getElementById('newPass').value;
@@ -675,7 +585,6 @@ async function loadAccountInfo() {
   } catch (e) {}
 }
 
-// ═══════════ OLAYLAR ═══════════
 document.getElementById('loginPass')?.addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); });
 document.getElementById('regPass')?.addEventListener('keypress', e => { if (e.key === 'Enter') doRegister(); });
 document.getElementById('chatInput')?.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
