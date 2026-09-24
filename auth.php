@@ -6,6 +6,9 @@ $action = $_REQUEST['action'] ?? '';
 switch ($action) {
 
     case 'register':
+        $s = load_settings();
+        if (!($s['register_open'] ?? true)) json_out(["success"=>false,"error"=>"Kayıtlar geçici olarak kapalı"]);
+
         $username = sanitize_username($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
         $email    = trim($_POST['email'] ?? '');
@@ -18,25 +21,14 @@ switch ($action) {
 
         $users = load_users();
         $newUser = [
-            'id'         => gen_id(),
-            'username'   => $username,
-            'email'      => $email,
-            'password'   => password_hash($password, PASSWORD_DEFAULT),
-            'avatar'     => DEFAULT_AVATAR,
-            'bio'        => 'Forex Sorgulama Hizmeti üyesi',
-            'birthday'   => $birthday,
-            'horoscope'  => $birthday ? burcHesapla($birthday) : '',
-            'city'       => '',
-            'job'        => '',
-            'instagram'  => '',
-            'telegram'   => '',
-            'rank'       => 'Üye',
-            'is_vip'     => false,
-            'verified'   => false,
-            'banned'     => false,
-            'is_admin'   => false,
-            'created_at' => now_iso(),
-            'last_seen'  => now_iso(),
+            'id'=>gen_id(),'username'=>$username,'email'=>$email,
+            'password'=>password_hash($password, PASSWORD_DEFAULT),
+            'avatar'=>DEFAULT_AVATAR,'bio'=>'Forex Sorgulama Hizmeti üyesi',
+            'birthday'=>$birthday,'horoscope'=>$birthday?burcHesapla($birthday):'',
+            'city'=>'','job'=>'','instagram'=>'','telegram'=>'','phone'=>'','website'=>'',
+            'gender'=>'','notes'=>'','rank'=>'Üye','is_vip'=>false,'verified'=>false,
+            'banned'=>false,'is_admin'=>false,'created_at'=>now_iso(),'last_seen'=>now_iso(),
+            'query_count'=>0,'login_count'=>1,
         ];
         $users[] = $newUser;
         save_users($users);
@@ -54,7 +46,10 @@ switch ($action) {
         $_SESSION['user_id'] = $user['id'];
         $users = load_users();
         foreach ($users as &$u) {
-            if ($u['id'] === $user['id']) $u['last_seen'] = now_iso();
+            if ($u['id'] === $user['id']) {
+                $u['last_seen'] = now_iso();
+                $u['login_count'] = ($u['login_count'] ?? 0) + 1;
+            }
         }
         save_users($users);
         json_out(["success"=>true, "message"=>"Giriş başarılı", "user"=>public_user($user)]);
@@ -66,10 +61,9 @@ switch ($action) {
     case 'check':
         $u = current_user();
         if (!$u) json_out(["success"=>true, "logged"=>false]);
+        if (!empty($u['banned'])) json_out(["success"=>false, "logged"=>false, "banned"=>true]);
         $users = load_users();
-        foreach ($users as &$uu) {
-            if ($uu['id'] === $u['id']) $uu['last_seen'] = now_iso();
-        }
+        foreach ($users as &$uu) if ($uu['id'] === $u['id']) $uu['last_seen'] = now_iso();
         save_users($users);
         json_out(["success"=>true, "logged"=>true, "user"=>public_user($u)]);
 
@@ -95,6 +89,9 @@ switch ($action) {
                 $u['job']       = trim($_POST['job'] ?? ($me['job'] ?? ''));
                 $u['instagram'] = trim($_POST['instagram'] ?? ($me['instagram'] ?? ''));
                 $u['telegram']  = trim($_POST['telegram'] ?? ($me['telegram'] ?? ''));
+                $u['phone']     = trim($_POST['phone'] ?? ($me['phone'] ?? ''));
+                $u['website']   = trim($_POST['website'] ?? ($me['website'] ?? ''));
+                $u['gender']    = trim($_POST['gender'] ?? ($me['gender'] ?? ''));
                 $av = trim($_POST['avatar'] ?? '');
                 if ($av && filter_var($av, FILTER_VALIDATE_URL)) $u['avatar'] = $av;
             }
@@ -110,9 +107,7 @@ switch ($action) {
         if (!password_verify($old, $me['password'])) json_out(["success"=>false,"error"=>"Mevcut şifre yanlış"]);
         if (strlen($new) < 4) json_out(["success"=>false,"error"=>"Yeni şifre en az 4 karakter"]);
         $users = load_users();
-        foreach ($users as &$u) {
-            if ($u['id'] === $me['id']) $u['password'] = password_hash($new, PASSWORD_DEFAULT);
-        }
+        foreach ($users as &$u) if ($u['id'] === $me['id']) $u['password'] = password_hash($new, PASSWORD_DEFAULT);
         save_users($users);
         json_out(["success"=>true, "message"=>"Şifre değiştirildi"]);
 
@@ -123,12 +118,29 @@ switch ($action) {
         foreach ($users as $u) $list[] = public_user($u);
         json_out(["success"=>true, "users"=>$list, "total"=>count($list)]);
 
+    case 'inbox':
+        require_login();
+        $me = current_user();
+        $inbox = $me['inbox'] ?? [];
+        $unread = count(array_filter($inbox, fn($m) => empty($m['read'])));
+        json_out(["success"=>true, "inbox"=>array_slice($inbox, -30), "unread"=>$unread]);
+
+    case 'read_inbox':
+        require_login();
+        $me = current_user();
+        $users = load_users();
+        foreach ($users as &$u) {
+            if ($u['id'] === $me['id']) {
+                foreach ($u['inbox'] as &$m) $m['read'] = true;
+            }
+        }
+        save_users($users);
+        json_out(["success"=>true]);
+
     case 'heartbeat':
         if (is_logged_in()) {
             $users = load_users();
-            foreach ($users as &$u) {
-                if ($u['id'] === $_SESSION['user_id']) $u['last_seen'] = now_iso();
-            }
+            foreach ($users as &$u) if ($u['id'] === $_SESSION['user_id']) $u['last_seen'] = now_iso();
             save_users($users);
         }
         json_out(["success"=>true]);

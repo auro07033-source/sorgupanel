@@ -16,6 +16,7 @@ define('USERS_FILE',    DATA_DIR . '/users.json');
 define('CHAT_FILE',     DATA_DIR . '/chat.json');
 define('AI_CHAT_FILE',  DATA_DIR . '/ai_chat.json');
 define('SETTINGS_FILE', DATA_DIR . '/settings.json');
+define('LOG_FILE',      DATA_DIR . '/admin_log.json');
 
 // ═══════════ GÖRSEL ═══════════
 define('BG_IMAGE',       'https://i.hizliresim.com/loreuqk4.jpg');
@@ -116,6 +117,22 @@ function is_online($user) {
     return (time() - strtotime($user['last_seen'])) < 300;
 }
 
+// ═══════════ LOG ═══════════
+function add_log($action, $detail = '') {
+    $logs = read_json(LOG_FILE, []);
+    $me = current_user();
+    $logs[] = [
+        'id'     => gen_id(),
+        'admin'  => $me['username'] ?? 'system',
+        'action' => $action,
+        'detail' => $detail,
+        'ip'     => $_SERVER['REMOTE_ADDR'] ?? '-',
+        'ts'     => time(),
+    ];
+    if (count($logs) > 1000) $logs = array_slice($logs, -1000);
+    write_json(LOG_FILE, $logs);
+}
+
 // ═══════════ AYARLAR ═══════════
 function load_settings() {
     return read_json(SETTINGS_FILE, [
@@ -123,6 +140,9 @@ function load_settings() {
         'announcement' => '',
         'maintenance'  => false,
         'ai_enabled'   => true,
+        'register_open'=> true,
+        'site_title'   => 'Forex Sorgulama',
+        'ai_model'     => 'pollinations',
     ]);
 }
 function save_settings($s) { write_json(SETTINGS_FILE, $s); }
@@ -137,18 +157,12 @@ function burcHesapla($tarih) {
     else { $d = (int)$parts[0]; $m = (int)$parts[1]; $y = (int)$parts[2]; }
 
     $burclar = [
-        ['01','20','02','18','Kova ♒'],
-        ['02','19','03','20','Balık ♓'],
-        ['03','21','04','19','Koç ♈'],
-        ['04','20','05','20','Boğa ♉'],
-        ['05','21','06','20','İkizler ♊'],
-        ['06','21','07','22','Yengeç ♋'],
-        ['07','23','08','22','Aslan ♌'],
-        ['08','23','09','22','Başak ♍'],
-        ['09','23','10','22','Terazi ♎'],
-        ['10','23','11','21','Akrep ♏'],
-        ['11','22','12','21','Yay ♐'],
-        ['12','22','01','19','Oğlak ♑'],
+        ['01','20','02','18','Kova ♒'], ['02','19','03','20','Balık ♓'],
+        ['03','21','04','19','Koç ♈'],  ['04','20','05','20','Boğa ♉'],
+        ['05','21','06','20','İkizler ♊'], ['06','21','07','22','Yengeç ♋'],
+        ['07','23','08','22','Aslan ♌'], ['08','23','09','22','Başak ♍'],
+        ['09','23','10','22','Terazi ♎'], ['10','23','11','21','Akrep ♏'],
+        ['11','22','12','21','Yay ♐'],   ['12','22','01','19','Oğlak ♑'],
     ];
     foreach ($burclar as [$sm, $sd, $em, $ed, $isim]) {
         $sm = (int)$sm; $sd = (int)$sd; $em = (int)$em; $ed = (int)$ed;
@@ -176,6 +190,10 @@ function public_user($u) {
         'job'        => $u['job'] ?? '',
         'instagram'  => $u['instagram'] ?? '',
         'telegram'   => $u['telegram'] ?? '',
+        'phone'      => $u['phone'] ?? '',
+        'website'    => $u['website'] ?? '',
+        'gender'     => $u['gender'] ?? '',
+        'notes'      => $u['notes'] ?? '',
         'rank'       => $u['rank'] ?? 'Üye',
         'is_vip'     => !empty($u['is_vip']) || ($u['rank'] ?? '') === 'VIP',
         'verified'   => !empty($u['verified']),
@@ -184,5 +202,7 @@ function public_user($u) {
         'online'     => is_online($u),
         'last_seen'  => $u['last_seen'] ?? null,
         'created_at' => $u['created_at'] ?? null,
+        'query_count'=> $u['query_count'] ?? 0,
+        'login_count'=> $u['login_count'] ?? 0,
     ];
 }
