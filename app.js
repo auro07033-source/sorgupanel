@@ -1,5 +1,6 @@
 /* ═══════════════════════════════════════════════════════════
    Forex Sorgulama - Uygulama Mantığı
+   @cmrbaskani
    ═══════════════════════════════════════════════════════════ */
 
 const API   = 'forexsystem.php';
@@ -8,7 +9,7 @@ const CHAT  = 'chat.php';
 const AIAPI = 'ai.php';
 const DEFAULT_AVATAR = 'https://i.hizliresim.com/midnihxu.jpg';
 
-// DevTools koruması
+// ═══════════ DEVTOOLS KORUMASI ═══════════
 (function(){
   let ihlal = 0;
   function ban(){
@@ -29,27 +30,28 @@ let CHAT_TIMER = null;
 let HEARTBEAT_TIMER = null;
 let CURRENT_QUERY = 'tc';
 
+// ═══════════ QUERIES ═══════════
 const QUERIES = {
-  tc:        { icon:'🆔', baslik:'TC Sorgulama',         alt:'Kimlik numarası ile kişi bilgisi', inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, label:'TC Kimlik Numarası'}], type:'tc', vip:false },
-  tcpro:     { icon:'🆔', baslik:'TC Pro Sorgulama',     alt:'Detaylı kişi bilgisi',             inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'tcpro', vip:false },
-  adsoyad:   { icon:'👥', baslik:'Ad Soyad Sorgulama',   alt:'Ad ve soyad ile TC bulma',         inputs:[{id:'ad', ph:'Ad', label:'Ad'},{id:'soyad', ph:'Soyad', label:'Soyad'}], type:'adsoyad', vip:false },
-  aile:      { icon:'👪', baslik:'Aile Sorgulama',       alt:'TC ile aile bireyleri',            inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'aile', vip:false },
-  ailepro:   { icon:'👪', baslik:'Aile Pro Sorgulama',   alt:'Detaylı aile bilgisi',             inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'ailepro', vip:false },
-  tcgsm:     { icon:'📱', baslik:'TC → GSM Sorgulama',   alt:'TC ile telefon numarası',          inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'tcgsm', vip:false },
-  gsmtc:     { icon:'📞', baslik:'GSM → TC Sorgulama',   alt:'Telefon ile TC',                   inputs:[{id:'gsm', ph:'GSM No (5XXXXXXXXX)', max:10, label:'GSM Numarası'}], type:'gsmtc', vip:false },
-  eokul:     { icon:'🎓', baslik:'E-Okul Sorgulama',     alt:'Öğrenci bilgileri',                inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'eokul', vip:false },
+  tc:        { icon:'🆔', baslik:'TC Sorgulama',       alt:'Kimlik numarası ile kişi bilgisi', inputs:[{id:'tc', ph:'TC Kimlik No (11 hane)', max:11, label:'TC Kimlik Numarası'}], type:'tc', vip:false },
+  tcpro:     { icon:'🆔', baslik:'TC Pro Sorgulama',   alt:'Detaylı kişi bilgisi',             inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'tcpro', vip:false },
+  adsoyad:   { icon:'👥', baslik:'Ad Soyad Sorgulama', alt:'Ad ve soyad ile TC bulma',         inputs:[{id:'ad', ph:'Ad', label:'Ad'},{id:'soyad', ph:'Soyad', label:'Soyad'}], type:'adsoyad', vip:false },
+  aile:      { icon:'👪', baslik:'Aile Sorgulama',     alt:'TC ile aile bireyleri',            inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'aile', vip:false },
+  ailepro:   { icon:'👪', baslik:'Aile Pro Sorgulama', alt:'Detaylı aile bilgisi',             inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'ailepro', vip:false },
+  tcgsm:     { icon:'📱', baslik:'TC → GSM Sorgulama', alt:'TC ile telefon numarası',          inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'tcgsm', vip:false },
+  gsmtc:     { icon:'📞', baslik:'GSM → TC Sorgulama', alt:'Telefon ile TC',                   inputs:[{id:'gsm', ph:'GSM No (5XXXXXXXXX)', max:10, label:'GSM Numarası'}], type:'gsmtc', vip:false },
+  eokul:     { icon:'🎓', baslik:'E-Okul Sorgulama',   alt:'Öğrenci bilgileri',                inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'eokul', vip:false },
 
-  sulale:    { icon:'🌳', baslik:'Sülale Sorgulama',     alt:'Sülale kayıtları',                 inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'sulale', vip:true },
-  adres:     { icon:'🏠', baslik:'Adres Sorgulama',      alt:'İkametgah adresi',                 inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'adres', vip:true },
-  tapu:      { icon:'🏡', baslik:'Tapu Sorgulama',       alt:'Tapu kayıtları',                   inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'tapu', vip:true },
-  adaparsel: { icon:'📐', baslik:'Ada Parsel Sorgulama', alt:'İl/ilçe ile parsel',               inputs:[{id:'il', ph:'İl', label:'İl'},{id:'ilce', ph:'İlçe', label:'İlçe'}], type:'adaparsel', vip:true },
+  sulale:    { icon:'🌳', baslik:'Sülale Sorgulama',   alt:'Sülale kayıtları',                 inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'sulale', vip:true },
+  adres:     { icon:'🏠', baslik:'Adres Sorgulama',    alt:'İkametgah adresi',                 inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'adres', vip:true },
+  tapu:      { icon:'🏡', baslik:'Tapu Sorgulama',     alt:'Tapu kayıtları',                   inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'tapu', vip:true },
+  adaparsel: { icon:'📐', baslik:'Ada Parsel',         alt:'İl/ilçe ile parsel',               inputs:[{id:'il', ph:'İl', label:'İl'},{id:'ilce', ph:'İlçe', label:'İlçe'}], type:'adaparsel', vip:true },
 
-  new_adsoyad:   { icon:'🔎', baslik:'Detaylı Ad Soyad',  alt:'Ad + soyad + il',   inputs:[{id:'ad', ph:'Ad', label:'Ad'},{id:'soyad', ph:'Soyad', label:'Soyad'},{id:'il', ph:'İl (opsiyonel)', label:'İl'}], type:'new_adsoyad', vip:false },
-  new_tc:        { icon:'🆔', baslik:'Detaylı TC',        alt:'TC + GSM + aile',   inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_tc', vip:false },
-  new_aile:      { icon:'👪', baslik:'Detaylı Aile',      alt:'Tam aile ağacı',    inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_aile', vip:false },
-  new_hane:      { icon:'🏘️', baslik:'Hane Sorgu',        alt:'Aynı hane',         inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_hane', vip:false },
-  new_sulale:    { icon:'🌳', baslik:'Detaylı Sülale',    alt:'Büyükbaba+anne',    inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_sulale', vip:true },
-  new_sokak:     { icon:'🛣️', baslik:'Sokak Sorgu',       alt:'Aynı sokak',        inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_sokak', vip:true },
+  new_adsoyad:   { icon:'🔎', baslik:'Detaylı Ad Soyad',   alt:'Ad + soyad + il',   inputs:[{id:'ad', ph:'Ad', label:'Ad'},{id:'soyad', ph:'Soyad', label:'Soyad'},{id:'il', ph:'İl (opsiyonel)', label:'İl'}], type:'new_adsoyad', vip:false },
+  new_tc:        { icon:'🆔', baslik:'Detaylı TC',         alt:'TC + GSM + aile',   inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_tc', vip:false },
+  new_aile:      { icon:'👪', baslik:'Detaylı Aile',       alt:'Tam aile ağacı',    inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_aile', vip:false },
+  new_hane:      { icon:'🏘️', baslik:'Hane Sorgu',         alt:'Aynı hane',         inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_hane', vip:false },
+  new_sulale:    { icon:'🌳', baslik:'Detaylı Sülale',     alt:'Büyükbaba+anne',    inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_sulale', vip:true },
+  new_sokak:     { icon:'🛣️', baslik:'Sokak Sorgu',        alt:'Aynı sokak',        inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_sokak', vip:true },
   new_adres2009: { icon:'📍', baslik:'Eski Adres Geçmişi', alt:'2009-2024',        inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_adres2009', vip:true },
 };
 
@@ -75,6 +77,7 @@ const INFO_TEXT = {
   new_adres2009:'💎 VIP — Eski adresler.',
 };
 
+// ═══════════ YARDIMCI ═══════════
 const toastEl = document.getElementById('toast');
 function toast(msg, type='') {
   if (!toastEl) return;
@@ -87,6 +90,7 @@ function esc(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<
 function avatarOf(u) { const a = u && u.avatar; return (a && !a.includes('ui-avatars.com')) ? a : DEFAULT_AVATAR; }
 function isVIP(u) { if (!u) return false; return u.is_vip || u.rank === 'VIP' || u.is_admin; }
 
+// ═══════════ TEMA ═══════════
 function setTheme(theme) {
   const ic = document.getElementById('themeIcon');
   const lb = document.getElementById('themeLabel');
@@ -106,6 +110,7 @@ function setTheme(theme) {
 function toggleTheme() { setTheme(document.body.classList.contains('dark') ? 'light' : 'dark'); }
 setTheme(localStorage.getItem('theme') === 'light' ? 'light' : 'dark');
 
+// ═══════════ AUTH ═══════════
 function switchTab(tab) {
   document.getElementById('authErr').classList.remove('active');
   if (tab === 'login') {
@@ -176,6 +181,7 @@ async function checkSession() {
   } catch (e) {}
 }
 
+// ═══════════ NAV ═══════════
 function navInsa() {
   const nav = document.getElementById('sbNav');
   if (!nav) return;
@@ -214,6 +220,7 @@ function navInsa() {
   `;
 }
 
+// ═══════════ PANEL ═══════════
 function enterPanel(user) {
   CURRENT_USER = user;
   document.getElementById('authView').classList.add('hidden');
@@ -245,6 +252,7 @@ function enterPanel(user) {
   HEARTBEAT_TIMER = setInterval(() => fetch(AUTH + '?action=heartbeat').catch(() => {}), 120000);
 }
 
+// ═══════════ SIDEBAR ═══════════
 function toggleSidebar() {
   document.getElementById('sidebar')?.classList.toggle('open');
   document.getElementById('overlay')?.classList.toggle('active');
@@ -262,25 +270,46 @@ document.addEventListener('click', () => {
   document.getElementById('profileBtn')?.classList.remove('open');
 });
 
+// ═══════════ SHOW VIEW (DÜZELTİLDİ) ═══════════
 function showView(view) {
-  ['query','chat','users','profile','settings','ai'].forEach(v => {
-    document.getElementById('view' + v.charAt(0).toUpperCase() + v.slice(1))?.classList.add('hidden');
+  const viewMap = {
+    query:    'viewQuery',
+    chat:     'viewChat',
+    users:    'viewUsers',
+    profile:  'viewProfile',
+    settings: 'viewSettings',
+    ai:       'viewAI'
+  };
+
+  // Hepsini gizle
+  Object.values(viewMap).forEach(id => {
+    document.getElementById(id)?.classList.add('hidden');
   });
-  document.getElementById('view' + view.charAt(0).toUpperCase() + view.slice(1))?.classList.remove('hidden');
+
+  // İstenileni göster
+  const targetId = viewMap[view];
+  if (targetId) document.getElementById(targetId)?.classList.remove('hidden');
+
+  // Sidebar aktif durumu
   document.querySelectorAll('.sb-nav .sb-item').forEach(el => el.classList.remove('active'));
   const navMap = { chat:'navChat', users:'navUsers', ai:'navAI' };
   if (navMap[view]) document.getElementById(navMap[view])?.classList.add('active');
+
+  // View'a özel yükleyiciler
   if (view === 'profile') loadProfile();
   if (view === 'users') loadUsers();
   if (view === 'settings') loadAccountInfo();
   if (view === 'chat') { loadChat(); scrollChatBottom(); }
   if (view === 'ai') { loadAIHistory(); scrollAIBottom(); }
+
+  // Mobil menü kapat
   if (window.innerWidth < 900) {
     document.getElementById('sidebar')?.classList.remove('open');
     document.getElementById('overlay')?.classList.remove('active');
   }
 }
 
+// ═══════════ SORGU ═══════════
 function openQuery(type) {
   const q = QUERIES[type];
   if (!q) return;
@@ -311,7 +340,6 @@ function openQuery(type) {
     g.appendChild(i);
     wrap.appendChild(g);
   }
-
   document.getElementById('resultWrap').classList.remove('active');
   document.getElementById('resultTable').innerHTML = '';
   showView('query');
@@ -336,7 +364,6 @@ async function runQuery() {
   const btn = document.getElementById('queryBtn');
   const wrap = document.getElementById('resultWrap');
   const table = document.getElementById('resultTable');
-
   const params = new URLSearchParams();
   params.set('action', 'query');
   params.set('type', q.type);
@@ -344,13 +371,11 @@ async function runQuery() {
     const v = document.getElementById('input_' + inp.id)?.value.trim() || '';
     if (v) params.set(inp.id, v);
   }
-
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Sorgulanıyor...';
   wrap.classList.add('active');
   table.innerHTML = '<div class="q-empty"><span class="spinner"></span> Sorgulanıyor...</div>';
   document.getElementById('resultCount').textContent = '';
-
   try {
     const r = await fetch(API + '?' + params.toString());
     const d = await r.json();
@@ -367,26 +392,18 @@ async function runQuery() {
 function renderResult(data) {
   const table = document.getElementById('resultTable');
   const cnt = document.getElementById('resultCount');
-
   if (data.error || data.hata) { table.innerHTML = `<div class="q-error">✗ ${esc(data.error || data.hata)}</div>`; cnt.textContent = ''; return; }
   if (data.success === false) { table.innerHTML = `<div class="q-error">✗ ${esc(data.error || 'Kayıt yok')}</div>`; cnt.textContent = ''; return; }
 
   if (data.data && typeof data.data === 'object' && !Array.isArray(data.data) && data.data.kisi) {
     const d = data.data;
-    const kategoriler = {
-      kisi: '👤 Kişi', baba: '👨 Baba', anne: '👩 Anne',
-      buyukbaba: '👴 Büyükbaba', buyukanne: '👵 Büyükanne',
-      kardesler: '👫 Kardeşler', cocuklar: '👶 Çocuklar',
-      torunlar: '👦 Torunlar', ailesirano_uyeleri: '📋 Aile Üyeleri'
-    };
+    const kategoriler = { kisi:'👤 Kişi', baba:'👨 Baba', anne:'👩 Anne', buyukbaba:'👴 Büyükbaba', buyukanne:'👵 Büyükanne', kardesler:'👫 Kardeşler', cocuklar:'👶 Çocuklar', torunlar:'👦 Torunlar', ailesirano_uyeleri:'📋 Aile Üyeleri' };
     let html = '', toplam = 0;
-
     if (d.ozet) {
       let s = [];
       for (const [k, v] of Object.entries(d.ozet)) if (v) s.push(`${k}: ${v}`);
       if (s.length) html += `<div class="result-ozet">📊 ${s.join(' · ')}</div>`;
     }
-
     for (const [key, list] of Object.entries(d)) {
       if (Array.isArray(list) && list.length > 0) {
         toplam += list.length;
@@ -441,6 +458,7 @@ function renderResult(data) {
   cnt.textContent = items.length + ' kayıt';
 }
 
+// ═══════════ CHAT ═══════════
 async function loadChat() {
   try {
     const r = await fetch(CHAT + '?action=messages');
@@ -471,9 +489,7 @@ async function loadChat() {
     } catch (e) {}
   } catch (e) {}
 }
-
 function scrollChatBottom() { const b = document.getElementById('chatMessages'); if (b) b.scrollTop = b.scrollHeight; }
-
 async function sendMessage() {
   const inp = document.getElementById('chatInput');
   const t = inp.value.trim();
@@ -491,6 +507,7 @@ async function sendMessage() {
   finally { btn.disabled = false; }
 }
 
+// ═══════════ AI ═══════════
 async function loadAIHistory() {
   try {
     const r = await fetch(AIAPI + '?action=history');
@@ -507,9 +524,7 @@ async function loadAIHistory() {
     box.innerHTML = html || '<div class="q-empty">AI ile sohbete başla! 👋</div>';
   } catch (e) {}
 }
-
 function scrollAIBottom() { const b = document.getElementById('aiMessages'); if (b) b.scrollTop = b.scrollHeight; }
-
 async function sendAI() {
   const inp = document.getElementById('aiInput');
   const q = inp.value.trim();
@@ -530,7 +545,6 @@ async function sendAI() {
     const r = await fetch(AIAPI, { method:'POST', body: fd });
     const d = await r.json();
     document.getElementById(waitId)?.remove();
-
     if (d.success) {
       box.innerHTML += `<div class="msg"><img class="av" src="${DEFAULT_AVATAR}" alt=""><div><div class="msg-bubble"><div class="msg-text">${esc(d.response)}</div>${d.command ? '<div class="msg-time" style="color:#f59e0b;">⚡ Komut Uygulandı</div>' : ''}</div></div></div>`;
     } else {
@@ -542,13 +556,13 @@ async function sendAI() {
     box.innerHTML += `<div class="msg"><div><div class="msg-bubble"><div class="msg-text" style="color:#f85149">❌ Bağlantı hatası</div></div></div></div>`;
   } finally { btn.disabled = false; btn.textContent = 'Gönder'; }
 }
-
 async function clearAI() {
   if (!confirm('AI geçmişini temizle?')) return;
   await fetch(AIAPI + '?action=clear');
   document.getElementById('aiMessages').innerHTML = '<div class="q-empty">Geçmiş temizlendi!</div>';
 }
 
+// ═══════════ USERS ═══════════
 async function loadUsers() {
   try {
     const r = await fetch(AUTH + '?action=users');
@@ -580,6 +594,7 @@ async function loadUsers() {
   } catch (e) {}
 }
 
+// ═══════════ PROFILE ═══════════
 async function loadProfile() {
   try {
     const r = await fetch(AUTH + '?action=profile&user=' + encodeURIComponent(CURRENT_USER.username));
@@ -604,7 +619,6 @@ async function loadProfile() {
     document.getElementById('editAvatar').value = u.avatar || '';
   } catch (e) {}
 }
-
 async function saveProfile() {
   const fd = new FormData();
   fd.append('action','update_profile');
@@ -624,6 +638,7 @@ async function saveProfile() {
   } catch (e) { toast('❌ Bağlantı hatası', 'error'); }
 }
 
+// ═══════════ SETTINGS ═══════════
 async function changePassword() {
   const o = document.getElementById('oldPass').value;
   const n = document.getElementById('newPass').value;
@@ -638,7 +653,6 @@ async function changePassword() {
     else toast('❌ ' + d.error, 'error');
   } catch (e) { toast('❌ Bağlantı hatası', 'error'); }
 }
-
 async function loadAccountInfo() {
   try {
     const r = await fetch(AUTH + '?action=check');
@@ -661,6 +675,7 @@ async function loadAccountInfo() {
   } catch (e) {}
 }
 
+// ═══════════ OLAYLAR ═══════════
 document.getElementById('loginPass')?.addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); });
 document.getElementById('regPass')?.addEventListener('keypress', e => { if (e.key === 'Enter') doRegister(); });
 document.getElementById('chatInput')?.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
