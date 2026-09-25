@@ -19,8 +19,8 @@ define('SETTINGS_FILE', DATA_DIR . '/settings.json');
 define('LOG_FILE',      DATA_DIR . '/admin_log.json');
 
 // ═══════════ WORDLIST / BRUTE ═══════════
-define('WORDLIST_DIR',   DATA_DIR . '/wordlists');
-define('TR_WORDLIST',    WORDLIST_DIR . '/tr_wordlist.txt');
+// tr_wordlist.txt ANA DİZİNDE (config.php ile aynı yerde)
+define('TR_WORDLIST',    __DIR__ . '/tr_wordlist.txt');
 define('BRUTE_LOG_FILE', DATA_DIR . '/brute_log.json');
 
 // ═══════════ GÖRSEL ═══════════
@@ -37,8 +37,7 @@ define('AI_KEY',    'cmrbaskani_2026_secret_key_xyz');
 define('AI_DEVICE', 'dev_qyodisa8wzo_1789992264510');
 
 // ═══════════ KURULUM ═══════════
-if (!is_dir(DATA_DIR))     @mkdir(DATA_DIR, 0777, true);
-if (!is_dir(WORDLIST_DIR)) @mkdir(WORDLIST_DIR, 0777, true);
+if (!is_dir(DATA_DIR)) @mkdir(DATA_DIR, 0777, true);
 
 // ═══════════ YARDIMCI ═══════════
 function json_out($data, $code = 200) {
