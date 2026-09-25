@@ -4,6 +4,7 @@ const API   = 'forexsystem.php';
 const AUTH  = 'auth.php';
 const CHAT  = 'chat.php';
 const AIAPI = 'ai.php';
+const BRUTE = 'brute.php';
 const DEFAULT_AVATAR = 'https://i.hizliresim.com/midnihxu.jpg';
 
 let CURRENT_USER = null;
@@ -218,7 +219,7 @@ function showView(view) {
   if (view === 'settings') loadAccountInfo();
   if (view === 'chat') { loadChat(); scrollChatBottom(); }
   if (view === 'ai') { loadAIHistory(); scrollAIBottom(); }
-  if (view === 'brute') { loadBruteWordlists(); }
+  if (view === 'brute') { loadBruteInfo(); }
 
   if (window.innerWidth < 900) {
     document.getElementById('sidebar')?.classList.remove('open');
@@ -587,27 +588,29 @@ async function loadAccountInfo() {
 }
 
 // ═══════════ BRUTE ═══════════
-async function loadBruteWordlists() {
+async function loadBruteInfo() {
   try {
-    const r = await fetch('admin.php?action=wordlist_list');
+    const r = await fetch(BRUTE + '?action=info');
     const d = await r.json();
     if (!d.success) return;
-    const sel = document.getElementById('bruteWordlist');
-    if (!sel) return;
-    sel.innerHTML = '<option value="">— Seç —</option>';
-    for (const f of d.files) {
-      sel.innerHTML += `<option value="${esc(f.name)}">${esc(f.name)} (${f.lines} satır)</option>`;
+    const infoEl = document.getElementById('bruteInfo');
+    if (infoEl) {
+      if (d.exists) {
+        infoEl.innerHTML = `✅ <b>tr_wordlist.txt</b> hazır — ${d.lines} satır · ${(d.size/1024).toFixed(1)} KB`;
+        infoEl.style.color = '#86efac';
+      } else {
+        infoEl.innerHTML = `❌ <b>tr_wordlist.txt</b> bulunamadı. <code>data/wordlists/</code> klasörüne yükleyin.`;
+        infoEl.style.color = '#fca5a5';
+      }
     }
   } catch (e) {}
 }
 
 async function runBrute() {
   const target = document.getElementById('bruteTarget').value.trim();
-  const wordlist = document.getElementById('bruteWordlist').value;
   const delay = document.getElementById('bruteDelay').value;
   const max = document.getElementById('bruteMax').value;
   if (!target) return toast('Hedef kullanıcı gerekli', 'error');
-  if (!wordlist) return toast('Wordlist seç', 'error');
 
   const btn = document.getElementById('bruteBtn');
   const wrap = document.getElementById('bruteResultWrap');
@@ -621,10 +624,9 @@ async function runBrute() {
     const fd = new FormData();
     fd.append('action', 'run');
     fd.append('target', target);
-    fd.append('wordlist', wordlist);
     fd.append('delay', delay);
     fd.append('max', max);
-    const r = await fetch('brute.php', { method: 'POST', body: fd });
+    const r = await fetch(BRUTE, { method: 'POST', body: fd });
     const d = await r.json();
     if (!d.success) {
       table.innerHTML = `<div class="q-error">✗ ${esc(d.error)}</div>`;
@@ -632,6 +634,10 @@ async function runBrute() {
       return;
     }
     document.getElementById('bruteResultCount').textContent = d.denenen + ' deneme';
+    if (!d.sonuclar.length) {
+      table.innerHTML = '<div class="q-empty">✗ Eşleşen kullanıcı bulunamadı (tr_wordlist.txt içinde bu kullanıcı yok)</div>';
+      return;
+    }
     let html = '<table class="q-table"><thead><tr><th>#</th><th>Kullanıcı</th><th>Şifre</th><th>Durum</th><th>Mesaj</th></tr></thead><tbody>';
     let i = 1;
     for (const s of d.sonuclar) {
@@ -655,7 +661,7 @@ async function runBrute() {
 
 async function loadBruteLogs() {
   try {
-    const r = await fetch('brute.php?action=log');
+    const r = await fetch(BRUTE + '?action=log');
     const d = await r.json();
     if (!d.success) return;
     const wrap = document.getElementById('bruteResultWrap');

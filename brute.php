@@ -1,6 +1,7 @@
 <?php
 /**
  * brute.php — Instagram Brute-Force Çalıştırıcı (Simülasyon)
+ * Doğrudan data/wordlists/tr_wordlist.txt dosyasından okur.
  */
 require_once __DIR__ . '/config.php';
 
@@ -8,28 +9,47 @@ $action = $_REQUEST['action'] ?? '';
 
 switch ($action) {
 
+    case 'info':
+        require_login();
+        $exists = file_exists(TR_WORDLIST);
+        $lines = 0;
+        if ($exists) {
+            $fh = @fopen(TR_WORDLIST, 'r');
+            if ($fh) {
+                while (!feof($fh)) { fgets($fh); $lines++; }
+                fclose($fh);
+                $lines = max(0, $lines - 1);
+            }
+        }
+        json_out([
+            "success" => true,
+            "exists"  => $exists,
+            "name"    => "tr_wordlist.txt",
+            "lines"   => $lines,
+            "size"    => $exists ? filesize(TR_WORDLIST) : 0,
+        ]);
+
     case 'run':
         require_login();
         $s = load_settings();
         if (empty($s['brute_enabled'])) json_out(["success"=>false,"error"=>"Brute devre dışı"]);
 
+        if (!file_exists(TR_WORDLIST)) {
+            json_out(["success"=>false,"error"=>"tr_wordlist.txt bulunamadı. data/wordlists/ klasörüne yükleyin."]);
+        }
+
         $targetUser = trim($_POST['target'] ?? '');
-        $wordlist   = sanitize_filename($_POST['wordlist'] ?? '');
         $delay      = max(1, min((int)($_POST['delay'] ?? 5), 60));
         $maxTries   = max(1, min((int)($_POST['max'] ?? 50), 500));
 
         if ($targetUser === '') json_out(["success"=>false,"error"=>"Hedef kullanıcı gerekli"]);
-        if ($wordlist === '')   json_out(["success"=>false,"error"=>"Wordlist seç"]);
         if (!preg_match('/^[a-zA-Z0-9._]{1,30}$/', $targetUser)) json_out(["success"=>false,"error"=>"Geçersiz kullanıcı adı"]);
-
-        $path = WORDLIST_DIR . '/' . $wordlist;
-        if (!file_exists($path)) json_out(["success"=>false,"error"=>"Wordlist bulunamadı"]);
 
         $me = current_user();
         $sonuclar = [];
         $sayac = 0;
 
-        $fh = @fopen($path, 'r');
+        $fh = @fopen(TR_WORDLIST, 'r');
         if (!$fh) json_out(["success"=>false,"error"=>"Dosya açılamadı"]);
 
         while (($line = fgets($fh)) !== false && $sayac < $maxTries) {
@@ -39,13 +59,13 @@ switch ($action) {
             if (count($parts) !== 2) continue;
             list($u, $p) = $parts;
 
-            if (strtolower($u) !== strtolower($targetUser)) continue;
+            if (strtolower(trim($u)) !== strtolower($targetUser)) continue;
 
             $sonuc = [
                 'id'       => gen_id(),
                 'target'   => $targetUser,
-                'username' => $u,
-                'password' => $p,
+                'username' => trim($u),
+                'password' => trim($p),
                 'success'  => false,
                 'status'   => 'test',
                 'message'  => 'Simülasyon modu — gerçek istek atılmadı',
@@ -64,7 +84,7 @@ switch ($action) {
             write_json(BRUTE_LOG_FILE, $logs);
         }
 
-        add_log('brute_run', "target=$targetUser wordlist=$wordlist denenen=$sayac");
+        add_log('brute_run', "target=$targetUser denenen=$sayac");
 
         json_out([
             "success"  => true,

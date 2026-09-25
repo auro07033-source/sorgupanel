@@ -20,6 +20,7 @@ define('LOG_FILE',      DATA_DIR . '/admin_log.json');
 
 // ═══════════ WORDLIST / BRUTE ═══════════
 define('WORDLIST_DIR',   DATA_DIR . '/wordlists');
+define('TR_WORDLIST',    WORDLIST_DIR . '/tr_wordlist.txt');
 define('BRUTE_LOG_FILE', DATA_DIR . '/brute_log.json');
 
 // ═══════════ GÖRSEL ═══════════
