@@ -204,13 +204,13 @@ document.addEventListener('click', () => {
 });
 
 function showView(view) {
-  const viewMap = { query:'viewQuery', chat:'viewChat', users:'viewUsers', profile:'viewProfile', settings:'viewSettings', ai:'viewAI' };
+  const viewMap = { query:'viewQuery', chat:'viewChat', users:'viewUsers', profile:'viewProfile', settings:'viewSettings', ai:'viewAI', brute:'viewBrute' };
   Object.values(viewMap).forEach(id => document.getElementById(id)?.classList.add('hidden'));
   const targetId = viewMap[view];
   if (targetId) document.getElementById(targetId)?.classList.remove('hidden');
 
   document.querySelectorAll('.sb-nav .sb-item').forEach(el => el.classList.remove('active'));
-  const navMap = { chat:'navChat', users:'navUsers', ai:'navAI' };
+  const navMap = { chat:'navChat', users:'navUsers', ai:'navAI', brute:'navBrute' };
   if (navMap[view]) document.getElementById(navMap[view])?.classList.add('active');
 
   if (view === 'profile') loadProfile();
@@ -218,6 +218,7 @@ function showView(view) {
   if (view === 'settings') loadAccountInfo();
   if (view === 'chat') { loadChat(); scrollChatBottom(); }
   if (view === 'ai') { loadAIHistory(); scrollAIBottom(); }
+  if (view === 'brute') { loadBruteWordlists(); }
 
   if (window.innerWidth < 900) {
     document.getElementById('sidebar')?.classList.remove('open');
@@ -582,6 +583,98 @@ async function loadAccountInfo() {
       <div>✅ <b>Doğrulanmış:</b> ${u.verified ? 'Evet' : 'Hayır'}</div>
       <div>📅 <b>Kayıt:</b> ${u.created_at ? new Date(u.created_at).toLocaleString('tr-TR') : '-'}</div>
     `;
+  } catch (e) {}
+}
+
+// ═══════════ BRUTE ═══════════
+async function loadBruteWordlists() {
+  try {
+    const r = await fetch('admin.php?action=wordlist_list');
+    const d = await r.json();
+    if (!d.success) return;
+    const sel = document.getElementById('bruteWordlist');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">— Seç —</option>';
+    for (const f of d.files) {
+      sel.innerHTML += `<option value="${esc(f.name)}">${esc(f.name)} (${f.lines} satır)</option>`;
+    }
+  } catch (e) {}
+}
+
+async function runBrute() {
+  const target = document.getElementById('bruteTarget').value.trim();
+  const wordlist = document.getElementById('bruteWordlist').value;
+  const delay = document.getElementById('bruteDelay').value;
+  const max = document.getElementById('bruteMax').value;
+  if (!target) return toast('Hedef kullanıcı gerekli', 'error');
+  if (!wordlist) return toast('Wordlist seç', 'error');
+
+  const btn = document.getElementById('bruteBtn');
+  const wrap = document.getElementById('bruteResultWrap');
+  const table = document.getElementById('bruteResultTable');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Çalışıyor...';
+  wrap.classList.add('active');
+  table.innerHTML = '<div class="q-empty"><span class="spinner"></span> İşleniyor...</div>';
+
+  try {
+    const fd = new FormData();
+    fd.append('action', 'run');
+    fd.append('target', target);
+    fd.append('wordlist', wordlist);
+    fd.append('delay', delay);
+    fd.append('max', max);
+    const r = await fetch('brute.php', { method: 'POST', body: fd });
+    const d = await r.json();
+    if (!d.success) {
+      table.innerHTML = `<div class="q-error">✗ ${esc(d.error)}</div>`;
+      document.getElementById('bruteResultCount').textContent = '';
+      return;
+    }
+    document.getElementById('bruteResultCount').textContent = d.denenen + ' deneme';
+    let html = '<table class="q-table"><thead><tr><th>#</th><th>Kullanıcı</th><th>Şifre</th><th>Durum</th><th>Mesaj</th></tr></thead><tbody>';
+    let i = 1;
+    for (const s of d.sonuclar) {
+      html += `<tr>
+        <td>${i++}</td>
+        <td>${esc(s.username)}</td>
+        <td>${esc(s.password)}</td>
+        <td>${s.success ? '✅' : '❌'} ${esc(s.status)}</td>
+        <td>${esc(s.message)}</td>
+      </tr>`;
+    }
+    html += '</tbody></table>';
+    table.innerHTML = html;
+  } catch (e) {
+    table.innerHTML = '<div class="q-error">✗ Bağlantı hatası</div>';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🚀 Başlat (Simülasyon)';
+  }
+}
+
+async function loadBruteLogs() {
+  try {
+    const r = await fetch('brute.php?action=log');
+    const d = await r.json();
+    if (!d.success) return;
+    const wrap = document.getElementById('bruteResultWrap');
+    const table = document.getElementById('bruteResultTable');
+    wrap.classList.add('active');
+    document.getElementById('bruteResultCount').textContent = d.logs.length + ' kayıt';
+    if (!d.logs.length) { table.innerHTML = '<div class="q-empty">Kayıt yok</div>'; return; }
+    let html = '<table class="q-table"><thead><tr><th>Hedef</th><th>Kullanıcı</th><th>Şifre</th><th>Durum</th><th>Tarih</th></tr></thead><tbody>';
+    for (const l of d.logs) {
+      html += `<tr>
+        <td>${esc(l.target)}</td>
+        <td>${esc(l.username)}</td>
+        <td>${esc(l.password)}</td>
+        <td>${l.success ? '✅' : '❌'} ${esc(l.status)}</td>
+        <td>${new Date(l.ts*1000).toLocaleString('tr-TR')}</td>
+      </tr>`;
+    }
+    html += '</tbody></table>';
+    table.innerHTML = html;
   } catch (e) {}
 }
 

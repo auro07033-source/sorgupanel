@@ -262,11 +262,11 @@
       </div>
     </div>
 
-    <!-- 🔥 SABİT MENÜ - TÜM SORGULAR + AI + SOHBET -->
     <nav class="sb-nav" id="sbNav">
       <div class="sb-item" id="navAI" onclick="showView('ai')"><span class="ico">🤖</span> AI Asistan</div>
       <div class="sb-item" id="navChat" onclick="showView('chat')"><span class="ico">💬</span> Genel Sohbet</div>
       <div class="sb-item" id="navUsers" onclick="showView('users')"><span class="ico">👥</span> Kullanıcılar</div>
+      <div class="sb-item" id="navBrute" onclick="showView('brute')"><span class="ico">🔐</span> Wordlist & Brute</div>
 
       <div class="sb-section">Ücretsiz Sorgular</div>
       <div class="sb-item" onclick="openQuery('tc')"><span class="ico">🆔</span> TC Sorgulama</div>
@@ -350,6 +350,42 @@
             <input class="chat-input" id="aiInput" placeholder="AI'ya bir şey sor...">
             <button class="chat-send" id="aiSendBtn" onclick="sendAI()">Gönder</button>
           </div>
+        </div>
+      </div>
+
+      <div id="viewBrute" class="hidden q-wrap">
+        <div class="q-card">
+          <div class="q-head">
+            <div class="q-head-ico">🔐</div>
+            <div class="q-head-txt"><h2>Wordlist & Brute</h2><p>Simülasyon modu</p></div>
+          </div>
+          <div class="q-info"><span>⚠️</span><span>Gerçek Instagram isteği atılmaz. Yalnızca test amaçlıdır.</span></div>
+          <div class="q-inputs">
+            <div class="q-input-group">
+              <label class="q-input-label">Hedef Kullanıcı Adı</label>
+              <input class="q-input" id="bruteTarget" placeholder="instagram_kullanici">
+            </div>
+            <div class="q-input-group">
+              <label class="q-input-label">Wordlist Seç</label>
+              <select class="q-input" id="bruteWordlist" style="font-family:inherit;"></select>
+            </div>
+            <div class="q-input-group">
+              <label class="q-input-label">Gecikme (saniye)</label>
+              <input class="q-input" id="bruteDelay" type="number" value="5" min="1" max="60">
+            </div>
+            <div class="q-input-group">
+              <label class="q-input-label">Maksimum Deneme</label>
+              <input class="q-input" id="bruteMax" type="number" value="50" min="1" max="500">
+            </div>
+          </div>
+          <div class="q-actions">
+            <button class="q-btn q-btn-primary" id="bruteBtn" onclick="runBrute()">🚀 Başlat (Simülasyon)</button>
+            <button class="q-btn q-btn-secondary" onclick="loadBruteLogs()">📜 Geçmiş</button>
+          </div>
+        </div>
+        <div class="q-results" id="bruteResultWrap">
+          <div class="q-results-head"><span>Sonuçlar</span><span class="q-results-count" id="bruteResultCount"></span></div>
+          <div class="q-table-wrap" id="bruteResultTable"></div>
         </div>
       </div>
 

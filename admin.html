@@ -67,16 +67,18 @@
   .form-row label{ display:block; font-size:.75rem; font-weight:600; color:var(--text-dim); margin-bottom:.3rem; }
   .form-row input, .form-row textarea, .form-row select{ width:100%; padding:.6rem .8rem; border-radius:.5rem; background:var(--bg); border:1px solid var(--border); color:var(--text); font-family:inherit; font-size:.85rem; outline:none; }
   .form-row textarea{ min-height:70px; resize:vertical; font-family:'JetBrains Mono',monospace; font-size:.8rem; }
-  .log-row{ padding:.65rem .85rem; border-bottom:1px solid var(--border); font-size:.78rem; display:flex; gap:.8rem; align-items:center; }
+  .log-row{ padding:.65rem .85rem; border-bottom:1px solid var(--border); font-size:.78rem; display:flex; gap:.8rem; align-items:center; flex-wrap:wrap; }
   .log-row:last-child{ border-bottom:none; }
-  .log-action{ font-family:'JetBrains Mono',monospace; font-weight:700; color:#a5b4fc; min-width:120px; }
-  .log-detail{ flex:1; color:var(--text-dim); word-break:break-all; }
+  .log-action{ font-family:'JetBrains Mono',monospace; font-weight:700; color:#a5b4fc; min-width:120px; word-break:break-all; }
+  .log-detail{ flex:1; color:var(--text-dim); word-break:break-all; min-width:200px; }
   .log-ts{ font-family:'JetBrains Mono',monospace; font-size:.7rem; color:var(--text-dim); }
   .toast{ position:fixed; bottom:24px; right:24px; padding:.85rem 1.2rem; background:var(--card-solid); border:1px solid var(--primary); border-radius:.75rem; color:var(--text); font-size:.85rem; font-weight:600; opacity:0; transform:translateY(12px); transition:all .3s; pointer-events:none; z-index:999; }
   .toast.show{ opacity:1; transform:translateY(0); }
   .toast.error{ border-color:var(--danger); } .toast.success{ border-color:var(--success); }
   .kv{ display:grid; grid-template-columns:140px 1fr; gap:.4rem .8rem; font-size:.82rem; }
   .kv b{ color:var(--text-dim); font-weight:600; }
+  .wl-grid{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.25rem; }
+  @media(max-width:700px){ .wl-grid{ grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -107,6 +109,8 @@
 
   <div class="tabs">
     <button class="tab-btn active" data-tab="users" onclick="switchTab('users')">👥 Kullanıcılar</button>
+    <button class="tab-btn" data-tab="wordlists" onclick="switchTab('wordlists')">📚 Wordlist'ler</button>
+    <button class="tab-btn" data-tab="brutelog" onclick="switchTab('brutelog')">🔐 Brute Log</button>
     <button class="tab-btn" data-tab="settings" onclick="switchTab('settings')">⚙️ Ayarlar</button>
     <button class="tab-btn" data-tab="broadcast" onclick="switchTab('broadcast')">📢 Duyuru</button>
     <button class="tab-btn" data-tab="logs" onclick="switchTab('logs')">📜 Loglar</button>
@@ -128,6 +132,31 @@
     <div id="userList"></div>
   </div>
 
+  <div id="tab-wordlists" class="panel hidden">
+    <div class="panel-title">📚 Wordlist Yönetimi</div>
+    <div class="wl-grid">
+      <div>
+        <div class="form-row"><label>📤 Dosya Yükle (.txt/.lst/.wordlist)</label><input type="file" id="wlFile" accept=".txt,.lst,.wordlist"></div>
+        <button class="btn primary" onclick="uploadWordlist()">⬆️ Yükle</button>
+      </div>
+      <div>
+        <div class="form-row"><label>📝 Yeni Wordlist Adı</label><input id="wlName" placeholder="ornek_wordlist.txt"></div>
+        <div class="form-row"><label>İçerik (user:pass satırları)</label><textarea id="wlContent" style="min-height:80px;" placeholder="kullanici:sifre&#10;kullanici2:sifre2"></textarea></div>
+        <button class="btn primary" onclick="createWordlist()">➕ Oluştur</button>
+      </div>
+    </div>
+    <div id="wlList"></div>
+  </div>
+
+  <div id="tab-brutelog" class="panel hidden">
+    <div class="panel-title">🔐 Brute-Force Kayıtları</div>
+    <div style="margin-bottom:1rem;display:flex;gap:.5rem;flex-wrap:wrap;">
+      <button class="btn" onclick="loadBruteLog()">🔄 Yenile</button>
+      <button class="btn danger" onclick="clearBruteLog()">🗑️ Tümünü Sil</button>
+    </div>
+    <div id="bruteLogList"></div>
+  </div>
+
   <div id="tab-settings" class="panel hidden">
     <div class="panel-title">⚙️ Site Ayarları</div>
     <div class="form-row"><label>Site Başlığı</label><input id="s_title"></div>
@@ -143,6 +172,7 @@
       <label style="display:flex;gap:.4rem;align-items:center;color:var(--text);"><input type="checkbox" id="s_maintenance" style="width:auto;"> Bakım Modu</label>
       <label style="display:flex;gap:.4rem;align-items:center;color:var(--text);"><input type="checkbox" id="s_ai" style="width:auto;"> AI Aktif</label>
       <label style="display:flex;gap:.4rem;align-items:center;color:var(--text);"><input type="checkbox" id="s_register" style="width:auto;"> Kayıt Açık</label>
+      <label style="display:flex;gap:.4rem;align-items:center;color:var(--text);"><input type="checkbox" id="s_brute" style="width:auto;"> Brute Aktif</label>
     </div>
     <div style="display:flex;gap:.5rem;margin-top:1rem;flex-wrap:wrap;">
       <button class="btn primary" onclick="saveSettings()">💾 Kaydet</button>
@@ -163,7 +193,6 @@
   </div>
 </div>
 
-<!-- Modal -->
 <div class="modal" id="userModal">
   <div class="modal-box">
     <div class="modal-title"><span id="modalTitle">Kullanıcı Detayı</span><button class="modal-close" onclick="closeModal()">×</button></div>
@@ -206,7 +235,7 @@ async function checkSession() {
   }
 }
 
-function loadAll(){ loadStats(); loadUsers(); loadSettings(); loadLogs(); }
+function loadAll(){ loadStats(); loadUsers(); loadSettings(); loadLogs(); loadWordlists(); loadBruteLog(); }
 
 async function loadStats() {
   const d = await api('stats'); if (!d.success) return;
@@ -383,6 +412,7 @@ async function loadSettings() {
   document.getElementById('s_maintenance').checked = !!s.maintenance;
   document.getElementById('s_ai').checked = !!s.ai_enabled;
   document.getElementById('s_register').checked = !!s.register_open;
+  document.getElementById('s_brute').checked = !!s.brute_enabled;
 }
 
 async function saveSettings() {
@@ -394,6 +424,7 @@ async function saveSettings() {
   fd.append('maintenance', document.getElementById('s_maintenance').checked ? 1 : 0);
   fd.append('ai_enabled', document.getElementById('s_ai').checked ? 1 : 0);
   fd.append('register_open', document.getElementById('s_register').checked ? 1 : 0);
+  fd.append('brute_enabled', document.getElementById('s_brute').checked ? 1 : 0);
   const r = await fetch(ADMIN_API, { method:'POST', body: fd });
   const d = await r.json();
   toast(d.message||'OK', d.success?'success':'error');
@@ -425,12 +456,104 @@ async function sendBroadcast() {
 
 function exportUsers(){ window.location.href = ADMIN_API + '?action=export_users'; }
 
+// ═══════════ WORDLIST ═══════════
+async function loadWordlists() {
+  const d = await api('wordlist_list'); if (!d.success) return;
+  let html = '';
+  if (!d.files.length) html = '<p style="color:var(--text-dim);text-align:center;padding:1.5rem;">Wordlist yok</p>';
+  for (const f of d.files) {
+    const sizeKb = (f.size / 1024).toFixed(1);
+    const dt = new Date(f.modified).toLocaleString('tr-TR');
+    html += `<div class="log-row">
+      <div class="log-action">📄 ${esc(f.name)}</div>
+      <div class="log-detail">${f.lines} satır · ${sizeKb} KB · ${dt}</div>
+      <div class="user-actions">
+        <button class="btn-sm warn" onclick="viewWordlist('${esc(f.name)}')">👁️ Görüntüle</button>
+        <button class="btn-sm danger" onclick="deleteWordlist('${esc(f.name)}')">🗑️ Sil</button>
+      </div>
+    </div>`;
+  }
+  document.getElementById('wlList').innerHTML = html;
+}
+
+async function uploadWordlist() {
+  const file = document.getElementById('wlFile').files[0];
+  if (!file) return toast('Dosya seç', 'error');
+  const fd = new FormData();
+  fd.append('action', 'wordlist_upload');
+  fd.append('file', file);
+  const r = await fetch(ADMIN_API, { method: 'POST', body: fd });
+  const d = await r.json();
+  toast(d.message || 'Yüklendi', d.success ? 'success' : 'error');
+  if (d.success) { document.getElementById('wlFile').value = ''; loadWordlists(); }
+}
+
+async function createWordlist() {
+  const name = document.getElementById('wlName').value.trim();
+  const content = document.getElementById('wlContent').value;
+  if (!name || !content.trim()) return toast('İsim ve içerik gerekli', 'error');
+  const d = await api('wordlist_create', { name, content });
+  toast(d.message || 'Oluşturuldu', d.success ? 'success' : 'error');
+  if (d.success) { document.getElementById('wlName').value = ''; document.getElementById('wlContent').value = ''; loadWordlists(); }
+}
+
+async function deleteWordlist(name) {
+  if (!confirm(`"${name}" silinsin mi?`)) return;
+  const d = await api('wordlist_delete', { name });
+  toast(d.message || 'Silindi', d.success ? 'success' : 'error');
+  loadWordlists();
+}
+
+async function viewWordlist(name) {
+  const d = await api('wordlist_view', { name, limit: 300 });
+  if (!d.success) return toast(d.error, 'error');
+  document.getElementById('modalTitle').textContent = '📄 ' + name + ' (ilk ' + d.shown + ' satır)';
+  document.getElementById('modalBody').innerHTML = `<pre style="font-family:'JetBrains Mono',monospace;font-size:.75rem;white-space:pre-wrap;word-break:break-all;max-height:60vh;overflow:auto;">${esc(d.lines.join('\n'))}</pre>`;
+  document.getElementById('userModal').classList.add('open');
+}
+
+// ═══════════ BRUTE LOG ═══════════
+async function loadBruteLog() {
+  const d = await api('brute_log_list'); if (!d.success) return;
+  let html = '';
+  if (!d.logs.length) html = '<p style="color:var(--text-dim);text-align:center;padding:1.5rem;">Kayıt yok</p>';
+  for (const l of d.logs) {
+    const icon = l.success ? '✅' : (l.status === 'checkpoint' ? '⚠️' : '❌');
+    html += `<div class="log-row">
+      <div class="log-action">${icon} ${esc(l.target)}</div>
+      <div class="log-detail">
+        <b>${esc(l.username)}:${esc(l.password)}</b> · 
+        ${esc(l.status || (l.success?'başarılı':'başarısız'))}
+        ${l.message ? '· ' + esc(l.message) : ''}
+      </div>
+      <div class="log-ts">${new Date(l.ts*1000).toLocaleString('tr-TR')}</div>
+      <button class="btn-sm danger" onclick="deleteBruteLog('${esc(l.id)}')">🗑️</button>
+    </div>`;
+  }
+  document.getElementById('bruteLogList').innerHTML = html;
+}
+
+async function deleteBruteLog(id) {
+  const d = await api('brute_log_delete', { id });
+  toast('Silindi', d.success ? 'success' : 'error');
+  loadBruteLog();
+}
+
+async function clearBruteLog() {
+  if (!confirm('Tüm brute logu silinsin mi?')) return;
+  const d = await api('brute_log_clear');
+  toast(d.message || 'Silindi', d.success ? 'success' : 'error');
+  loadBruteLog();
+}
+
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
-  ['users','settings','broadcast','logs'].forEach(t=>{
+  ['users','wordlists','brutelog','settings','broadcast','logs'].forEach(t=>{
     document.getElementById('tab-'+t).classList.toggle('hidden', t!==tab);
   });
   if (tab==='logs') loadLogs();
+  if (tab==='wordlists') loadWordlists();
+  if (tab==='brutelog') loadBruteLog();
 }
 
 async function logout(){ await fetch('auth.php?action=logout'); location.href='adminlogin.html'; }

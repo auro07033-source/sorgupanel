@@ -18,6 +18,10 @@ define('AI_CHAT_FILE',  DATA_DIR . '/ai_chat.json');
 define('SETTINGS_FILE', DATA_DIR . '/settings.json');
 define('LOG_FILE',      DATA_DIR . '/admin_log.json');
 
+// ═══════════ WORDLIST / BRUTE ═══════════
+define('WORDLIST_DIR',   DATA_DIR . '/wordlists');
+define('BRUTE_LOG_FILE', DATA_DIR . '/brute_log.json');
+
 // ═══════════ GÖRSEL ═══════════
 define('BG_IMAGE',       'https://i.hizliresim.com/loreuqk4.jpg');
 define('DEFAULT_AVATAR', 'https://i.hizliresim.com/midnihxu.jpg');
@@ -32,7 +36,8 @@ define('AI_KEY',    'cmrbaskani_2026_secret_key_xyz');
 define('AI_DEVICE', 'dev_qyodisa8wzo_1789992264510');
 
 // ═══════════ KURULUM ═══════════
-if (!is_dir(DATA_DIR)) @mkdir(DATA_DIR, 0777, true);
+if (!is_dir(DATA_DIR))     @mkdir(DATA_DIR, 0777, true);
+if (!is_dir(WORDLIST_DIR)) @mkdir(WORDLIST_DIR, 0777, true);
 
 // ═══════════ YARDIMCI ═══════════
 function json_out($data, $code = 200) {
@@ -103,6 +108,7 @@ function require_admin() {
 // ═══════════ YARDIMCI ═══════════
 function gen_id() { return bin2hex(random_bytes(8)); }
 function sanitize_username($u) { return preg_replace('/[^a-zA-Z0-9_]/', '', $u); }
+function sanitize_filename($n) { return preg_replace('/[^a-zA-Z0-9_\-\.]/', '', $n); }
 function now_iso() { return date('c'); }
 
 function avatar_url($user) {
@@ -136,13 +142,14 @@ function add_log($action, $detail = '') {
 // ═══════════ AYARLAR ═══════════
 function load_settings() {
     return read_json(SETTINGS_FILE, [
-        'theme'        => 'dark',
-        'announcement' => '',
-        'maintenance'  => false,
-        'ai_enabled'   => true,
-        'register_open'=> true,
-        'site_title'   => 'Forex Sorgulama',
-        'ai_model'     => 'pollinations',
+        'theme'         => 'dark',
+        'announcement'  => '',
+        'maintenance'   => false,
+        'ai_enabled'    => true,
+        'register_open' => true,
+        'site_title'    => 'Forex Sorgulama',
+        'ai_model'      => 'pollinations',
+        'brute_enabled' => true,
     ]);
 }
 function save_settings($s) { write_json(SETTINGS_FILE, $s); }

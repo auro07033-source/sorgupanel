@@ -211,6 +211,106 @@ switch ($action) {
             "queries"     => $totalQueries,
         ]);
 
+    // ═══════════ WORDLIST YÖNETİMİ ═══════════
+
+    case 'wordlist_list':
+        require_admin();
+        $files = [];
+        if (is_dir(WORDLIST_DIR)) {
+            foreach (scandir(WORDLIST_DIR) as $f) {
+                if ($f === '.' || $f === '..') continue;
+                $path = WORDLIST_DIR . '/' . $f;
+                if (!is_file($path)) continue;
+                $lines = 0;
+                $fh = @fopen($path, 'r');
+                if ($fh) {
+                    while (!feof($fh)) { fgets($fh); $lines++; }
+                    fclose($fh);
+                    $lines = max(0, $lines - 1);
+                }
+                $files[] = [
+                    'name' => $f,
+                    'size' => filesize($path),
+                    'lines'=> $lines,
+                    'modified' => date('c', filemtime($path)),
+                ];
+            }
+        }
+        json_out(["success"=>true, "files"=>$files]);
+
+    case 'wordlist_upload':
+        require_admin();
+        if (empty($_FILES['file']['tmp_name'])) json_out(["success"=>false,"error"=>"Dosya seçilmedi"]);
+        $orig = $_FILES['file']['name'];
+        $ext  = strtolower(pathinfo($orig, PATHINFO_EXTENSION));
+        if (!in_array($ext, ['txt', 'lst', 'wordlist'])) json_out(["success"=>false,"error"=>"Sadece .txt/.lst/.wordlist"]);
+        $safe = sanitize_filename(pathinfo($orig, PATHINFO_FILENAME)) . '_' . time() . '.' . $ext;
+        $dest = WORDLIST_DIR . '/' . $safe;
+        if (!move_uploaded_file($_FILES['file']['tmp_name'], $dest)) {
+            json_out(["success"=>false,"error"=>"Dosya yüklenemedi"]);
+        }
+        add_log('wordlist_upload', $safe);
+        json_out(["success"=>true, "message"=>"Yüklendi", "name"=>$safe, "size"=>filesize($dest)]);
+
+    case 'wordlist_create':
+        require_admin();
+        $name = sanitize_filename($_POST['name'] ?? '');
+        $content = $_POST['content'] ?? '';
+        if (!$name) json_out(["success"=>false,"error"=>"İsim gerekli"]);
+        if (trim($content) === '') json_out(["success"=>false,"error"=>"İçerik boş"]);
+        if (!preg_match('/\.(txt|lst|wordlist)$/i', $name)) $name .= '.txt';
+        $dest = WORDLIST_DIR . '/' . $name;
+        file_put_contents($dest, $content);
+        add_log('wordlist_create', $name);
+        json_out(["success"=>true, "message"=>"Oluşturuldu", "name"=>$name]);
+
+    case 'wordlist_delete':
+        require_admin();
+        $name = sanitize_filename($_POST['name'] ?? '');
+        if (!$name) json_out(["success"=>false,"error"=>"İsim gerekli"]);
+        $path = WORDLIST_DIR . '/' . $name;
+        if (!file_exists($path)) json_out(["success"=>false,"error"=>"Dosya yok"]);
+        @unlink($path);
+        add_log('wordlist_delete', $name);
+        json_out(["success"=>true, "message"=>"Silindi"]);
+
+    case 'wordlist_view':
+        require_admin();
+        $name = sanitize_filename($_GET['name'] ?? '');
+        $path = WORDLIST_DIR . '/' . $name;
+        if (!file_exists($path)) json_out(["success"=>false,"error"=>"Dosya yok"]);
+        $limit = min((int)($_GET['limit'] ?? 200), 5000);
+        $lines = [];
+        $fh = @fopen($path, 'r');
+        if ($fh) {
+            $i = 0;
+            while (($line = fgets($fh)) !== false && $i < $limit) {
+                $lines[] = rtrim($line, "\r\n");
+                $i++;
+            }
+            fclose($fh);
+        }
+        json_out(["success"=>true, "name"=>$name, "lines"=>$lines, "shown"=>count($lines)]);
+
+    case 'brute_log_list':
+        require_admin();
+        $logs = read_json(BRUTE_LOG_FILE, []);
+        $logs = array_slice(array_reverse($logs), 0, 200);
+        json_out(["success"=>true, "logs"=>$logs]);
+
+    case 'brute_log_clear':
+        require_admin();
+        write_json(BRUTE_LOG_FILE, []);
+        json_out(["success"=>true, "message"=>"Brute logu temizlendi"]);
+
+    case 'brute_log_delete':
+        require_admin();
+        $id = $_POST['id'] ?? '';
+        $logs = read_json(BRUTE_LOG_FILE, []);
+        $logs = array_values(array_filter($logs, fn($l) => ($l['id'] ?? '') !== $id));
+        write_json(BRUTE_LOG_FILE, $logs);
+        json_out(["success"=>true, "message"=>"Silindi"]);
+
     case 'settings':
         require_admin();
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -222,6 +322,7 @@ switch ($action) {
             if (isset($_POST['register_open'])) $s['register_open'] = (bool)$_POST['register_open'];
             if (isset($_POST['site_title']))    $s['site_title'] = trim($_POST['site_title']);
             if (isset($_POST['ai_model']))      $s['ai_model'] = trim($_POST['ai_model']);
+            if (isset($_POST['brute_enabled'])) $s['brute_enabled'] = (bool)$_POST['brute_enabled'];
             save_settings($s);
             add_log('settings_update');
             json_out(["success"=>true, "message"=>"Ayarlar güncellendi", "settings"=>$s]);
