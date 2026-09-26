@@ -1,19 +1,80 @@
 <?php
 /**
- * canliyayin.php — Canlı Yayın İzleme Sayfası
- * Tüm canlı yayınları listeler ve oynatır.
+ * canliyayin.php — Canlı Yayın İzleme + Proxy
  */
 require_once __DIR__ . '/config.php';
 
 $channels = [
-    ['id'=>'tv8',      'name'=>'TV8',       'desc'=>'TV8 Canlı Yayın',       'logo'=>'📺', 'm3u8'=>'https://tv8-live.daioncdn.net/tv8/tv8_1080p.m3u8'],
-    ['id'=>'atv',      'name'=>'ATV',       'desc'=>'ATV Canlı Yayın',       'logo'=>'📺', 'm3u8'=>'https://trkvz.daioncdn.net/atv/atv_720p.m3u8?e=1790459519&st=ne0VE8K7G6nJehtYiHToPA&sid=8s7zry521cpb&app=d5eb593f-39d9-4b01-9cfd-4748e8332cf0&ce=3'],
-    ['id'=>'showturk', 'name'=>'Show TV',   'desc'=>'Show TV Canlı Yayın',   'logo'=>'📺', 'm3u8'=>'https://ciner-live.ercdn.net/showturk/showturk_360p.m3u8?e=1790422099&st=J5hVtUAXwtGOFzZTws0veQ&tv=1'],
-    ['id'=>'startv',   'name'=>'Star TV',   'desc'=>'Star TV Canlı Yayın',   'logo'=>'📺', 'm3u8'=>'https://dogus.daioncdn.net/startv/startv_720p.m3u8?&sid=8s816hezq2g1&app=a20ac41e-bdc3-4aa1-934d-26b484480ac9&ce=3'],
-    ['id'=>'cnnturk',  'name'=>'CNN Türk',  'desc'=>'CNN Türk Canlı Yayın',  'logo'=>'📰', 'm3u8'=>'https://live.duhnet.tv//S2/HLS_LIVE/cnnturknp/track_4_1000/playlist.m3u8?&live=true&app=com.cnnturk&st=qhLZf29Ofdq6HDxEMDC8KA&e=1790425863'],
-    ['id'=>'ahaber',   'name'=>'A Haber',   'desc'=>'A Haber Canlı Yayın',   'logo'=>'📰', 'm3u8'=>'https://trkvz.daioncdn.net/ahaber/ahaber_720p.m3u8?e=1790460376&st=p2N4Jb_sm4FKxjLFFzs3CA'],
-    ['id'=>'trt1',     'name'=>'TRT 1',     'desc'=>'TRT 1 Canlı Yayın',     'logo'=>'📺', 'm3u8'=>'https://trt.daioncdn.net/trt-1/master.m3u8?app=web&ppid=8520d614e6604ad93247c613ec6c834f'],
+    ['id'=>'tv8',      'name'=>'TV8',       'desc'=>'TV8 Canlı Yayın',       'logo'=>'📺', 'page'=>'https://www.tv8.com.tr/canli-yayin',       'm3u8'=>'https://tv8-live.daioncdn.net/tv8/tv8_1080p.m3u8'],
+    ['id'=>'atv',      'name'=>'ATV',       'desc'=>'ATV Canlı Yayın',       'logo'=>'📺', 'page'=>'https://www.atv.com.tr/canli-yayin',        'm3u8'=>'https://trkvz.daioncdn.net/atv/atv_720p.m3u8'],
+    ['id'=>'showturk', 'name'=>'Show TV',   'desc'=>'Show TV Canlı Yayın',   'logo'=>'📺', 'page'=>'https://www.showtv.com.tr/canli-yayin',     'm3u8'=>'https://ciner-live.ercdn.net/showturk/showturk_720p.m3u8'],
+    ['id'=>'startv',   'name'=>'Star TV',   'desc'=>'Star TV Canlı Yayın',   'logo'=>'📺', 'page'=>'https://www.startv.com.tr/canli-yayin',     'm3u8'=>'https://dogus.daioncdn.net/startv/startv_720p.m3u8'],
+    ['id'=>'cnnturk',  'name'=>'CNN Türk',  'desc'=>'CNN Türk Canlı Yayın',  'logo'=>'📰', 'page'=>'https://www.cnnturk.com/canli-yayin',       'm3u8'=>'https://live.duhnet.tv/S2/HLS_LIVE/cnnturknp/track_4_1000/playlist.m3u8'],
+    ['id'=>'ahaber',   'name'=>'A Haber',   'desc'=>'A Haber Canlı Yayın',   'logo'=>'📰', 'page'=>'https://www.ahaber.com.tr/canli-yayin',     'm3u8'=>'https://trkvz.daioncdn.net/ahaber/ahaber_720p.m3u8'],
+    ['id'=>'trt1',     'name'=>'TRT 1',     'desc'=>'TRT 1 Canlı Yayın',     'logo'=>'📺', 'page'=>'https://www.trt1.com.tr/canli-yayin',       'm3u8'=>'https://tv-trt1.medya.trt.com.tr/master.m3u8'],
+    ['id'=>'fox',      'name'=>'FOX TV',    'desc'=>'FOX TV Canlı Yayın',    'logo'=>'📺', 'page'=>'https://www.fox.com.tr/canli-yayin',        'm3u8'=>'https://fox-live.daioncdn.net/fox/fox_720p.m3u8'],
+    ['id'=>'tv100',    'name'=>'TV100',     'desc'=>'TV100 Canlı Yayın',     'logo'=>'📰', 'page'=>'https://www.tv100.com/canli-yayin',         'm3u8'=>'https://tv100-live.daioncdn.net/tv100/tv100_720p.m3u8'],
+    ['id'=>'haberturk','name'=>'Habertürk', 'desc'=>'Habertürk Canlı Yayın', 'logo'=>'📰', 'page'=>'https://www.haberturk.com/canli-yayin',     'm3u8'=>'https://haberturk-live.daioncdn.net/haberturk/haberturk_720p.m3u8'],
 ];
+
+// ═══════════ PROXY ═══════════
+if (isset($_GET['proxy'])) {
+    $url = base64_decode($_GET['proxy'] ?? '');
+    if (!$url || !preg_match('#^https?://#i', $url)) {
+        http_response_code(400); exit('Bad URL');
+    }
+
+    // Güvenlik: sadece izinli domainler
+    $allowed = ['daioncdn.net','ercdn.net','duhnet.tv','trt.com.tr','medya.trt.com.tr','litix.io','akamaized.net','ciner.com.tr'];
+    $host = parse_url($url, PHP_URL_HOST);
+    $ok = false;
+    foreach ($allowed as $a) if (stripos($host, $a) !== false) { $ok = true; break; }
+    if (!$ok) { http_response_code(403); exit('Domain not allowed'); }
+
+    // İmzalı URL ise taze token al (referer gönder)
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_MAXREDIRS      => 5,
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_TIMEOUT        => 30,
+        CURLOPT_USERAGENT      => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36',
+        CURLOPT_HTTPHEADER     => [
+            'Referer: https://www.tv8.com.tr/',
+            'Origin: https://www.tv8.com.tr',
+            'Accept: */*',
+        ],
+    ]);
+    $body = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $type = curl_getinfo($ch, CURLINFO_CONTENT_TYPE) ?: 'application/octet-stream';
+    curl_close($ch);
+
+    if ($code !== 200 || !$body) { http_response_code($code ?: 502); exit('Proxy error'); }
+
+    header('Access-Control-Allow-Origin: *');
+    header('Content-Type: ' . $type);
+
+    // m3u8 ise içindeki segment URL'lerini de proxy'le
+    if (stripos($type, 'mpegurl') !== false || preg_match('/\.m3u8/i', $url)) {
+        $base = substr($url, 0, strrpos($url, '/') + 1);
+        $lines = explode("\n", $body);
+        foreach ($lines as &$l) {
+            $l = rtrim($l, "\r");
+            if ($l === '' || $l[0] === '#') continue;
+            if (!preg_match('#^https?://#i', $l)) {
+                if (preg_match('#^//#', $l)) $l = 'https:' . $l;
+                else $l = $base . $l;
+            }
+            $l = 'proxy.php?proxy=' . base64_encode($l);
+        }
+        echo implode("\n", $lines);
+    } else {
+        echo $body;
+    }
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="tr">
@@ -24,70 +85,50 @@ $channels = [
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  :root {
-    --bg:#0a0e1a; --card:#1e293b; --border:rgba(148,163,184,.12);
-    --text:#f1f5f9; --text-dim:#94a3b8; --primary:#6366f1; --primary-2:#8b5cf6;
-    --danger:#ef4444; --success:#10b981;
-  }
-  body {
-    font-family:'Inter',sans-serif; background:var(--bg); color:var(--text);
-    min-height:100vh; padding:1rem;
+  :root { --bg:#0a0e1a; --card:#1e293b; --border:rgba(148,163,184,.12);
+    --text:#f1f5f9; --text-dim:#94a3b8; --primary:#6366f1; --danger:#ef4444; }
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding:1rem;
     background-image:linear-gradient(rgba(10,14,26,.92),rgba(10,14,26,.96)), url('https://i.hizliresim.com/loreuqk4.jpg');
-    background-size:cover; background-position:center; background-attachment:fixed;
-  }
+    background-size:cover; background-position:center; background-attachment:fixed; }
   .container { max-width:1400px; margin:0 auto; }
-  .header {
-    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;
+  .header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;
     margin-bottom:1.5rem; padding:1rem 1.25rem; background:rgba(30,41,59,.85);
-    backdrop-filter:blur(20px); border:1px solid var(--border); border-radius:1rem;
-  }
+    backdrop-filter:blur(20px); border:1px solid var(--border); border-radius:1rem; }
   .header h1 { font-size:1.2rem; font-weight:800; display:flex; align-items:center; gap:.5rem; }
   .header h1 span { color:var(--danger); }
   .btn { background:var(--card); border:1px solid var(--border); border-radius:.6rem; padding:.5rem 1rem; cursor:pointer; font-weight:600; font-size:.82rem; color:var(--text); font-family:inherit; }
   .btn:hover { background:#334155; }
   .btn.danger { color:#fca5a5; border-color:rgba(239,68,68,.35); }
   .btn.primary { background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; }
-  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1rem; margin-bottom:1.5rem; }
-  .channel-card {
-    background:rgba(30,41,59,.85); backdrop-filter:blur(20px); border:1px solid var(--border);
-    border-radius:1rem; overflow:hidden; cursor:pointer; transition:all .2s;
-  }
-  .channel-card:hover { transform:translateY(-3px); border-color:var(--primary); box-shadow:0 10px 30px rgba(99,102,241,.2); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1rem; margin-bottom:1.5rem; }
+  .channel-card { background:rgba(30,41,59,.85); backdrop-filter:blur(20px); border:1px solid var(--border);
+    border-radius:1rem; overflow:hidden; cursor:pointer; transition:all .2s; }
+  .channel-card:hover { transform:translateY(-3px); border-color:var(--primary); }
   .channel-card.active { border-color:var(--primary); box-shadow:0 0 0 2px var(--primary); }
-  .channel-thumb {
-    width:100%; height:160px; background:linear-gradient(135deg,#1e293b,#0f172a);
-    display:flex; align-items:center; justify-content:center; font-size:3rem; position:relative;
-  }
+  .channel-thumb { width:100%; height:130px; background:linear-gradient(135deg,#1e293b,#0f172a);
+    display:flex; align-items:center; justify-content:center; font-size:3rem; position:relative; }
   .channel-thumb::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.6)); }
   .channel-logo { position:absolute; bottom:10px; left:10px; right:10px; font-size:.9rem; font-weight:800; z-index:2; }
   .channel-info { padding:.75rem 1rem; }
   .channel-name { font-weight:700; font-size:.9rem; }
   .channel-desc { font-size:.72rem; color:var(--text-dim); margin-top:.2rem; }
-  .player-wrap {
-    background:rgba(30,41,59,.85); backdrop-filter:blur(20px); border:1px solid var(--border);
-    border-radius:1rem; overflow:hidden; margin-bottom:1.5rem; display:none;
-  }
+  .player-wrap { background:rgba(30,41,59,.85); backdrop-filter:blur(20px); border:1px solid var(--border);
+    border-radius:1rem; overflow:hidden; margin-bottom:1.5rem; display:none; }
   .player-wrap.active { display:block; }
-  .player-header {
-    padding:.85rem 1.25rem; border-bottom:1px solid var(--border);
-    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.5rem;
-  }
+  .player-header { padding:.85rem 1.25rem; border-bottom:1px solid var(--border);
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.5rem; }
   .player-title { font-weight:700; font-size:1rem; display:flex; align-items:center; gap:.5rem; }
   .player-title .live-dot { width:8px; height:8px; background:var(--danger); border-radius:50%; animation:pulse 1.5s infinite; }
   @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.4;} }
   .player-body { position:relative; background:#000; width:100%; aspect-ratio:16/9; }
   .player-body video { width:100%; height:100%; display:block; background:#000; }
-  .player-loading {
-    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    background:rgba(0,0,0,.7); color:var(--text-dim); font-size:.9rem; flex-direction:column; gap:.75rem;
-  }
+  .player-loading { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    background:rgba(0,0,0,.7); color:var(--text-dim); font-size:.9rem; flex-direction:column; gap:.75rem; }
   .spinner { width:32px; height:32px; border:3px solid rgba(255,255,255,.15); border-top-color:var(--primary); border-radius:50%; animation:spin .8s linear infinite; }
   @keyframes spin { to { transform:rotate(360deg); } }
-  .toast {
-    position:fixed; bottom:24px; right:24px; padding:.85rem 1.2rem; background:var(--card);
+  .toast { position:fixed; bottom:24px; right:24px; padding:.85rem 1.2rem; background:var(--card);
     border:1px solid var(--primary); border-radius:.75rem; color:var(--text); font-size:.85rem;
-    font-weight:600; opacity:0; transform:translateY(12px); transition:all .3s; pointer-events:none; z-index:999;
-  }
+    font-weight:600; opacity:0; transform:translateY(12px); transition:all .3s; pointer-events:none; z-index:999; }
   .toast.show { opacity:1; transform:translateY(0); }
   .toast.error { border-color:var(--danger); }
   .empty-state { text-align:center; padding:3rem 1rem; color:var(--text-dim); }
@@ -120,7 +161,9 @@ $channels = [
 
 <script>
 const CHANNELS = <?php echo json_encode($channels, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+const PROXY = (url) => 'canliyayin.php?proxy=' + btoa(url);
 
+let currentHls = null;
 let currentPlayer = null;
 
 const toastEl = document.getElementById('toast');
@@ -151,11 +194,10 @@ function loadChannels() {
 }
 
 function stopPlayer() {
-  const wrap = document.getElementById('playerWrap');
-  const body = document.getElementById('playerBody');
-  wrap.classList.remove('active');
-  body.innerHTML = '';
-  currentPlayer = null;
+  if (currentHls) { try { currentHls.destroy(); } catch(e){} currentHls = null; }
+  if (currentPlayer) { try { currentPlayer.pause(); currentPlayer.src=''; currentPlayer.load(); } catch(e){} currentPlayer = null; }
+  document.getElementById('playerWrap').classList.remove('active');
+  document.getElementById('playerBody').innerHTML = '';
   document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('active'));
 }
 
@@ -163,7 +205,7 @@ function playChannel(id) {
   const ch = CHANNELS.find(c => c.id === id);
   if (!ch) return;
 
-  document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('active'));
+  stopPlayer();
   document.getElementById('card_' + id)?.classList.add('active');
 
   const wrap = document.getElementById('playerWrap');
@@ -174,19 +216,16 @@ function playChannel(id) {
   wrap.classList.add('active');
   body.innerHTML = '<div class="player-loading"><div class="spinner"></div><span>Yükleniyor...</span></div>';
 
-  playM3U8(ch);
-}
-
-function playM3U8(ch) {
-  const body = document.getElementById('playerBody');
+  const proxied = PROXY(ch.m3u8);
   const video = document.createElement('video');
   video.controls = true;
   video.autoplay = true;
+  video.muted = true;
   video.playsInline = true;
   video.setAttribute('webkit-playsinline', 'true');
 
   if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    video.src = ch.m3u8;
+    video.src = proxied;
     body.innerHTML = '';
     body.appendChild(video);
     video.play().catch(() => toast('Oynatmak için tıkla', 'error'));
@@ -196,7 +235,7 @@ function playM3U8(ch) {
 
   if (window.Hls && Hls.isSupported()) {
     const hls = new Hls({ enableWorker: true, lowLatencyMode: true, backBufferLength: 90 });
-    hls.loadSource(ch.m3u8);
+    hls.loadSource(proxied);
     hls.attachMedia(video);
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
       video.play().catch(() => console.warn('Autoplay engellendi'));
@@ -214,10 +253,11 @@ function playM3U8(ch) {
     body.appendChild(video);
     video.play().catch(() => console.warn('Autoplay engellendi'));
     currentPlayer = video;
+    currentHls = hls;
     return;
   }
 
-  body.innerHTML = `<iframe src="${ch.m3u8}" allowfullscreen allow="autoplay; encrypted-media" style="width:100%;height:100%;border:none;"></iframe>`;
+  body.innerHTML = '<div class="player-loading">Tarayıcı HLS desteklemiyor</div>';
 }
 
 function loadHls(callback) {
