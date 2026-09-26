@@ -3,127 +3,74 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Canlı Yayınlar — @cmrbaskani</title>
+<title>Canlı Yayın Merkezi — @cmrbaskani</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   :root {
     --bg:#0a0e1a; --card:rgba(30,41,59,.85); --border:rgba(148,163,184,.12);
-    --text:#f1f5f9; --text-dim:#94a3b8; --primary:#6366f1; --primary-2:#8b5cf6;
-    --danger:#ef4444; --success:#10b981; --warning:#f59e0b;
-    --tag-tv:#6366f1; --tag-news:#ef4444; --tag-world:#10b981; --tag-sport:#f59e0b;
-    --tag-kids:#ec4899; --tag-doc:#06b6d4; --tag-music:#a855f7;
+    --text:#f1f5f9; --text-dim:#94a3b8; --primary:#6366f1;
+    --danger:#ef4444; --success:#10b981;
   }
-  body {
-    font-family:'Inter',sans-serif; background:var(--bg); color:var(--text);
-    min-height:100vh; padding:1rem;
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding:1rem;
     background-image:linear-gradient(rgba(10,14,26,.92),rgba(10,14,26,.96)), url('https://i.hizliresim.com/loreuqk4.jpg');
-    background-size:cover; background-position:center; background-attachment:fixed;
-  }
+    background-size:cover; background-position:center; background-attachment:fixed; }
   .container { max-width:1400px; margin:0 auto; }
-
-  /* ═══ HEADER ═══ */
-  .header {
-    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;
-    margin-bottom:1.5rem; padding:1rem 1.25rem; background:var(--card);
-    backdrop-filter:blur(20px); border:1px solid var(--border); border-radius:1rem;
-  }
+  .header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;
+    margin-bottom:1.5rem; padding:1rem 1.25rem; background:var(--card); backdrop-filter:blur(20px);
+    border:1px solid var(--border); border-radius:1rem; }
   .logo { display:flex; align-items:center; gap:.75rem; }
-  .logo-icon {
-    width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg,#ef4444,#f97316);
-    display:flex; align-items:center; justify-content:center; font-size:22px;
-    box-shadow:0 0 20px rgba(239,68,68,.4);
-  }
+  .logo-icon { width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg,#ef4444,#f97316);
+    display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:0 0 20px rgba(239,68,68,.4); }
   .logo-text h1 { font-size:1.1rem; font-weight:800; }
   .logo-text p { font-size:.7rem; color:var(--text-dim); font-family:'JetBrains Mono',monospace; }
   .header-actions { display:flex; gap:.5rem; flex-wrap:wrap; }
-
-  /* ═══ BUTONLAR ═══ */
-  .btn {
-    background:rgba(15,23,42,.7); border:1px solid var(--border); border-radius:.6rem;
-    padding:.55rem 1rem; cursor:pointer; font-weight:600; font-size:.82rem; color:var(--text);
-    font-family:inherit; transition:all .15s; display:inline-flex; align-items:center; gap:.4rem;
-  }
+  .btn { background:rgba(15,23,42,.7); border:1px solid var(--border); border-radius:.6rem; padding:.55rem 1rem;
+    cursor:pointer; font-weight:600; font-size:.82rem; color:var(--text); font-family:inherit; transition:all .15s;
+    display:inline-flex; align-items:center; gap:.4rem; text-decoration:none; }
   .btn:hover { background:#334155; transform:translateY(-1px); }
   .btn.danger { color:#fca5a5; border-color:rgba(239,68,68,.35); }
-  .btn.danger:hover { background:rgba(239,68,68,.15); }
   .btn.primary { background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; }
-  .btn.primary:hover { box-shadow:0 5px 20px rgba(99,102,241,.4); }
-
-  /* ═══ PLAYER ═══ */
-  .player-wrap {
-    background:var(--card); backdrop-filter:blur(20px); border:1px solid var(--border);
-    border-radius:1rem; overflow:hidden; margin-bottom:1.5rem; display:none;
-  }
+  .player-wrap { background:var(--card); backdrop-filter:blur(20px); border:1px solid var(--border);
+    border-radius:1rem; overflow:hidden; margin-bottom:1.5rem; display:none; }
   .player-wrap.active { display:block; animation:fadeIn .3s; }
   @keyframes fadeIn { from{opacity:0;transform:translateY(-10px);} to{opacity:1;transform:translateY(0);} }
-  .player-header {
-    padding:.85rem 1.25rem; border-bottom:1px solid var(--border);
-    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.5rem;
-  }
+  .player-header { padding:.85rem 1.25rem; border-bottom:1px solid var(--border);
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.5rem; }
   .player-title { font-weight:700; font-size:1rem; display:flex; align-items:center; gap:.6rem; }
-  .player-title .live-dot {
-    width:8px; height:8px; background:var(--danger); border-radius:50%;
-    animation:pulse 1.5s infinite; box-shadow:0 0 10px var(--danger);
-  }
+  .live-dot { width:8px; height:8px; background:var(--danger); border-radius:50%;
+    animation:pulse 1.5s infinite; box-shadow:0 0 10px var(--danger); }
   @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.3;} }
   .player-body { position:relative; background:#000; width:100%; aspect-ratio:16/9; }
   .player-body video { width:100%; height:100%; display:block; background:#000; }
-  .player-loading {
-    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    background:rgba(0,0,0,.8); color:var(--text-dim); font-size:.9rem;
-    flex-direction:column; gap:.75rem; text-align:center; padding:1rem;
-  }
-  .spinner {
-    width:36px; height:36px; border:3px solid rgba(255,255,255,.15);
-    border-top-color:var(--primary); border-radius:50%; animation:spin .8s linear infinite;
-  }
+  .player-loading { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    background:rgba(0,0,0,.85); color:var(--text-dim); font-size:.9rem; flex-direction:column;
+    gap:.75rem; text-align:center; padding:1rem; }
+  .spinner { width:36px; height:36px; border:3px solid rgba(255,255,255,.15);
+    border-top-color:var(--primary); border-radius:50%; animation:spin .8s linear infinite; }
   @keyframes spin { to { transform:rotate(360deg); } }
-  .error-box {
-    text-align:center; padding:1rem;
-  }
+  .error-box { text-align:center; padding:1rem; }
   .error-box h3 { color:#fca5a5; font-size:1rem; margin-bottom:.5rem; }
   .error-box p { font-size:.78rem; color:var(--text-dim); margin-bottom:.75rem; }
-  .error-box a {
-    display:inline-block; padding:.5rem 1rem; background:linear-gradient(135deg,#6366f1,#8b5cf6);
-    color:white; text-decoration:none; border-radius:.5rem; font-weight:700; font-size:.8rem;
-  }
-
-  /* ═══ KANAL LİSTESİ ═══ */
-  .section-title {
-    display:flex; align-items:center; gap:.6rem; margin:1.5rem 0 1rem;
-    font-size:.95rem; font-weight:800; color:var(--text);
-  }
-  .section-title::before {
-    content:''; width:4px; height:20px; border-radius:2px;
-    background:linear-gradient(180deg,#ef4444,#f97316);
-  }
-  .section-title .count {
-    margin-left:auto; font-size:.7rem; font-weight:700; padding:.2rem .6rem;
-    background:rgba(99,102,241,.15); color:#a5b4fc; border-radius:999px;
-    font-family:'JetBrains Mono',monospace;
-  }
-  .grid {
-    display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
-    gap:.75rem; margin-bottom:1rem;
-  }
-  .channel-card {
-    background:var(--card); backdrop-filter:blur(20px); border:1px solid var(--border);
-    border-radius:.85rem; padding:.85rem 1rem; cursor:pointer; transition:all .2s;
-    position:relative; overflow:hidden;
-  }
+  .error-box a { display:inline-block; padding:.5rem 1rem; background:linear-gradient(135deg,#6366f1,#8b5cf6);
+    color:white; text-decoration:none; border-radius:.5rem; font-weight:700; font-size:.8rem; }
+  .section-title { display:flex; align-items:center; gap:.6rem; margin:1.5rem 0 1rem;
+    font-size:.95rem; font-weight:800; }
+  .section-title::before { content:''; width:4px; height:20px; border-radius:2px;
+    background:linear-gradient(180deg,#ef4444,#f97316); }
+  .section-title .count { margin-left:auto; font-size:.7rem; font-weight:700; padding:.2rem .6rem;
+    background:rgba(99,102,241,.15); color:#a5b4fc; border-radius:999px; font-family:'JetBrains Mono',monospace; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:.75rem; }
+  .channel-card { background:var(--card); backdrop-filter:blur(20px); border:1px solid var(--border);
+    border-radius:.85rem; padding:.85rem 1rem; cursor:pointer; transition:all .2s; position:relative; overflow:hidden; }
   .channel-card:hover { transform:translateY(-3px); border-color:var(--primary); box-shadow:0 10px 25px rgba(99,102,241,.2); }
   .channel-card.active { border-color:var(--primary); box-shadow:0 0 0 2px var(--primary); }
-  .channel-card.active::after {
-    content:'▶'; position:absolute; top:50%; right:1rem; transform:translateY(-50%);
-    font-size:1.2rem; color:var(--primary); animation:pulse 1.5s infinite;
-  }
+  .channel-card.active::after { content:'▶'; position:absolute; top:50%; right:1rem; transform:translateY(-50%);
+    font-size:1.2rem; color:var(--primary); animation:pulse 1.5s infinite; }
   .channel-head { display:flex; align-items:center; gap:.5rem; margin-bottom:.35rem; }
   .channel-name { font-weight:700; font-size:.9rem; flex:1; }
-  .channel-tag {
-    font-size:.55rem; padding:.15rem .45rem; border-radius:4px;
-    font-weight:800; text-transform:uppercase; letter-spacing:.05em;
-  }
+  .channel-tag { font-size:.55rem; padding:.15rem .45rem; border-radius:4px;
+    font-weight:800; text-transform:uppercase; letter-spacing:.05em; }
   .tag-tv { background:rgba(99,102,241,.9); color:white; }
   .tag-news { background:rgba(239,68,68,.9); color:white; }
   .tag-world { background:rgba(16,185,129,.9); color:white; }
@@ -131,65 +78,45 @@
   .tag-kids { background:rgba(236,72,153,.9); color:white; }
   .tag-doc { background:rgba(6,182,212,.9); color:white; }
   .tag-music { background:rgba(168,85,247,.9); color:white; }
-  .channel-host {
-    font-size:.65rem; color:var(--text-dim); font-family:'JetBrains Mono',monospace;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  }
-  .channel-hd {
-    position:absolute; top:.5rem; right:.6rem; font-size:.5rem; font-weight:800;
-    padding:.1rem .35rem; border-radius:3px; background:rgba(255,255,255,.1);
-    color:#cbd5e1; letter-spacing:.05em;
-  }
-
-  /* ═══ TOAST ═══ */
-  .toast {
-    position:fixed; bottom:24px; right:24px; padding:.85rem 1.2rem; background:var(--card);
+  .channel-host { font-size:.65rem; color:var(--text-dim); font-family:'JetBrains Mono',monospace;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .channel-hd { position:absolute; top:.5rem; right:.6rem; font-size:.5rem; font-weight:800;
+    padding:.1rem .35rem; border-radius:3px; background:rgba(255,255,255,.1); color:#cbd5e1; letter-spacing:.05em; }
+  .toast { position:fixed; bottom:24px; right:24px; padding:.85rem 1.2rem; background:var(--card);
     border:1px solid var(--primary); border-radius:.75rem; color:var(--text); font-size:.85rem;
     font-weight:600; opacity:0; transform:translateY(12px); transition:all .3s;
-    pointer-events:none; z-index:999; max-width:90vw; backdrop-filter:blur(20px);
-  }
+    pointer-events:none; z-index:999; max-width:90vw; backdrop-filter:blur(20px); }
   .toast.show { opacity:1; transform:translateY(0); }
   .toast.error { border-color:var(--danger); }
   .toast.success { border-color:var(--success); }
-
-  /* ═══ FOOTER ═══ */
-  .footer {
-    text-align:center; padding:1.5rem 1rem; margin-top:2rem;
-    color:var(--text-dim); font-size:.75rem; border-top:1px solid var(--border);
-  }
+  .footer { text-align:center; padding:1.5rem 1rem; margin-top:2rem;
+    color:var(--text-dim); font-size:.75rem; border-top:1px solid var(--border); }
   .footer a { color:#a5b4fc; text-decoration:none; font-weight:700; }
-  .footer a:hover { color:var(--primary-2); }
-
-  /* ═══ RESPONSIVE ═══ */
   @media (max-width:600px) {
     .grid { grid-template-columns:1fr 1fr; gap:.5rem; }
     .channel-card { padding:.6rem .7rem; }
     .channel-name { font-size:.78rem; }
     .channel-host { font-size:.55rem; }
-    .header h1 { font-size:.95rem; }
   }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <!-- ═══ HEADER ═══ -->
   <div class="header">
     <div class="logo">
       <div class="logo-icon">📺</div>
       <div class="logo-text">
         <h1>Canlı Yayın Merkezi</h1>
-        <p>@cmrbaskani · <span id="channelCount">0</span> kanal aktif</p>
+        <p>@cmrbaskani · <span id="channelCount">0</span> kanal</p>
       </div>
     </div>
     <div class="header-actions">
-      <button class="btn" onclick="refreshPlayer()">🔄 Yenile</button>
       <button class="btn danger" onclick="stopPlayer()">⏹️ Durdur</button>
-      <a href="https://t.me/cmrbaskani" target="_blank" class="btn primary" style="text-decoration:none;">✈️ Telegram</a>
+      <a href="https://t.me/cmrbaskani" target="_blank" class="btn primary">✈️ Telegram</a>
     </div>
   </div>
 
-  <!-- ═══ PLAYER ═══ -->
   <div class="player-wrap" id="playerWrap">
     <div class="player-header">
       <div class="player-title">
@@ -201,10 +128,9 @@
     <div class="player-body" id="playerBody"></div>
   </div>
 
-  <!-- ═══ KANALLAR ═══ -->
-  <div id="channelsContainer"></div>
+  <div class="section-title">📡 Tüm Kanallar <span class="count" id="channelCount2">0</span></div>
+  <div class="grid" id="channelsGrid"></div>
 
-  <!-- ═══ FOOTER ═══ -->
   <div class="footer">
     © Canlı Yayın Merkezi · <a href="https://t.me/cmrbaskani" target="_blank">@cmrbaskani</a>
   </div>
@@ -213,32 +139,37 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ═══════════ ÇALIŞAN KANALLAR (test sonucuna göre) ═══════════
+// ═══════════ PROXY FONKSİYONU ═══════════
+// Node.js server.js /proxy endpoint'ini çağırır
+const PROXY = (url) => '/proxy?u=' + btoa(url);
+
+// ═══════════ KANALLAR ═══════════
 const CHANNELS = [
-  // ═══ TÜRK TV ═══
-  { id:'beyaztv',  name:'Beyaz TV',   type:'tv',    tag:'TV',    m3u8:'https://beyaztv-live.daioncdn.net/beyaztv/beyaztv_720p.m3u8' },
-  { id:'trtkurdi', name:'TRT Kurdî',  type:'tv',    tag:'TV',    m3u8:'https://tv-trtkurdi.medya.trt.com.tr/master.m3u8' },
-
-  // ═══ TÜRK HABER ═══
-  { id:'halktv',   name:'Halk TV',    type:'news',  tag:'HABER', m3u8:'https://halktv-live.daioncdn.net/halktv/halktv_720p.m3u8' },
-
-  // ═══ DÜNYA ═══
-  { id:'dw',       name:'DW English', type:'world', tag:'DÜNYA', m3u8:'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8' },
-  { id:'trtworld', name:'TRT World',  type:'world', tag:'DÜNYA', m3u8:'https://tv-trtworld.medya.trt.com.tr/master.m3u8' },
-  { id:'rt',       name:'RT News',    type:'world', tag:'DÜNYA', m3u8:'https://rt-glb.rttv.com/live/rtnews/playlist.m3u8' },
-];
-
-// ═══════════ HATA VERENLER (yedek olarak gösterilecek) ═══════════
-const FAILED = [
-  { name:'TRT 1',        m3u8:'https://tv-trt1.medya.trt.com.tr/master.m3u8',         reason:'CORS' },
-  { name:'TRT 2',        m3u8:'https://tv-trt2.medya.trt.com.tr/master.m3u8',         reason:'CORS' },
-  { name:'TRT Haber',    m3u8:'https://tv-trthaber.medya.trt.com.tr/master.m3u8',     reason:'CORS' },
-  { name:'TRT Spor',     m3u8:'https://tv-trtspor1.medya.trt.com.tr/master.m3u8',     reason:'CORS' },
-  { name:'TRT Çocuk',    m3u8:'https://tv-trtcocuk.medya.trt.com.tr/master.m3u8',     reason:'CORS' },
-  { name:'TRT Belgesel', m3u8:'https://tv-trtbelgesel.medya.trt.com.tr/master.m3u8',  reason:'CORS' },
-  { name:'TRT Müzik',    m3u8:'https://tv-trtmuzik.medya.trt.com.tr/master.m3u8',     reason:'CORS' },
-  { name:'TRT Avaz',     m3u8:'https://tv-trtavaz.medya.trt.com.tr/master.m3u8',      reason:'CORS' },
-  { name:'TRT Arabi',    m3u8:'https://tv-trtarabi.medya.trt.com.tr/master.m3u8',     reason:'CORS' },
+  { id:'trt1',     name:'TRT 1',       tag:'TV',       m3u8:PROXY('https://tv-trt1.medya.trt.com.tr/master.m3u8') },
+  { id:'trt2',     name:'TRT 2',       tag:'TV',       m3u8:PROXY('https://tv-trt2.medya.trt.com.tr/master.m3u8') },
+  { id:'trthaber', name:'TRT Haber',   tag:'HABER',    m3u8:PROXY('https://tv-trthaber.medya.trt.com.tr/master.m3u8') },
+  { id:'trtspor',  name:'TRT Spor',    tag:'SPOR',     m3u8:PROXY('https://tv-trtspor1.medya.trt.com.tr/master.m3u8') },
+  { id:'trtcocuk', name:'TRT Çocuk',   tag:'ÇOCUK',    m3u8:PROXY('https://tv-trtcocuk.medya.trt.com.tr/master.m3u8') },
+  { id:'trtbelge', name:'TRT Belgesel',tag:'BELGESEL', m3u8:PROXY('https://tv-trtbelgesel.medya.trt.com.tr/master.m3u8') },
+  { id:'trtmuzik', name:'TRT Müzik',   tag:'MÜZİK',    m3u8:PROXY('https://tv-trtmuzik.medya.trt.com.tr/master.m3u8') },
+  { id:'trtavaz',  name:'TRT Avaz',    tag:'TV',       m3u8:PROXY('https://tv-trtavaz.medya.trt.com.tr/master.m3u8') },
+  { id:'trtarabi', name:'TRT Arabi',   tag:'TV',       m3u8:PROXY('https://tv-trtarabi.medya.trt.com.tr/master.m3u8') },
+  { id:'trtkurdi', name:'TRT Kurdî',   tag:'TV',       m3u8:PROXY('https://tv-trtkurdi.medya.trt.com.tr/master.m3u8') },
+  { id:'trtworld', name:'TRT World',   tag:'DÜNYA',    m3u8:PROXY('https://tv-trtworld.medya.trt.com.tr/master.m3u8') },
+  { id:'tv8',      name:'TV8',         tag:'TV',       m3u8:PROXY('https://tv8-live.daioncdn.net/tv8/tv8_1080p.m3u8') },
+  { id:'atv',      name:'ATV',         tag:'TV',       m3u8:PROXY('https://trkvz.daioncdn.net/atv/atv_720p.m3u8') },
+  { id:'showturk', name:'Show TV',     tag:'TV',       m3u8:PROXY('https://ciner-live.ercdn.net/showturk/showturk_720p.m3u8') },
+  { id:'startv',   name:'Star TV',     tag:'TV',       m3u8:PROXY('https://dogus.daioncdn.net/startv/startv_720p.m3u8') },
+  { id:'cnnturk',  name:'CNN Türk',    tag:'HABER',    m3u8:PROXY('https://live.duhnet.tv/S2/HLS_LIVE/cnnturknp/track_4_1000/playlist.m3u8') },
+  { id:'ahaber',   name:'A Haber',     tag:'HABER',    m3u8:PROXY('https://trkvz.daioncdn.net/ahaber/ahaber_720p.m3u8') },
+  { id:'haberturk',name:'Habertürk',   tag:'HABER',    m3u8:PROXY('https://haberturk-live.daioncdn.net/haberturk/haberturk_720p.m3u8') },
+  { id:'ntv',      name:'NTV',         tag:'HABER',    m3u8:PROXY('https://ntv-live.daioncdn.net/ntv/ntv_720p.m3u8') },
+  { id:'tv100',    name:'TV100',       tag:'HABER',    m3u8:PROXY('https://tv100-live.daioncdn.net/tv100/tv100_720p.m3u8') },
+  { id:'sozcu',    name:'Sözcü TV',    tag:'HABER',    m3u8:PROXY('https://sozcu-live.daioncdn.net/sozcu/sozcu_720p.m3u8') },
+  { id:'beyaztv',  name:'Beyaz TV',    tag:'TV',       m3u8:PROXY('https://beyaztv-live.daioncdn.net/beyaztv/beyaztv_720p.m3u8') },
+  { id:'halktv',   name:'Halk TV',     tag:'HABER',    m3u8:PROXY('https://halktv-live.daioncdn.net/halktv/halktv_720p.m3u8') },
+  { id:'dw',       name:'DW English',  tag:'DÜNYA',    m3u8:'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8' },
+  { id:'rt',       name:'RT News',     tag:'DÜNYA',    m3u8:'https://rt-glb.rttv.com/live/rtnews/playlist.m3u8' },
 ];
 
 let currentHls = null;
@@ -253,55 +184,39 @@ function toast(msg, type='') {
   toastEl._t = setTimeout(() => toastEl.className = 'toast', 3000);
 }
 
-// ═══════════ RENDER ═══════════
 function render() {
-  const container = document.getElementById('channelsContainer');
+  const grid = document.getElementById('channelsGrid');
   let html = '';
-
-  // Çalışan kanallar
-  html += `<div class="section-title">
-    ✅ Çalışan Kanallar
-    <span class="count">${CHANNELS.length}</span>
-  </div>`;
-  html += '<div class="grid">';
+  const tagMap = { 'TV':'tv','HABER':'news','DÜNYA':'world','SPOR':'sport','ÇOCUK':'kids','BELGESEL':'doc','MÜZİK':'music' };
   for (const ch of CHANNELS) {
-    html += channelCard(ch, false);
+    const tagClass = 'tag-' + (tagMap[ch.tag] || 'tv');
+    let host = 'stream';
+    try {
+      const decoded = decodeURIComponent(ch.m3u8);
+      const match = decoded.match(/u=([^&]+)/);
+      if (match) {
+        const origUrl = atob(match[1]);
+        host = new URL(origUrl).hostname;
+      } else {
+        host = new URL(ch.m3u8).hostname;
+      }
+    } catch(e) {}
+    const hd = ch.m3u8.includes('1080') ? 'FHD' : ch.m3u8.includes('720') ? 'HD' : 'SD';
+    html += `
+      <div class="channel-card" id="card_${ch.id}" onclick="playChannel('${ch.id}')">
+        <div class="channel-hd">${hd}</div>
+        <div class="channel-head">
+          <div class="channel-name">${ch.name}</div>
+          <span class="channel-tag ${tagClass}">${ch.tag}</span>
+        </div>
+        <div class="channel-host">${host}</div>
+      </div>`;
   }
-  html += '</div>';
-
-  // Hata verenler
-  html += `<div class="section-title" style="color:#fca5a5;">
-    ⚠️ Erişilemeyen Kanallar (CORS)
-    <span class="count" style="background:rgba(239,68,68,.15);color:#fca5a5;">${FAILED.length}</span>
-  </div>`;
-  html += '<div class="grid">';
-  for (const ch of FAILED) {
-    html += channelCard(ch, true);
-  }
-  html += '</div>';
-
-  container.innerHTML = html;
+  grid.innerHTML = html;
   document.getElementById('channelCount').textContent = CHANNELS.length;
+  document.getElementById('channelCount2').textContent = CHANNELS.length;
 }
 
-function channelCard(ch, isFailed) {
-  const tagClass = 'tag-' + (ch.tag === 'HABER' ? 'news' : ch.tag === 'DÜNYA' ? 'world' : ch.tag === 'SPOR' ? 'sport' : ch.tag === 'ÇOCUK' ? 'kids' : ch.tag === 'BELGESEL' ? 'doc' : ch.tag === 'MÜZİK' ? 'music' : 'tv');
-  const host = ch.m3u8 ? ch.m3u8.split('/')[2] : '';
-  const onclick = isFailed ? `tryFailed('${ch.name}')` : `playChannel('${ch.id}')`;
-  const hd = ch.m3u8 && ch.m3u8.includes('1080') ? 'FHD' : ch.m3u8 && ch.m3u8.includes('720') ? 'HD' : 'SD';
-
-  return `
-    <div class="channel-card" id="card_${ch.id || ch.name.replace(/\s+/g,'_')}" onclick="${onclick}" style="${isFailed?'opacity:.6;':''}">
-      <div class="channel-hd">${hd}</div>
-      <div class="channel-head">
-        <div class="channel-name">${ch.name}</div>
-        <span class="channel-tag ${tagClass}">${ch.tag}</span>
-      </div>
-      <div class="channel-host">${host}</div>
-    </div>`;
-}
-
-// ═══════════ PLAYER ═══════════
 function stopPlayer() {
   if (currentHls) { try { currentHls.destroy(); } catch(e){} currentHls = null; }
   if (currentPlayer) { try { currentPlayer.pause(); currentPlayer.src=''; currentPlayer.load(); } catch(e){} currentPlayer = null; }
@@ -309,15 +224,6 @@ function stopPlayer() {
   document.getElementById('playerBody').innerHTML = '';
   document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('active'));
   currentChannelId = null;
-}
-
-function refreshPlayer() {
-  if (currentChannelId) {
-    const ch = CHANNELS.find(c => c.id === currentChannelId);
-    if (ch) playChannel(currentChannelId);
-  } else {
-    toast('Önce bir kanal seç', 'error');
-  }
 }
 
 function playChannel(id) {
@@ -341,7 +247,6 @@ function playChannel(id) {
   video.playsInline = true;
   video.setAttribute('webkit-playsinline', 'true');
 
-  // Native HLS (Safari/iOS)
   if (video.canPlayType('application/vnd.apple.mpegurl')) {
     video.src = ch.m3u8;
     body.innerHTML = '';
@@ -351,18 +256,17 @@ function playChannel(id) {
     return;
   }
 
-  // hls.js
   if (window.Hls && Hls.isSupported()) {
     const hls = new Hls({
       enableWorker: true,
       lowLatencyMode: true,
       backBufferLength: 90,
-      manifestLoadingTimeOut: 15000,
-      manifestLoadingMaxRetry: 3,
-      levelLoadingTimeOut: 15000,
-      levelLoadingMaxRetry: 3,
-      fragLoadingTimeOut: 20000,
-      fragLoadingMaxRetry: 4,
+      manifestLoadingTimeOut: 30000,
+      manifestLoadingMaxRetry: 4,
+      levelLoadingTimeOut: 30000,
+      levelLoadingMaxRetry: 4,
+      fragLoadingTimeOut: 40000,
+      fragLoadingMaxRetry: 6,
     });
 
     hls.loadSource(ch.m3u8);
@@ -377,7 +281,7 @@ function playChannel(id) {
       if (data.fatal) {
         switch (data.type) {
           case Hls.ErrorTypes.NETWORK_ERROR:
-            toast(ch.name + ': Ağ/CORS hatası, yeniden deneniyor...', 'error');
+            toast(ch.name + ': Ağ hatası, yeniden deneniyor...', 'error');
             hls.startLoad();
             break;
           case Hls.ErrorTypes.MEDIA_ERROR:
@@ -406,37 +310,30 @@ function showError(body, ch) {
     <div class="player-loading">
       <div class="error-box">
         <h3>⚠️ Yayın Açılamadı</h3>
-        <p><b>${ch.name}</b> akışı tarayıcıdan oynatılamıyor.<br>CORS veya Referer engeli var.</p>
+        <p><b>${ch.name}</b> akışı şu an oynatılamıyor.</p>
+        <p style="font-size:.75rem;">Sunucu proxy'sini kontrol et.</p>
         <a href="https://t.me/cmrbaskani" target="_blank">Telegram: @cmrbaskani</a>
       </div>
     </div>`;
 }
 
-function tryFailed(name) {
-  toast(name + ': CORS engeli — PHP proxy gerekli', 'error');
-}
-
-// ═══════════ hls.js LOAD ═══════════
-function loadHls(callback) {
-  if (window.Hls) { callback(); return; }
+function loadHls(cb) {
+  if (window.Hls) { cb(); return; }
   const s = document.createElement('script');
   s.src = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js';
-  s.onload = callback;
+  s.onload = cb;
   s.onerror = () => toast('hls.js yüklenemedi', 'error');
   document.head.appendChild(s);
 }
 
-// ═══════════ BAŞLAT ═══════════
 loadHls(() => {
   render();
-  console.log(' Canlı Yayın ');
-  console.log('Çalışan kanallar:', CHANNELS.map(c=>c.name).join(', '));
+  console.log('✅ Canlı Yayın Merkezi · ' + CHANNELS.length + ' kanal');
 });
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') stopPlayer(); });
 </script>
 
-<!-- hls.js -->
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
 </body>
 </html>
