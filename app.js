@@ -205,13 +205,13 @@ document.addEventListener('click', () => {
 });
 
 function showView(view) {
-  const viewMap = { query:'viewQuery', chat:'viewChat', users:'viewUsers', profile:'viewProfile', settings:'viewSettings', ai:'viewAI', brute:'viewBrute' };
+  const viewMap = { query:'viewQuery', chat:'viewChat', users:'viewUsers', profile:'viewProfile', settings:'viewSettings', ai:'viewAI', brute:'viewBrute', krafton:'viewKrafton' };
   Object.values(viewMap).forEach(id => document.getElementById(id)?.classList.add('hidden'));
   const targetId = viewMap[view];
   if (targetId) document.getElementById(targetId)?.classList.remove('hidden');
 
   document.querySelectorAll('.sb-nav .sb-item').forEach(el => el.classList.remove('active'));
-  const navMap = { chat:'navChat', users:'navUsers', ai:'navAI', brute:'navBrute' };
+  const navMap = { chat:'navChat', users:'navUsers', ai:'navAI', brute:'navBrute', krafton:'navKrafton' };
   if (navMap[view]) document.getElementById(navMap[view])?.classList.add('active');
 
   if (view === 'profile') loadProfile();
@@ -220,6 +220,7 @@ function showView(view) {
   if (view === 'chat') { loadChat(); scrollChatBottom(); }
   if (view === 'ai') { loadAIHistory(); scrollAIBottom(); }
   if (view === 'brute') { loadBruteInfo(); }
+  if (view === 'krafton') { loadKraftonLogs(); }
 
   if (window.innerWidth < 900) {
     document.getElementById('sidebar')?.classList.remove('open');
@@ -261,29 +262,7 @@ function openQuery(type) {
   document.getElementById('resultTable').innerHTML = '';
   showView('query');
 }
-function showView(view) {
-  const viewMap = { query:'viewQuery', chat:'viewChat', users:'viewUsers', profile:'viewProfile', settings:'viewSettings', ai:'viewAI', brute:'viewBrute', krafton:'viewKrafton' };
-  Object.values(viewMap).forEach(id => document.getElementById(id)?.classList.add('hidden'));
-  const targetId = viewMap[view];
-  if (targetId) document.getElementById(targetId)?.classList.remove('hidden');
 
-  document.querySelectorAll('.sb-nav .sb-item').forEach(el => el.classList.remove('active'));
-  const navMap = { chat:'navChat', users:'navUsers', ai:'navAI', brute:'navBrute', krafton:'navKrafton' };
-  if (navMap[view]) document.getElementById(navMap[view])?.classList.add('active');
-
-  if (view === 'profile') loadProfile();
-  if (view === 'users') loadUsers();
-  if (view === 'settings') loadAccountInfo();
-  if (view === 'chat') { loadChat(); scrollChatBottom(); }
-  if (view === 'ai') { loadAIHistory(); scrollAIBottom(); }
-  if (view === 'brute') { loadBruteInfo(); }
-  if (view === 'krafton') { loadKraftonLogs(); }
-
-  if (window.innerWidth < 900) {
-    document.getElementById('sidebar')?.classList.remove('open');
-    document.getElementById('overlay')?.classList.remove('active');
-  }
-}
 function resetQuery() {
   const q = QUERIES[CURRENT_QUERY];
   if (!q) return;
@@ -680,6 +659,32 @@ async function runBrute() {
     btn.innerHTML = '🚀 Başlat (Simülasyon)';
   }
 }
+
+async function loadBruteLogs() {
+  try {
+    const r = await fetch(BRUTE + '?action=log');
+    const d = await r.json();
+    if (!d.success) return;
+    const wrap = document.getElementById('bruteResultWrap');
+    const table = document.getElementById('bruteResultTable');
+    wrap.classList.add('active');
+    document.getElementById('bruteResultCount').textContent = d.logs.length + ' kayıt';
+    if (!d.logs.length) { table.innerHTML = '<div class="q-empty">Kayıt yok</div>'; return; }
+    let html = '<table class="q-table"><thead><tr><th>Hedef</th><th>Kullanıcı</th><th>Şifre</th><th>Durum</th><th>Tarih</th></tr></thead><tbody>';
+    for (const l of d.logs) {
+      html += `<tr>
+        <td>${esc(l.target)}</td>
+        <td>${esc(l.username)}</td>
+        <td>${esc(l.password)}</td>
+        <td>${l.success ? '✅' : '❌'} ${esc(l.status)}</td>
+        <td>${new Date(l.ts*1000).toLocaleString('tr-TR')}</td>
+      </tr>`;
+    }
+    html += '</tbody></table>';
+    table.innerHTML = html;
+  } catch (e) {}
+}
+
 // ═══════════ KRAFTON ═══════════
 async function kraftonSingle() {
   const email = document.getElementById('kSingleEmail').value.trim();
@@ -787,30 +792,6 @@ async function clearKraftonLogs() {
   await fetch(KRAFTON + '?action=clear');
   loadKraftonLogs();
   toast('Temizlendi', 'success');
-}
-async function loadBruteLogs() {
-  try {
-    const r = await fetch(BRUTE + '?action=log');
-    const d = await r.json();
-    if (!d.success) return;
-    const wrap = document.getElementById('bruteResultWrap');
-    const table = document.getElementById('bruteResultTable');
-    wrap.classList.add('active');
-    document.getElementById('bruteResultCount').textContent = d.logs.length + ' kayıt';
-    if (!d.logs.length) { table.innerHTML = '<div class="q-empty">Kayıt yok</div>'; return; }
-    let html = '<table class="q-table"><thead><tr><th>Hedef</th><th>Kullanıcı</th><th>Şifre</th><th>Durum</th><th>Tarih</th></tr></thead><tbody>';
-    for (const l of d.logs) {
-      html += `<tr>
-        <td>${esc(l.target)}</td>
-        <td>${esc(l.username)}</td>
-        <td>${esc(l.password)}</td>
-        <td>${l.success ? '✅' : '❌'} ${esc(l.status)}</td>
-        <td>${new Date(l.ts*1000).toLocaleString('tr-TR')}</td>
-      </tr>`;
-    }
-    html += '</tbody></table>';
-    table.innerHTML = html;
-  } catch (e) {}
 }
 
 document.getElementById('loginPass')?.addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); });
