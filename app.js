@@ -205,14 +205,27 @@ document.addEventListener('click', () => {
 });
 
 function showView(view) {
-  const viewMap = { query:'viewQuery', chat:'viewChat', users:'viewUsers', profile:'viewProfile', settings:'viewSettings', ai:'viewAI', brute:'viewBrute', krafton:'viewKrafton' };
-  Object.values(viewMap).forEach(id => document.getElementById(id)?.classList.add('hidden'));
+  const viewMap = {
+    query:'viewQuery', chat:'viewChat', users:'viewUsers',
+    profile:'viewProfile', settings:'viewSettings', ai:'viewAI',
+    brute:'viewBrute', krafton:'viewKrafton'
+  };
+  Object.values(viewMap).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('hidden');
+  });
   const targetId = viewMap[view];
-  if (targetId) document.getElementById(targetId)?.classList.remove('hidden');
+  if (targetId) {
+    const el = document.getElementById(targetId);
+    if (el) el.classList.remove('hidden');
+  }
 
   document.querySelectorAll('.sb-nav .sb-item').forEach(el => el.classList.remove('active'));
   const navMap = { chat:'navChat', users:'navUsers', ai:'navAI', brute:'navBrute', krafton:'navKrafton' };
-  if (navMap[view]) document.getElementById(navMap[view])?.classList.add('active');
+  if (navMap[view]) {
+    const navEl = document.getElementById(navMap[view]);
+    if (navEl) navEl.classList.add('active');
+  }
 
   if (view === 'profile') loadProfile();
   if (view === 'users') loadUsers();
