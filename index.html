@@ -387,6 +387,57 @@
         </div>
         <div class="q-results" id="bruteResultWrap">
           <div class="q-results-head"><span>Sonuçlar</span><span class="q-results-count" id="bruteResultCount"></span></div>
+          <div class="q-table-wrap" id="bruteResultTable"></div>
+        </div>
+      </div>
+
+      <div id="viewKrafton" class="hidden q-wrap">
+        <div class="q-card">
+          <div class="q-head">
+            <div class="q-head-ico">🎮</div>
+            <div class="q-head-txt"><h2>Krafton / PUBG Login Checker</h2><p>Tek giriş + combo tarama</p></div>
+          </div>
+          <div class="q-info"><span>⚠️</span><span>Sadece kendi hesabını test etmek için. Başkasının hesabına izinsiz giriş yasal suçtur.</span></div>
+          <div class="q-inputs">
+            <div class="q-input-group">
+              <label class="q-input-label">Email</label>
+              <input class="q-input" id="kSingleEmail" placeholder="ornek@mail.com">
+            </div>
+            <div class="q-input-group">
+              <label class="q-input-label">Şifre</label>
+              <input class="q-input" id="kSinglePass" type="password" placeholder="••••••••">
+            </div>
+          </div>
+          <div class="q-actions">
+            <button class="q-btn q-btn-primary" id="kSingleBtn" onclick="kraftonSingle()">🔎 Tek Giriş Dene</button>
+          </div>
+        </div>
+
+        <div class="q-card">
+          <div class="q-head">
+            <div class="q-head-ico">📋</div>
+            <div class="q-head-txt"><h2>Combo Tarama</h2><p>her satır: email:şifre</p></div>
+          </div>
+          <div class="q-inputs">
+            <div class="q-input-group">
+              <label class="q-input-label">Combo İçeriği</label>
+              <textarea class="q-input" id="kComboContent" style="min-height:140px;font-family:'JetBrains Mono',monospace;" placeholder="ornek1@mail.com:sifre1&#10;ornek2@mail.com:sifre2"></textarea>
+            </div>
+            <div class="q-input-group">
+              <label class="q-input-label">Gecikme (saniye)</label>
+              <input class="q-input" id="kComboDelay" type="number" value="3" min="1" max="30">
+            </div>
+            <div class="q-input-group">
+              <label class="q-input-label">Maksimum Deneme</label>
+              <input class="q-input" id="kComboMax" type="number" value="50" min="1" max="500">
+            </div>
+          </div>
+          <div class="q-actions">
+            <button class="q-btn q-btn-primary" id="kComboBtn" onclick="kraftonCombo()">🚀 Combo Başlat</button>
+            <button class="q-btn q-btn-secondary" onclick="loadKraftonLogs()">📜 Geçmiş</button>
+            <button class="q-btn q-btn-secondary" onclick="clearKraftonLogs()">🗑️ Temizle</button>
+          </div>
+        </div>
 
         <div class="q-results" id="kResultWrap">
           <div class="q-results-head"><span>Sonuçlar</span><span class="q-results-count" id="kResultCount"></span></div>
