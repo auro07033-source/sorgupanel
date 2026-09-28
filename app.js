@@ -716,9 +716,8 @@ async function kraftonSingle() {
     const r = await fetch(KRAFTON, { method:'POST', body: fd });
     const d = await r.json();
     if (d.success) toast('✔ ' + d.message, 'success');
-    else toast('✘ ' + (d.error || 'başarısız'), 'error');
-  } catch (e) {
-    toast('❌ Bağlantı hatası', 'error');
+else toast('✘ ' + (d.error || 'başarısız') + (d.status ? ' [' + d.status + ']' : ''), 'error');
+console.log('KRAFTON_RESULT:', d);
   } finally {
     btn.disabled = false;
     btn.innerHTML = '🔎 Tek Giriş Dene';
