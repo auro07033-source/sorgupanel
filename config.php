@@ -19,9 +19,12 @@ define('SETTINGS_FILE', DATA_DIR . '/settings.json');
 define('LOG_FILE',      DATA_DIR . '/admin_log.json');
 
 // ═══════════ WORDLIST / BRUTE ═══════════
-// tr_wordlist.txt ANA DİZİNDE (config.php ile aynı yerde)
 define('TR_WORDLIST',    __DIR__ . '/tr_wordlist.txt');
 define('BRUTE_LOG_FILE', DATA_DIR . '/brute_log.json');
+
+// ═══════════ KRAFTON ═══════════
+define('KRAFTON_LOG_FILE', DATA_DIR . '/krafton_log.json');
+define('KRAFTON_URL',      'https://accounts.krafton.com/auth/login/local');
 
 // ═══════════ GÖRSEL ═══════════
 define('BG_IMAGE',       'https://i.hizliresim.com/loreuqk4.jpg');
