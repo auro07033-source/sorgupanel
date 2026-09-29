@@ -1,9 +1,9 @@
 <?php
 /**
- * havadurumu.php — İl ile hava durumu
+ * havadurumu.php — İl -> koordinat -> hava API
  * Kullanıcı: ?il=Ankara
- * Dönen: Türkçe alan adlarıyla JSON
- * İletişim: Telegram @cmrbaskani
+ * Dönen: Open-Meteo ham JSON (default 7 gün)
+ * Fallback: Open-Meteo 429 verirse wttr.in denenir
  */
 require_once __DIR__ . '/config.php';
 
@@ -13,7 +13,7 @@ header('Access-Control-Allow-Origin: *');
 // ═══════════ GİRDİ ═══════════
 $il = trim($_REQUEST['il'] ?? $_REQUEST['sehir'] ?? '');
 if ($il === '') {
-    echo json_encode(["hata" => "il parametresi gerekli"], JSON_UNESCAPED_UNICODE);
+    echo json_encode(["error" => "il parametresi gerekli"], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -23,66 +23,75 @@ function http_get($url, $params = [], $timeout = 15) {
         $url .= '?' . http_build_query($params, '', '&', PHP_QUERY_RFC3986);
     }
 
-    $ch = curl_init($url);
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT        => $timeout,
-        CURLOPT_CONNECTTIMEOUT => 8,
-        CURLOPT_SSL_VERIFYPEER => false,
-        CURLOPT_SSL_VERIFYHOST => false,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_USERAGENT      => 'HavaBot/1.0',
-        CURLOPT_HTTPHEADER     => [
-            'Accept: application/json',
-            'Accept-Encoding: identity'
-        ],
-    ]);
-    $body = curl_exec($ch);
-    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $err  = curl_error($ch);
-    curl_close($ch);
-
-    if ($err || $code !== 200 || !$body) return null;
-    $j = json_decode($body, true);
-    return is_array($j) ? $j : null;
-}
-
-// ═══════════ DURUM KODU ÇEVİRİ ═══════════
-function durum_adi($kod) {
-    $harita = [
-        0  => "Açık",
-        1  => "Az bulutlu",
-        2  => "Parçalı bulutlu",
-        3  => "Kapalı",
-        45 => "Sisli",
-        48 => "Kırağılı sis",
-        51 => "Hafif çisenti",
-        53 => "Çisenti",
-        55 => "Yoğun çisenti",
-        61 => "Hafif yağmur",
-        63 => "Yağmur",
-        65 => "Şiddetli yağmur",
-        66 => "Dondurucu yağmur",
-        67 => "Şiddetli dondurucu yağmur",
-        71 => "Hafif kar",
-        73 => "Kar",
-        75 => "Yoğun kar",
-        77 => "Kar taneleri",
-        80 => "Hafif sağanak",
-        81 => "Sağanak",
-        82 => "Şiddetli sağanak",
-        85 => "Hafif kar sağanağı",
-        86 => "Yoğun kar sağanağı",
-        95 => "Gök gürültülü fırtına",
-        96 => "Dolulu fırtına",
-        99 => "Şiddetli dolulu fırtına",
+    $GLOBALS['HTTP_LAST'] = [
+        'url'       => $url,
+        'code'      => null,
+        'err'       => null,
+        'body_len'  => 0,
+        'body_head' => '',
+        'json_err'  => null,
+        'method'    => null
     ];
-    return $harita[$kod] ?? "Bilinmiyor";
-}
 
-function gun_adi($tarih) {
-    $gunler = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
-    return $gunler[(int)date('w', strtotime($tarih))];
+    // ─── 1) cURL ───
+    if (function_exists('curl_init')) {
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => $timeout,
+            CURLOPT_CONNECTTIMEOUT => 8,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => false,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_USERAGENT      => 'HavaBot/1.0',
+            CURLOPT_HTTPHEADER     => [
+                'Accept: application/json',
+                'Accept-Encoding: identity'
+            ],
+        ]);
+        $body = curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $err  = curl_error($ch);
+        curl_close($ch);
+
+        $GLOBALS['HTTP_LAST']['method']    = 'curl';
+        $GLOBALS['HTTP_LAST']['code']      = $code;
+        $GLOBALS['HTTP_LAST']['err']       = $err;
+        $GLOBALS['HTTP_LAST']['body_len']  = strlen((string)$body);
+        $GLOBALS['HTTP_LAST']['body_head'] = substr((string)$body, 0, 500);
+
+        if (!$err && $code === 200 && $body) {
+            $j = json_decode($body, true);
+            if (is_array($j)) return $j;
+            $GLOBALS['HTTP_LAST']['json_err'] = json_last_error_msg();
+        }
+    }
+
+    // ─── 2) file_get_contents fallback ───
+    $GLOBALS['HTTP_LAST']['method'] = 'file_get_contents';
+    $ctx = stream_context_create([
+        'http' => [
+            'timeout'    => $timeout,
+            'user_agent' => 'HavaBot/1.0',
+            'header'     => "Accept: application/json\r\nAccept-Encoding: identity\r\n"
+        ],
+        'ssl' => ['verify_peer' => false, 'verify_peer_name' => false]
+    ]);
+    $body2 = @file_get_contents($url, false, $ctx);
+
+    $GLOBALS['HTTP_LAST']['body_len']  = strlen((string)$body2);
+    $GLOBALS['HTTP_LAST']['body_head'] = substr((string)$body2, 0, 500);
+
+    if ($body2 === false) {
+        $GLOBALS['HTTP_LAST']['err'] = 'file_get_contents failed';
+        return null;
+    }
+    $j2 = json_decode($body2, true);
+    if (!is_array($j2)) {
+        $GLOBALS['HTTP_LAST']['json_err'] = json_last_error_msg();
+        return null;
+    }
+    return $j2;
 }
 
 // ═══════════ 1) GEOCODING ═══════════
@@ -92,9 +101,13 @@ $geo = http_get('https://geocoding-api.open-meteo.com/v1/search', [
     'language' => 'tr',
     'format'   => 'json'
 ]);
+$geo_debug = $GLOBALS['HTTP_LAST'];
 
 if (!$geo || empty($geo['results'])) {
-    echo json_encode(["hata" => "'$il' bulunamadı"], JSON_UNESCAPED_UNICODE);
+    echo json_encode([
+        "error"     => "'$il' bulunamadı",
+        "geo_debug" => $geo_debug
+    ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     exit;
 }
 
@@ -103,7 +116,7 @@ $enlem  = $g['latitude'];
 $boylam = $g['longitude'];
 $tz     = $g['timezone'] ?? 'Europe/Istanbul';
 
-// ═══════════ 2) HAVA VERİSİ ═══════════
+// ═══════════ 2) HAVA API ═══════════
 $hava = http_get('https://api.open-meteo.com/v1/forecast', [
     'latitude'  => $enlem,
     'longitude' => $boylam,
@@ -112,97 +125,60 @@ $hava = http_get('https://api.open-meteo.com/v1/forecast', [
     'hourly'    => 'temperature_2m,precipitation_probability,weather_code,wind_speed_10m',
     'timezone'  => $tz
 ]);
+$hava_debug = $GLOBALS['HTTP_LAST'];
 
-if (!$hava) {
-    echo json_encode(["hata" => "Hava verisi alınamadı"], JSON_UNESCAPED_UNICODE);
+// ═══════════ 3) FALLBACK — wttr.in ═══════════
+if (!$hava || (($hava_debug['code'] ?? 0) === 429)) {
+    // wttr.in'den dene
+    $wttr = http_get('https://wttr.in/' . rawurlencode($il), [
+        'format' => 'j1'
+    ]);
+
+    if ($wttr && isset($wttr['current_condition'])) {
+        $c = $wttr['current_condition'][0];
+        echo json_encode([
+            'kaynak'   => 'none',
+            'il'       => $il,
+            'konum'    => [
+                'ad'     => $wttr['nearest_area'][0]['areaName'][0]['value'] ?? $il,
+                'ulke'   => $wttr['nearest_area'][0]['country'][0]['value'] ?? '',
+                'enlem'  => $wttr['nearest_area'][0]['latitude'] ?? $enlem,
+                'boylam' => $wttr['nearest_area'][0]['longitude'] ?? $boylam,
+            ],
+            'current'  => [
+                'temperature_2m'       => (float)$c['temp_C'],
+                'relative_humidity_2m' => (int)$c['humidity'],
+                'wind_speed_10m'       => (float)$c['windspeedKmph'],
+                'weather_code'         => 0,
+                'weather_desc'         => $c['weatherDesc'][0]['value'] ?? '',
+                'apparent_temperature' => (float)$c['FeelsLikeC'],
+                'pressure_msl'         => (float)$c['pressure'],
+                'time'                 => date('c'),
+            ],
+            'daily'    => array_map(function($d) {
+                return [
+                    'date'    => $d['date'],
+                    'max'     => (float)$d['maxtempC'],
+                    'min'     => (float)$d['mintempC'],
+                    'yagis'   => (float)($d['totalSnow_cm'] ?? 0),
+                    'gunes_dog'=> ($d['astronomy'][0]['sunrise'] ?? '') . ' ' . $d['date'],
+                    'gunes_bat'=> ($d['astronomy'][0]['sunset']  ?? '') . ' ' . $d['date'],
+                ];
+            }, $wttr['weather'] ?? []),
+            'hourly'   => [],
+            'not'      => 'Gunluk limit asildi !',
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+        exit;
+    }
+
+    // İkisi de başarısız
+    echo json_encode([
+        "error"      => "Hava verisi alınamadı !",
+        "geo_debug"  => $geo_debug,
+        "hava_debug" => $hava_debug
+    ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     exit;
 }
 
-// ═══════════ 3) TÜRKÇE ALAN ADLARINA ÇEVİR ═══════════
-$cur = $hava['current'] ?? [];
-$d   = $hava['daily']   ?? [];
-$h   = $hava['hourly']  ?? [];
-
-$kod = $cur['weather_code'] ?? -1;
-
-// ANLIK
-$anlik = [
-    'saat'          => $cur['time'] ?? null,
-    'sicaklik'      => $cur['temperature_2m'] ?? null,
-    'hissedilen'    => $cur['apparent_temperature'] ?? null,
-    'nem'           => $cur['relative_humidity_2m'] ?? null,
-    'ruzgar'        => $cur['wind_speed_10m'] ?? null,
-    'basinc'        => $cur['pressure_msl'] ?? null,
-    'durum'         => durum_adi($kod),
-    'durum_kodu'    => $kod,
-];
-
-// GÜNLÜK (7 gün)
-$gunluk = [];
-foreach (($d['time'] ?? []) as $i => $t) {
-    $k = $d['weather_code'][$i] ?? -1;
-    $gunluk[] = [
-        'tarih'       => $t,
-        'gun'         => gun_adi($t),
-        'durum'       => durum_adi($k),
-        'durum_kodu'  => $k,
-        'en_dusuk'    => $d['temperature_2m_min'][$i] ?? null,
-        'en_yuksek'   => $d['temperature_2m_max'][$i] ?? null,
-        'yagis_mm'    => $d['precipitation_sum'][$i] ?? null,
-        'ruzgar_max'  => $d['wind_speed_10m_max'][$i] ?? null,
-        'gunes_dogus' => $d['sunrise'][$i] ?? null,
-        'gunes_batis' => $d['sunset'][$i] ?? null,
-        'uv'          => $d['uv_index_max'][$i] ?? null,
-    ];
-}
-
-// SAATLİK (48 saat)
-$saatlik = [];
-$limit = min(48, count($h['time'] ?? []));
-for ($i = 0; $i < $limit; $i++) {
-    $k = $h['weather_code'][$i] ?? -1;
-    $saatlik[] = [
-        'saat'      => $h['time'][$i],
-        'sicaklik'  => $h['temperature_2m'][$i] ?? null,
-        'durum'     => durum_adi($k),
-        'yagis_yuz' => $h['precipitation_probability'][$i] ?? null,
-        'ruzgar'    => $h['wind_speed_10m'][$i] ?? null,
-    ];
-}
-
-// ÖZET
-$mins  = array_filter(array_column($gunluk, 'en_dusuk'),  fn($v) => $v !== null);
-$maxs  = array_filter(array_column($gunluk, 'en_yuksek'), fn($v) => $v !== null);
-$yagis = array_filter(array_column($gunluk, 'yagis_mm'),  fn($v) => $v !== null);
-
-$ozet = [
-    'gun_sayisi'    => count($gunluk),
-    'en_dusuk'      => $mins ? min($mins) : null,
-    'en_yuksek'     => $maxs ? max($maxs) : null,
-    'ortalama'      => ($mins && $maxs)
-        ? round((array_sum($mins) + array_sum($maxs)) / (count($mins) + count($maxs)), 1)
-        : null,
-    'toplam_yagis'  => $yagis ? round(array_sum($yagis), 1) : 0,
-];
-
-// ═══════════ 4) TÜRKÇE JSON DÖN ═══════════
-$sonuc = [
-    'basarili' => true,
-    'sorgu_il' => $il,
-    'konum'    => [
-        'il'      => $g['name']    ?? $il,
-        'ulke'    => $g['country'] ?? '',
-        'enlem'   => $enlem,
-        'boylam'  => $boylam,
-        'saat_dilimi' => $tz,
-    ],
-    'anlik'    => $anlik,
-    'gunluk'   => $gunluk,
-    'saatlik'  => $saatlik,
-    'ozet'     => $ozet,
-    'kaynak'   => 'none',
-    'telegram' => '@cmrbaskani',
-    'tarih'    => date('c'),
-];
-
-echo json_encode($sonuc, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+// ═══════════ 4) HAM JSON DÖN ═══════════
+echo json_encode($hava, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
