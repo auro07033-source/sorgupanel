@@ -33,7 +33,7 @@ const QUERIES = {
   new_sulale:    { icon:'🌳', baslik:'Detaylı Sülale',     alt:'Büyükbaba+anne',    inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_sulale', vip:true },
   new_sokak:     { icon:'🛣️', baslik:'Sokak Sorgu',        alt:'Aynı sokak',        inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_sokak', vip:true },
   new_adres2009: { icon:'📍', baslik:'Eski Adres Geçmişi', alt:'2009-2024',        inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_adres2009', vip:true },
-  hava:          { icon:'🌦️', baslik:'Hava Durumu',        alt:'İl ile anlık + 7 günlük tahmin', inputs:[{id:'il', ph:'İl adı (örn: Ankara)', label:'İl'}], type:'hava', vip:false },
+  hava:          { icon:'🌦️', baslik:'Hava Durumu',        alt:'Anlık + günlük + haftalık + saatlik', inputs:[{id:'il', ph:'İl adı (örn: Ankara)', label:'İl'},{id:'gun', ph:'7', label:'Kaç günlük? (1-16)', max:2}], type:'hava', vip:false },
 };
 
 const INFO_TEXT = {
@@ -56,7 +56,7 @@ const INFO_TEXT = {
   new_sulale:'💎 VIP — Detaylı sülale.',
   new_sokak:'💎 VIP — Sokaktaki kişiler.',
   new_adres2009:'💎 VIP — Eski adresler.',
-  hava:'İl adı gir; anlık + 7 günlük + 24 saatlik tahmin. Open-Meteo verisi.',
+  hava:'İl adı + kaç günlük (1-16). Anlık + günlük + haftalık + saatlik tahmin.',
 };
 
 const toastEl = document.getElementById('toast');
@@ -270,6 +270,7 @@ function openQuery(type) {
     i.type = 'text'; i.id = 'input_' + inp.id;
     i.className = 'q-input'; i.placeholder = inp.ph;
     if (inp.max) i.maxLength = inp.max;
+    if (inp.id === 'gun') i.value = '7';
     i.addEventListener('keypress', e => { if (e.key === 'Enter') runQuery(); });
     g.appendChild(i);
     wrap.appendChild(g);
@@ -284,7 +285,7 @@ function resetQuery() {
   if (!q) return;
   for (const inp of q.inputs) {
     const el = document.getElementById('input_' + inp.id);
-    if (el) el.value = '';
+    if (el) el.value = (inp.id === 'gun') ? '7' : '';
   }
   document.getElementById('resultWrap').classList.remove('active');
   document.getElementById('resultTable').innerHTML = '';
@@ -397,6 +398,7 @@ function renderResult(data) {
 // ═══════════ HAVA DURUMU ═══════════
 async function runHava() {
   const il = document.getElementById('input_il')?.value.trim();
+  const gun = document.getElementById('input_gun')?.value.trim() || '7';
   const btn = document.getElementById('queryBtn');
   const wrap = document.getElementById('resultWrap');
   const table = document.getElementById('resultTable');
@@ -410,7 +412,7 @@ async function runHava() {
   cnt.textContent = '';
 
   try {
-    const r = await fetch(HAVA + '?il=' + encodeURIComponent(il));
+    const r = await fetch(HAVA + '?il=' + encodeURIComponent(il) + '&gun=' + encodeURIComponent(gun));
     const d = await r.json();
     if (!d.success) {
       table.innerHTML = `<div class="q-error">✗ ${esc(d.error || 'Hata')}</div>`;
@@ -428,49 +430,71 @@ async function runHava() {
 function renderHava(d) {
   const table = document.getElementById('resultTable');
   const cnt   = document.getElementById('resultCount');
-  const k = d.konum, a = d.anlik;
+  const k = d.konum, a = d.anlik, o = d.ozet || {};
 
   let html = `<div class="result-ozet">📍 ${esc(k.ad)}, ${esc(k.ulke)} · ${esc(a.saat || '')}${d.cached ? ' · (önbellek)' : ''}</div>`;
 
+  // ÖZET
+  if (o.gun_sayisi) {
+    html += `<div class="result-ozet" style="background:rgba(163,113,247,.1);border-color:rgba(163,113,247,.3);color:#d2a8ff;">
+      📊 ${esc(o.gun_sayisi)} günlük özet: 
+      En düşük <b>${esc(o.en_dusuk)}°</b> · 
+      En yüksek <b>${esc(o.en_yuksek)}°</b> · 
+      Ort. <b>${esc(o.ort_sicak)}°</b> · 
+      Toplam yağış <b>${esc(o.toplam_yagis)} mm</b>
+    </div>`;
+  }
+
+  // ANLIK
   html += `<div class="result-category">
     <div class="result-category-title">🌡️ Anlık Durum</div>
     <table class="q-table"><tbody>
       <tr><th>Sıcaklık</th><td>${esc(a.sicaklik)} °C</td>
-          <th>Nem</th><td>${esc(a.nem)} %</td></tr>
-      <tr><th>Rüzgar</th><td>${esc(a.ruzgar)} km/s</td>
+          <th>Hissedilen</th><td>${esc(a.hissedilen)} °C</td></tr>
+      <tr><th>Nem</th><td>${esc(a.nem)} %</td>
+          <th>Rüzgar</th><td>${esc(a.ruzgar)} km/s</td></tr>
+      <tr><th>Basınç</th><td>${esc(a.basinc)} hPa</td>
           <th>Durum</th><td>${esc(a.durum)}</td></tr>
     </tbody></table></div>`;
 
+  // GÜNLÜK / HAFTALIK
   if (Array.isArray(d.gunluk) && d.gunluk.length) {
     html += `<div class="result-category">
-      <div class="result-category-title">📅 7 Günlük Tahmin <span class="cat-count">${d.gunluk.length} gün</span></div>
+      <div class="result-category-title">📅 ${d.gunluk.length} Günlük Tahmin <span class="cat-count">${d.gunluk.length} gün</span></div>
       <table class="q-table"><thead><tr>
-        <th>Tarih</th><th>Durum</th><th>Min</th><th>Max</th><th>Yağış</th><th>Rüzgar</th>
+        <th>Tarih</th><th>Gün</th><th>Durum</th><th>Min</th><th>Max</th><th>Yağış</th><th>Rüzgar</th><th>UV</th><th>G.Doğuş</th><th>G.Batış</th>
       </tr></thead><tbody>`;
     for (const g of d.gunluk) {
       html += `<tr>
         <td>${esc(g.tarih)}</td>
+        <td>${esc(g.gun_adi)}</td>
         <td>${esc(g.durum)}</td>
         <td>${esc(g.min)}°</td>
         <td>${esc(g.max)}°</td>
         <td>${esc(g.yagis)} mm</td>
         <td>${esc(g.ruzgar)} km/s</td>
+        <td>${esc(g.uv)}</td>
+        <td>${esc((g.gunes_dog||'').split('T')[1] || '-')}</td>
+        <td>${esc((g.gunes_bat||'').split('T')[1] || '-')}</td>
       </tr>`;
     }
     html += `</tbody></table></div>`;
   }
 
+  // SAATLİK
   if (Array.isArray(d.saatlik) && d.saatlik.length) {
     html += `<div class="result-category">
-      <div class="result-category-title">⏰ Saatlik (ilk 24) <span class="cat-count">${d.saatlik.length} saat</span></div>
+      <div class="result-category-title">⏰ Saatlik (${d.saatlik.length} saat) <span class="cat-count">${d.saatlik.length} saat</span></div>
       <table class="q-table"><thead><tr>
-        <th>Saat</th><th>Sıcaklık</th><th>Yağış %</th>
+        <th>Saat</th><th>Sıcaklık</th><th>Durum</th><th>Yağış %</th><th>Rüzgar</th>
       </tr></thead><tbody>`;
     for (const s of d.saatlik) {
       html += `<tr>
-        <td>${esc(s.saat)}</td>
+        <td>${esc((s.saat||'').replace('T',' '))}</td>
         <td>${esc(s.sicaklik)}°C</td>
+        <td>${esc(s.durum)}</td>
         <td>%${esc(s.yagis)}</td>
+        <td>${esc(s.ruzgar)} km/s</td>
       </tr>`;
     }
     html += `</tbody></table></div>`;
@@ -486,6 +510,7 @@ function renderHava(d) {
 
 async function gosterHava() {
   const il = document.getElementById('havaIl')?.value.trim();
+  const gun = document.getElementById('havaGun')?.value.trim() || '7';
   const btn = document.getElementById('havaBtn');
   const wrap = document.getElementById('havaResultWrap');
   const table = document.getElementById('havaResult');
@@ -498,7 +523,7 @@ async function gosterHava() {
   table.innerHTML = '<div class="q-empty"><span class="spinner"></span> Çekiliyor...</div>';
 
   try {
-    const r = await fetch(HAVA + '?il=' + encodeURIComponent(il));
+    const r = await fetch(HAVA + '?il=' + encodeURIComponent(il) + '&gun=' + encodeURIComponent(gun));
     const d = await r.json();
     if (!d.success) { table.innerHTML = `<div class="q-error">✗ ${esc(d.error)}</div>`; return; }
     renderHavaTo(d, table, cnt);
@@ -511,23 +536,29 @@ async function gosterHava() {
 }
 
 function renderHavaTo(d, table, cnt) {
-  const k = d.konum, a = d.anlik;
+  const k = d.konum, a = d.anlik, o = d.ozet || {};
   let html = `<div class="result-ozet">📍 ${esc(k.ad)}, ${esc(k.ulke)} · ${esc(a.saat || '')}${d.cached ? ' · (önbellek)' : ''}</div>`;
+  if (o.gun_sayisi) {
+    html += `<div class="result-ozet" style="background:rgba(163,113,247,.1);border-color:rgba(163,113,247,.3);color:#d2a8ff;">
+      📊 ${esc(o.gun_sayisi)} gün: En düşük <b>${esc(o.en_dusuk)}°</b> · En yüksek <b>${esc(o.en_yuksek)}°</b> · Ort. <b>${esc(o.ort_sicak)}°</b> · Yağış <b>${esc(o.toplam_yagis)} mm</b>
+    </div>`;
+  }
   html += `<div class="result-category"><div class="result-category-title">🌡️ Anlık</div>
     <table class="q-table"><tbody>
-      <tr><th>Sıcaklık</th><td>${esc(a.sicaklik)} °C</td><th>Nem</th><td>${esc(a.nem)} %</td></tr>
-      <tr><th>Rüzgar</th><td>${esc(a.ruzgar)} km/s</td><th>Durum</th><td>${esc(a.durum)}</td></tr>
+      <tr><th>Sıcaklık</th><td>${esc(a.sicaklik)} °C</td><th>Hissedilen</th><td>${esc(a.hissedilen)} °C</td></tr>
+      <tr><th>Nem</th><td>${esc(a.nem)} %</td><th>Rüzgar</th><td>${esc(a.ruzgar)} km/s</td></tr>
+      <tr><th>Basınç</th><td>${esc(a.basinc)} hPa</td><th>Durum</th><td>${esc(a.durum)}</td></tr>
     </tbody></table></div>`;
   if (Array.isArray(d.gunluk)) {
-    html += `<div class="result-category"><div class="result-category-title">📅 7 Günlük <span class="cat-count">${d.gunluk.length}</span></div>
-      <table class="q-table"><thead><tr><th>Tarih</th><th>Durum</th><th>Min</th><th>Max</th><th>Yağış</th><th>Rüzgar</th></tr></thead><tbody>`;
-    for (const g of d.gunluk) html += `<tr><td>${esc(g.tarih)}</td><td>${esc(g.durum)}</td><td>${esc(g.min)}°</td><td>${esc(g.max)}°</td><td>${esc(g.yagis)} mm</td><td>${esc(g.ruzgar)} km/s</td></tr>`;
+    html += `<div class="result-category"><div class="result-category-title">📅 ${d.gunluk.length} Günlük <span class="cat-count">${d.gunluk.length}</span></div>
+      <table class="q-table"><thead><tr><th>Tarih</th><th>Gün</th><th>Durum</th><th>Min</th><th>Max</th><th>Yağış</th><th>Rüzgar</th><th>UV</th></tr></thead><tbody>`;
+    for (const g of d.gunluk) html += `<tr><td>${esc(g.tarih)}</td><td>${esc(g.gun_adi)}</td><td>${esc(g.durum)}</td><td>${esc(g.min)}°</td><td>${esc(g.max)}°</td><td>${esc(g.yagis)} mm</td><td>${esc(g.ruzgar)} km/s</td><td>${esc(g.uv)}</td></tr>`;
     html += `</tbody></table></div>`;
   }
   if (Array.isArray(d.saatlik)) {
     html += `<div class="result-category"><div class="result-category-title">⏰ Saatlik <span class="cat-count">${d.saatlik.length}</span></div>
-      <table class="q-table"><thead><tr><th>Saat</th><th>Sıcaklık</th><th>Yağış %</th></tr></thead><tbody>`;
-    for (const s of d.saatlik) html += `<tr><td>${esc(s.saat)}</td><td>${esc(s.sicaklik)}°C</td><td>%${esc(s.yagis)}</td></tr>`;
+      <table class="q-table"><thead><tr><th>Saat</th><th>Sıcaklık</th><th>Durum</th><th>Yağış %</th><th>Rüzgar</th></tr></thead><tbody>`;
+    for (const s of d.saatlik) html += `<tr><td>${esc((s.saat||'').replace('T',' '))}</td><td>${esc(s.sicaklik)}°C</td><td>${esc(s.durum)}</td><td>%${esc(s.yagis)}</td><td>${esc(s.ruzgar)} km/s</td></tr>`;
     html += `</tbody></table></div>`;
   }
   if (d.telegram) {

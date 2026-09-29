@@ -22,6 +22,8 @@ define('LOG_FILE',      DATA_DIR . '/admin_log.json');
 // ═══════════ HAVA DURUMU ═══════════
 define('HAVA_CACHE_FILE', DATA_DIR . '/hava_cache.json');
 define('HAVA_CACHE_TTL',  1800);
+define('GEO_URL',         'https://geocoding-api.open-meteo.com/v1/search');
+define('HAVA_URL',        'https://api.open-meteo.com/v1/forecast');
 
 // ═══════════ WORDLIST / BRUTE ═══════════
 define('TR_WORDLIST',    __DIR__ . '/tr_wordlist.txt');

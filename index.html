@@ -312,18 +312,22 @@
         <div class="q-card">
           <div class="q-head">
             <div class="q-head-ico">🌦️</div>
-            <div class="q-head-txt"><h2>Hava Durumu</h2><p>İl ile anlık + 7 günlük tahmin</p></div>
+            <div class="q-head-txt"><h2>Hava Durumu</h2><p>Anlık + günlük + haftalık + saatlik</p></div>
           </div>
-          <div class="q-info"><span>ℹ️</span><span>İl adı yaz (örn: Ankara, İstanbul). Open-Meteo verisi. İletişim: Telegram @cmrbaskani</span></div>
+          <div class="q-info"><span>ℹ️</span><span>İl adı + kaç günlük (1-16). Open-Meteo verisi. İletişim: Telegram @cmrbaskani</span></div>
           <div class="q-inputs">
             <div class="q-input-group">
               <label class="q-input-label">İl</label>
               <input class="q-input" id="havaIl" placeholder="Ankara" onkeypress="if(event.key==='Enter')gosterHava()">
             </div>
+            <div class="q-input-group">
+              <label class="q-input-label">Kaç günlük? <span class="q-input-hint">(1-16)</span></label>
+              <input class="q-input" id="havaGun" type="number" value="7" min="1" max="16" onkeypress="if(event.key==='Enter')gosterHava()">
+            </div>
           </div>
           <div class="q-actions">
             <button class="q-btn q-btn-primary" id="havaBtn" onclick="gosterHava()">🔎 Sorgula</button>
-            <button class="q-btn q-btn-secondary" onclick="document.getElementById('havaIl').value='';document.getElementById('havaResultWrap').classList.remove('active');document.getElementById('havaResult').innerHTML='';">🔄 Sıfırla</button>
+            <button class="q-btn q-btn-secondary" onclick="document.getElementById('havaIl').value='';document.getElementById('havaGun').value='7';document.getElementById('havaResultWrap').classList.remove('active');document.getElementById('havaResult').innerHTML='';">🔄 Sıfırla</button>
           </div>
         </div>
         <div class="q-results" id="havaResultWrap">
