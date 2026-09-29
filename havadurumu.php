@@ -3,6 +3,7 @@
  * havadurumu.php — İl -> koordinat -> hava API
  * Kullanıcı: ?il=Ankara
  * Dönen: Open-Meteo ham JSON (default 7 gün)
+ * Fallback: Open-Meteo 429 verirse wttr.in denenir
  */
 require_once __DIR__ . '/config.php';
 
@@ -19,7 +20,6 @@ if ($il === '') {
 // ═══════════ HTTP YARDIMCI ═══════════
 function http_get($url, $params = [], $timeout = 15) {
     if ($params) {
-        // RFC3986: boşluk %20, virgül olduğu gibi kalır
         $url .= '?' . http_build_query($params, '', '&', PHP_QUERY_RFC3986);
     }
 
@@ -59,11 +59,6 @@ function http_get($url, $params = [], $timeout = 15) {
         $GLOBALS['HTTP_LAST']['err']       = $err;
         $GLOBALS['HTTP_LAST']['body_len']  = strlen((string)$body);
         $GLOBALS['HTTP_LAST']['body_head'] = substr((string)$body, 0, 500);
-
-        if ($code === 429) {
-            $GLOBALS['HTTP_LAST']['err'] = 'Rate limit (429)';
-            return null;
-        }
 
         if (!$err && $code === 200 && $body) {
             $j = json_decode($body, true);
@@ -132,14 +127,58 @@ $hava = http_get('https://api.open-meteo.com/v1/forecast', [
 ]);
 $hava_debug = $GLOBALS['HTTP_LAST'];
 
-if (!$hava) {
+// ═══════════ 3) FALLBACK — wttr.in ═══════════
+if (!$hava || (($hava_debug['code'] ?? 0) === 429)) {
+    // wttr.in'den dene
+    $wttr = http_get('https://wttr.in/' . rawurlencode($il), [
+        'format' => 'j1'
+    ]);
+
+    if ($wttr && isset($wttr['current_condition'])) {
+        $c = $wttr['current_condition'][0];
+        echo json_encode([
+            'kaynak'   => 'wttr.in',
+            'il'       => $il,
+            'konum'    => [
+                'ad'     => $wttr['nearest_area'][0]['areaName'][0]['value'] ?? $il,
+                'ulke'   => $wttr['nearest_area'][0]['country'][0]['value'] ?? '',
+                'enlem'  => $wttr['nearest_area'][0]['latitude'] ?? $enlem,
+                'boylam' => $wttr['nearest_area'][0]['longitude'] ?? $boylam,
+            ],
+            'current'  => [
+                'temperature_2m'       => (float)$c['temp_C'],
+                'relative_humidity_2m' => (int)$c['humidity'],
+                'wind_speed_10m'       => (float)$c['windspeedKmph'],
+                'weather_code'         => 0,
+                'weather_desc'         => $c['weatherDesc'][0]['value'] ?? '',
+                'apparent_temperature' => (float)$c['FeelsLikeC'],
+                'pressure_msl'         => (float)$c['pressure'],
+                'time'                 => date('c'),
+            ],
+            'daily'    => array_map(function($d) {
+                return [
+                    'date'    => $d['date'],
+                    'max'     => (float)$d['maxtempC'],
+                    'min'     => (float)$d['mintempC'],
+                    'yagis'   => (float)($d['totalSnow_cm'] ?? 0),
+                    'gunes_dog'=> ($d['astronomy'][0]['sunrise'] ?? '') . ' ' . $d['date'],
+                    'gunes_bat'=> ($d['astronomy'][0]['sunset']  ?? '') . ' ' . $d['date'],
+                ];
+            }, $wttr['weather'] ?? []),
+            'hourly'   => [],
+            'not'      => 'Open-Meteo gunluk limit asildi, wttr.in kullanildi',
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+        exit;
+    }
+
+    // İkisi de başarısız
     echo json_encode([
-        "error"      => "Hava verisi alınamadı",
+        "error"      => "Hava verisi alınamadı (Open-Meteo limit + wttr.in başarısız)",
         "geo_debug"  => $geo_debug,
         "hava_debug" => $hava_debug
     ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     exit;
 }
 
-// ═══════════ 3) HAM JSON DÖN ═══════════
+// ═══════════ 4) HAM JSON DÖN ═══════════
 echo json_encode($hava, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
