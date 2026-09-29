@@ -16,50 +16,103 @@ if ($il === '') {
     exit;
 }
 
-// ═══════════ HTTP ═══════════
+// ═══════════ HTTP YARDIMCI ═══════════
 function http_get($url, $params = [], $timeout = 15) {
     if ($params) {
-        $parts = [];
-        foreach ($params as $k => $v) {
-            $parts[] = $k . '=' . str_replace('%2C', ',', rawurlencode($v));
-        }
-        $url .= '?' . implode('&', $parts);
+        // RFC3986: boşluk %20, virgül olduğu gibi kalır
+        $url .= '?' . http_build_query($params, '', '&', PHP_QUERY_RFC3986);
     }
 
-    $ch = curl_init($url);
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT        => $timeout,
-        CURLOPT_CONNECTTIMEOUT => 8,
-        CURLOPT_SSL_VERIFYPEER => false,
-        CURLOPT_SSL_VERIFYHOST => false,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_USERAGENT      => 'HavaBot/1.0',
-        CURLOPT_HTTPHEADER     => [
-            'Accept: application/json',
-            'Accept-Encoding: identity'
-        ],
-    ]);
-    $body = curl_exec($ch);
-    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $err  = curl_error($ch);
-    curl_close($ch);
+    $GLOBALS['HTTP_LAST'] = [
+        'url'       => $url,
+        'code'      => null,
+        'err'       => null,
+        'body_len'  => 0,
+        'body_head' => '',
+        'json_err'  => null,
+        'method'    => null
+    ];
 
-    if ($err || $code !== 200 || !$body) return null;
-    $j = json_decode($body, true);
-    return is_array($j) ? $j : null;
+    // ─── 1) cURL ───
+    if (function_exists('curl_init')) {
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => $timeout,
+            CURLOPT_CONNECTTIMEOUT => 8,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => false,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_USERAGENT      => 'HavaBot/1.0',
+            CURLOPT_HTTPHEADER     => [
+                'Accept: application/json',
+                'Accept-Encoding: identity'
+            ],
+        ]);
+        $body = curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $err  = curl_error($ch);
+        curl_close($ch);
+
+        $GLOBALS['HTTP_LAST']['method']    = 'curl';
+        $GLOBALS['HTTP_LAST']['code']      = $code;
+        $GLOBALS['HTTP_LAST']['err']       = $err;
+        $GLOBALS['HTTP_LAST']['body_len']  = strlen((string)$body);
+        $GLOBALS['HTTP_LAST']['body_head'] = substr((string)$body, 0, 500);
+
+        if ($code === 429) {
+            $GLOBALS['HTTP_LAST']['err'] = 'Rate limit (429)';
+            return null;
+        }
+
+        if (!$err && $code === 200 && $body) {
+            $j = json_decode($body, true);
+            if (is_array($j)) return $j;
+            $GLOBALS['HTTP_LAST']['json_err'] = json_last_error_msg();
+        }
+    }
+
+    // ─── 2) file_get_contents fallback ───
+    $GLOBALS['HTTP_LAST']['method'] = 'file_get_contents';
+    $ctx = stream_context_create([
+        'http' => [
+            'timeout'    => $timeout,
+            'user_agent' => 'HavaBot/1.0',
+            'header'     => "Accept: application/json\r\nAccept-Encoding: identity\r\n"
+        ],
+        'ssl' => ['verify_peer' => false, 'verify_peer_name' => false]
+    ]);
+    $body2 = @file_get_contents($url, false, $ctx);
+
+    $GLOBALS['HTTP_LAST']['body_len']  = strlen((string)$body2);
+    $GLOBALS['HTTP_LAST']['body_head'] = substr((string)$body2, 0, 500);
+
+    if ($body2 === false) {
+        $GLOBALS['HTTP_LAST']['err'] = 'file_get_contents failed';
+        return null;
+    }
+    $j2 = json_decode($body2, true);
+    if (!is_array($j2)) {
+        $GLOBALS['HTTP_LAST']['json_err'] = json_last_error_msg();
+        return null;
+    }
+    return $j2;
 }
 
-// ═══════════ 1) GEOCODING (il -> koordinat) ═══════════
+// ═══════════ 1) GEOCODING ═══════════
 $geo = http_get('https://geocoding-api.open-meteo.com/v1/search', [
     'name'     => $il,
     'count'    => 1,
     'language' => 'tr',
     'format'   => 'json'
 ]);
+$geo_debug = $GLOBALS['HTTP_LAST'];
 
 if (!$geo || empty($geo['results'])) {
-    echo json_encode(["error" => "'$il' bulunamadı"], JSON_UNESCAPED_UNICODE);
+    echo json_encode([
+        "error"     => "'$il' bulunamadı",
+        "geo_debug" => $geo_debug
+    ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     exit;
 }
 
@@ -68,7 +121,7 @@ $enlem  = $g['latitude'];
 $boylam = $g['longitude'];
 $tz     = $g['timezone'] ?? 'Europe/Istanbul';
 
-// ═══════════ 2) HAVA API (ham JSON, default 7 gün) ═══════════
+// ═══════════ 2) HAVA API ═══════════
 $hava = http_get('https://api.open-meteo.com/v1/forecast', [
     'latitude'  => $enlem,
     'longitude' => $boylam,
@@ -76,11 +129,15 @@ $hava = http_get('https://api.open-meteo.com/v1/forecast', [
     'daily'     => 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,sunrise,sunset,uv_index_max',
     'hourly'    => 'temperature_2m,precipitation_probability,weather_code,wind_speed_10m',
     'timezone'  => $tz
-    // forecast_days YOK -> Open-Meteo default 7 gün döner
 ]);
+$hava_debug = $GLOBALS['HTTP_LAST'];
 
 if (!$hava) {
-    echo json_encode(["error" => "Hava verisi alınamadı"], JSON_UNESCAPED_UNICODE);
+    echo json_encode([
+        "error"      => "Hava verisi alınamadı",
+        "geo_debug"  => $geo_debug,
+        "hava_debug" => $hava_debug
+    ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     exit;
 }
 
