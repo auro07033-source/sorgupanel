@@ -5,6 +5,7 @@ const AUTH  = 'auth.php';
 const CHAT  = 'chat.php';
 const AIAPI = 'ai.php';
 const BRUTE = 'brute.php';
+const HAVA  = 'havadurumu.php';
 const DEFAULT_AVATAR = 'https://i.hizliresim.com/midnihxu.jpg';
 
 let CURRENT_USER = null;
@@ -32,6 +33,7 @@ const QUERIES = {
   new_sulale:    { icon:'🌳', baslik:'Detaylı Sülale',     alt:'Büyükbaba+anne',    inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_sulale', vip:true },
   new_sokak:     { icon:'🛣️', baslik:'Sokak Sorgu',        alt:'Aynı sokak',        inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_sokak', vip:true },
   new_adres2009: { icon:'📍', baslik:'Eski Adres Geçmişi', alt:'2009-2024',        inputs:[{id:'tc', ph:'TC Kimlik No', max:11, label:'TC Kimlik Numarası'}], type:'new_adres2009', vip:true },
+  hava:          { icon:'🌦️', baslik:'Hava Durumu',        alt:'İl ile anlık + 7 günlük tahmin', inputs:[{id:'il', ph:'İl adı (örn: Ankara)', label:'İl'}], type:'hava', vip:false },
 };
 
 const INFO_TEXT = {
@@ -54,6 +56,7 @@ const INFO_TEXT = {
   new_sulale:'💎 VIP — Detaylı sülale.',
   new_sokak:'💎 VIP — Sokaktaki kişiler.',
   new_adres2009:'💎 VIP — Eski adresler.',
+  hava:'İl adı gir; anlık + 7 günlük + 24 saatlik tahmin. Open-Meteo verisi.',
 };
 
 const toastEl = document.getElementById('toast');
@@ -208,7 +211,7 @@ function showView(view) {
   const viewMap = {
     query:'viewQuery', chat:'viewChat', users:'viewUsers',
     profile:'viewProfile', settings:'viewSettings', ai:'viewAI',
-    brute:'viewBrute', krafton:'viewKrafton'
+    brute:'viewBrute', krafton:'viewKrafton', hava:'viewHava'
   };
   Object.values(viewMap).forEach(id => {
     const el = document.getElementById(id);
@@ -291,6 +294,8 @@ async function runQuery() {
   const q = QUERIES[CURRENT_QUERY];
   if (!q) return;
   if (q.vip && !isVIP(CURRENT_USER)) { toast('💎 VIP gerekli', 'error'); return; }
+
+  if (CURRENT_QUERY === 'hava') { return runHava(); }
 
   const btn = document.getElementById('queryBtn');
   const wrap = document.getElementById('resultWrap');
@@ -387,6 +392,149 @@ function renderResult(data) {
   html += '</tbody></table>';
   table.innerHTML = html;
   cnt.textContent = items.length + ' kayıt';
+}
+
+// ═══════════ HAVA DURUMU ═══════════
+async function runHava() {
+  const il = document.getElementById('input_il')?.value.trim();
+  const btn = document.getElementById('queryBtn');
+  const wrap = document.getElementById('resultWrap');
+  const table = document.getElementById('resultTable');
+  const cnt = document.getElementById('resultCount');
+  if (!il) { toast('İl adı gerekli', 'error'); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Sorgulanıyor...';
+  wrap.classList.add('active');
+  table.innerHTML = '<div class="q-empty"><span class="spinner"></span> Hava verisi çekiliyor...</div>';
+  cnt.textContent = '';
+
+  try {
+    const r = await fetch(HAVA + '?il=' + encodeURIComponent(il));
+    const d = await r.json();
+    if (!d.success) {
+      table.innerHTML = `<div class="q-error">✗ ${esc(d.error || 'Hata')}</div>`;
+      return;
+    }
+    renderHava(d);
+  } catch (e) {
+    table.innerHTML = '<div class="q-error">✗ Bağlantı hatası</div>';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🔎 Sorgula';
+  }
+}
+
+function renderHava(d) {
+  const table = document.getElementById('resultTable');
+  const cnt   = document.getElementById('resultCount');
+  const k = d.konum, a = d.anlik;
+
+  let html = `<div class="result-ozet">📍 ${esc(k.ad)}, ${esc(k.ulke)} · ${esc(a.saat || '')}${d.cached ? ' · (önbellek)' : ''}</div>`;
+
+  html += `<div class="result-category">
+    <div class="result-category-title">🌡️ Anlık Durum</div>
+    <table class="q-table"><tbody>
+      <tr><th>Sıcaklık</th><td>${esc(a.sicaklik)} °C</td>
+          <th>Nem</th><td>${esc(a.nem)} %</td></tr>
+      <tr><th>Rüzgar</th><td>${esc(a.ruzgar)} km/s</td>
+          <th>Durum</th><td>${esc(a.durum)}</td></tr>
+    </tbody></table></div>`;
+
+  if (Array.isArray(d.gunluk) && d.gunluk.length) {
+    html += `<div class="result-category">
+      <div class="result-category-title">📅 7 Günlük Tahmin <span class="cat-count">${d.gunluk.length} gün</span></div>
+      <table class="q-table"><thead><tr>
+        <th>Tarih</th><th>Durum</th><th>Min</th><th>Max</th><th>Yağış</th><th>Rüzgar</th>
+      </tr></thead><tbody>`;
+    for (const g of d.gunluk) {
+      html += `<tr>
+        <td>${esc(g.tarih)}</td>
+        <td>${esc(g.durum)}</td>
+        <td>${esc(g.min)}°</td>
+        <td>${esc(g.max)}°</td>
+        <td>${esc(g.yagis)} mm</td>
+        <td>${esc(g.ruzgar)} km/s</td>
+      </tr>`;
+    }
+    html += `</tbody></table></div>`;
+  }
+
+  if (Array.isArray(d.saatlik) && d.saatlik.length) {
+    html += `<div class="result-category">
+      <div class="result-category-title">⏰ Saatlik (ilk 24) <span class="cat-count">${d.saatlik.length} saat</span></div>
+      <table class="q-table"><thead><tr>
+        <th>Saat</th><th>Sıcaklık</th><th>Yağış %</th>
+      </tr></thead><tbody>`;
+    for (const s of d.saatlik) {
+      html += `<tr>
+        <td>${esc(s.saat)}</td>
+        <td>${esc(s.sicaklik)}°C</td>
+        <td>%${esc(s.yagis)}</td>
+      </tr>`;
+    }
+    html += `</tbody></table></div>`;
+  }
+
+  if (d.telegram) {
+    html += `<div class="result-ozet" style="margin-top:.75rem;background:rgba(88,166,255,.1);border-color:rgba(88,166,255,.3);color:#79c0ff;">📢 Telegram: <b>${esc(d.telegram)}</b></div>`;
+  }
+
+  table.innerHTML = html;
+  cnt.textContent = (d.gunluk?.length || 0) + ' gün · ' + (d.saatlik?.length || 0) + ' saat';
+}
+
+async function gosterHava() {
+  const il = document.getElementById('havaIl')?.value.trim();
+  const btn = document.getElementById('havaBtn');
+  const wrap = document.getElementById('havaResultWrap');
+  const table = document.getElementById('havaResult');
+  const cnt = document.getElementById('havaCount');
+  if (!il) { toast('İl adı gerekli', 'error'); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Sorgulanıyor...';
+  wrap.classList.add('active');
+  table.innerHTML = '<div class="q-empty"><span class="spinner"></span> Çekiliyor...</div>';
+
+  try {
+    const r = await fetch(HAVA + '?il=' + encodeURIComponent(il));
+    const d = await r.json();
+    if (!d.success) { table.innerHTML = `<div class="q-error">✗ ${esc(d.error)}</div>`; return; }
+    renderHavaTo(d, table, cnt);
+  } catch (e) {
+    table.innerHTML = '<div class="q-error">✗ Bağlantı hatası</div>';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🔎 Sorgula';
+  }
+}
+
+function renderHavaTo(d, table, cnt) {
+  const k = d.konum, a = d.anlik;
+  let html = `<div class="result-ozet">📍 ${esc(k.ad)}, ${esc(k.ulke)} · ${esc(a.saat || '')}${d.cached ? ' · (önbellek)' : ''}</div>`;
+  html += `<div class="result-category"><div class="result-category-title">🌡️ Anlık</div>
+    <table class="q-table"><tbody>
+      <tr><th>Sıcaklık</th><td>${esc(a.sicaklik)} °C</td><th>Nem</th><td>${esc(a.nem)} %</td></tr>
+      <tr><th>Rüzgar</th><td>${esc(a.ruzgar)} km/s</td><th>Durum</th><td>${esc(a.durum)}</td></tr>
+    </tbody></table></div>`;
+  if (Array.isArray(d.gunluk)) {
+    html += `<div class="result-category"><div class="result-category-title">📅 7 Günlük <span class="cat-count">${d.gunluk.length}</span></div>
+      <table class="q-table"><thead><tr><th>Tarih</th><th>Durum</th><th>Min</th><th>Max</th><th>Yağış</th><th>Rüzgar</th></tr></thead><tbody>`;
+    for (const g of d.gunluk) html += `<tr><td>${esc(g.tarih)}</td><td>${esc(g.durum)}</td><td>${esc(g.min)}°</td><td>${esc(g.max)}°</td><td>${esc(g.yagis)} mm</td><td>${esc(g.ruzgar)} km/s</td></tr>`;
+    html += `</tbody></table></div>`;
+  }
+  if (Array.isArray(d.saatlik)) {
+    html += `<div class="result-category"><div class="result-category-title">⏰ Saatlik <span class="cat-count">${d.saatlik.length}</span></div>
+      <table class="q-table"><thead><tr><th>Saat</th><th>Sıcaklık</th><th>Yağış %</th></tr></thead><tbody>`;
+    for (const s of d.saatlik) html += `<tr><td>${esc(s.saat)}</td><td>${esc(s.sicaklik)}°C</td><td>%${esc(s.yagis)}</td></tr>`;
+    html += `</tbody></table></div>`;
+  }
+  if (d.telegram) {
+    html += `<div class="result-ozet" style="margin-top:.75rem;background:rgba(88,166,255,.1);border-color:rgba(88,166,255,.3);color:#79c0ff;">📢 Telegram: <b>${esc(d.telegram)}</b></div>`;
+  }
+  table.innerHTML = html;
+  cnt.textContent = (d.gunluk?.length || 0) + ' gün · ' + (d.saatlik?.length || 0) + ' saat';
 }
 
 async function loadChat() {
@@ -716,8 +864,8 @@ async function kraftonSingle() {
     const r = await fetch(KRAFTON, { method:'POST', body: fd });
     const d = await r.json();
     if (d.success) toast('✔ ' + d.message, 'success');
-else toast('✘ ' + (d.error || 'başarısız') + (d.status ? ' [' + d.status + ']' : ''), 'error');
-console.log('KRAFTON_RESULT:', d);
+    else toast('✘ ' + (d.error || 'başarısız') + (d.status ? ' [' + d.status + ']' : ''), 'error');
+    console.log('KRAFTON_RESULT:', d);
   } finally {
     btn.disabled = false;
     btn.innerHTML = '🔎 Tek Giriş Dene';

@@ -1,6 +1,7 @@
 <?php
 /**
  * config.php — Forex Sorgulama Hizmeti
+ * İletişim: Telegram @cmrbaskani
  */
 
 if (session_status() === PHP_SESSION_NONE) session_start();
@@ -17,6 +18,10 @@ define('CHAT_FILE',     DATA_DIR . '/chat.json');
 define('AI_CHAT_FILE',  DATA_DIR . '/ai_chat.json');
 define('SETTINGS_FILE', DATA_DIR . '/settings.json');
 define('LOG_FILE',      DATA_DIR . '/admin_log.json');
+
+// ═══════════ HAVA DURUMU ═══════════
+define('HAVA_CACHE_FILE', DATA_DIR . '/hava_cache.json');
+define('HAVA_CACHE_TTL',  1800);
 
 // ═══════════ WORDLIST / BRUTE ═══════════
 define('TR_WORDLIST',    __DIR__ . '/tr_wordlist.txt');

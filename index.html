@@ -279,6 +279,7 @@
       <div class="sb-item" onclick="openQuery('tcgsm')"><span class="ico">📱</span> TC → GSM</div>
       <div class="sb-item" onclick="openQuery('gsmtc')"><span class="ico">📞</span> GSM → TC</div>
       <div class="sb-item" onclick="openQuery('eokul')"><span class="ico">🎓</span> E-Okul</div>
+      <div class="sb-item" onclick="openQuery('hava')"><span class="ico">🌦️</span> Hava Durumu</div>
 
       <div class="sb-section" style="color:#f59e0b;">💎 VIP Sorgular</div>
       <div class="sb-item" onclick="openQuery('sulale')"><span class="ico">🌳</span> Sülale <span class="vip-badge">VIP</span></div>
@@ -306,6 +307,30 @@
       <button class="topbar-btn" onclick="showView('profile')">👤</button>
     </div>
     <div class="content" id="content">
+
+      <div id="viewHava" class="q-wrap hidden">
+        <div class="q-card">
+          <div class="q-head">
+            <div class="q-head-ico">🌦️</div>
+            <div class="q-head-txt"><h2>Hava Durumu</h2><p>İl ile anlık + 7 günlük tahmin</p></div>
+          </div>
+          <div class="q-info"><span>ℹ️</span><span>İl adı yaz (örn: Ankara, İstanbul). Open-Meteo verisi. İletişim: Telegram @cmrbaskani</span></div>
+          <div class="q-inputs">
+            <div class="q-input-group">
+              <label class="q-input-label">İl</label>
+              <input class="q-input" id="havaIl" placeholder="Ankara" onkeypress="if(event.key==='Enter')gosterHava()">
+            </div>
+          </div>
+          <div class="q-actions">
+            <button class="q-btn q-btn-primary" id="havaBtn" onclick="gosterHava()">🔎 Sorgula</button>
+            <button class="q-btn q-btn-secondary" onclick="document.getElementById('havaIl').value='';document.getElementById('havaResultWrap').classList.remove('active');document.getElementById('havaResult').innerHTML='';">🔄 Sıfırla</button>
+          </div>
+        </div>
+        <div class="q-results" id="havaResultWrap">
+          <div class="q-results-head"><span>Sonuçlar</span><span class="q-results-count" id="havaCount"></span></div>
+          <div class="q-table-wrap" id="havaResult"></div>
+        </div>
+      </div>
 
       <div id="viewQuery" class="q-wrap">
         <div class="q-card">
@@ -495,7 +520,7 @@
         </div>
       </div>
 
-      <div class="footer">© Tüm Hakları Saklıdır ©</div>
+      <div class="footer">© Tüm Hakları Saklıdır © — Telegram <b>@cmrbaskani</b></div>
     </div>
   </div>
 </div>
